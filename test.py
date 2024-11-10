@@ -19,7 +19,7 @@ model = YOLO("yolo11n.pt").to(device)
 
 # Perform object detection on an image
 # results = model("OIP.jpg", conf=0.6)
-results = model("download.jpg", conf=0.6)
+results = model("basketball4.jpg", conf=0.6)
 
 results[0].show()
 
