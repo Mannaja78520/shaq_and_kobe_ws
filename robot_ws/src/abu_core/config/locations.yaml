@@ -1,0 +1,13 @@
+robot_main_state_node:
+  ros__parameters:
+    waypoints_start_to_challenge_zone: 
+      start: [0.0, 0.0, 0.0]
+      sub: [1.75, 0.0, 0.0]
+      challenge_zone: [1.75, 0.48, -150.0]
+
+    lists_challenge_zone: 
+      room1: [-0.117, 0.50, 169.0]
+      room2: [0.358, 0.53, 170.0]
+      room3: [0.835, 0.56, 170.0]
+      room4: [1.3, 0.58, 175.0]
+      room5: [1.75, 0.59, -180.0]
