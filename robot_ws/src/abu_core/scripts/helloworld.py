@@ -22,7 +22,9 @@ class HelloWorld(Node):
             qos_profile=qos.qos_profile_sensor_data,
         )
         
-        self.sent_timer = self.create_timer(0.1, self.timer_callback)
+        self.sent_timer = self.create_timer(1, self.timer_callback)
+        self.sent_a = self.create_timer(0.1, self.timer_a)
+        # self.sent_timer = self.create_timer(0.1, self.timer_callback)
         self.i = 0
         
         
@@ -32,6 +34,11 @@ class HelloWorld(Node):
         msg_HelloWorld.data = manpub
         self.hello.publish(msg_HelloWorld)
         self.i = self.i + 1
+        
+    def timer_a(self):
+        print("A")
+        # self.send_twist_msg()
+        
         
             
 def main():

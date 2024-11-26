@@ -38,7 +38,7 @@ find_package(behaviortree_cpp_v3 REQUIRED)
 # Install
 ################################################################################
 install(
-  DIRECTORY launch map param scripts wrg_core config
+  DIRECTORY launch scripts abu_core config
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -52,6 +52,7 @@ ament_python_install_package(${PROJECT_NAME})
 ################################################################################
 install(PROGRAMS
   scripts/robot_main_state.py
+  scripts/helloworld.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
