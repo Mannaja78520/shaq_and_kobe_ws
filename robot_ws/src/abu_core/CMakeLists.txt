@@ -53,8 +53,17 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   scripts/robot_main_state.py
   scripts/helloworld.py
+  scripts/keyboard_control.py
+  scripts/test_sub_cmd_vel.py
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(PROGRAMS
+  src/controller.py
+  src/utilize.py
+  DESTINATION lib/${PROJECT_NAME}/src
+)
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

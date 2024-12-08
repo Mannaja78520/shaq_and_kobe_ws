@@ -39,7 +39,7 @@ public:
 
         if (pwm_frequency > 0)
         {
-            analogWriteFrequency(pwm_pin, pwm_frequency);
+            analogWriteFrequency(pwm_frequency);
         }
         analogWriteResolution(pwm_bits);
 

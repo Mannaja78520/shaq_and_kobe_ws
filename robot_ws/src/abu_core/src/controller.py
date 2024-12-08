@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from src.utilize import *
 import time
 
@@ -24,17 +26,17 @@ class Controller:
         self.ErrorTolerance = abs(errorTolerance)
         self.LastTime = time.time()
         
-    def ConfigPIDF(self, kp = 0, ki = 0, kd = 0, kf = 0, baseSpeed = 0):
+    def ConfigPIDF(self, kp = 0, ki = 0, kd = 0, kf = 0, baseSpeed = 0) -> None:
         self.kp = kp
         self.ki = ki
         self.kd = kd
         self.kf = kf
         self.baseSpeed = baseSpeed
     
-    def Calculate(self, setpoint, measurement):
+    def Calculate(self, setpoint, measurement) -> float:
         return self.Calculate(setpoint - measurement)
     
-    def Calculate(self, error):
+    def Calculate(self, error) -> float:
         self.CurrentTime = time.time()
         self.Dt = self.CurrentTime - self.LastTime
         self.LastTime  = self.CurrentTime
@@ -49,13 +51,13 @@ class Controller:
         BaseSpeed = self.baseSpeed * sig_num(self.Error)
         return (self.Error * self.kp) + (self.Integral * self.ki) + (Derivative * self.kd) + (self.Setpoint * self.kf) + BaseSpeed
     
-    def ResetVariable(self):
+    def ResetVariable(self) -> None:
         self.LastError = 0
         self.Integral = 0 
         self.CurrentTime = time.time()
         self.LastTime = self.CurrentTime
         
-    def Reset(self, kp = None, ki = None, kd = None, kf = None, baseSpeed = None):
+    def Reset(self, kp = None, ki = None, kd = None, kf = None, baseSpeed = None) -> None:
         # pidf Setting
         kp = self.kp if kp == None else kp
         ki = self.ki if ki == None else ki
