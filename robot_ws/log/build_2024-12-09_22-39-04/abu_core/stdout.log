@@ -1,0 +1,56 @@
+Built target ament_cmake_python_copy_abu_core
+running egg_info
+writing abu_core.egg-info/PKG-INFO
+writing dependency_links to abu_core.egg-info/dependency_links.txt
+writing top-level names to abu_core.egg-info/top_level.txt
+reading manifest file 'abu_core.egg-info/SOURCES.txt'
+writing manifest file 'abu_core.egg-info/SOURCES.txt'
+Built target ament_cmake_python_build_abu_core_egg
+-- Install configuration: ""
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/helloWorld.launch.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/state.launch.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/bot_bringup.launch.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/microros.launch.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/navigate.launch.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/keyboard_control.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/test_sub_cmd_vel.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/robot_main_state.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/helloworld.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/__init__.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/abu_core
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/abu_core/__init__.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/config
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/config/locations.yaml
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/pythonpath.sh
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/pythonpath.dsv
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info/dependency_links.txt
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info/top_level.txt
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info/SOURCES.txt
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info/PKG-INFO
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core/__init__.py
+Listing '/home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core'...
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/robot_main_state.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/helloworld.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/keyboard_control.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/test_sub_cmd_vel.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/src/controller.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/src/utilize.py
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/ament_index/resource_index/package_run_dependencies/abu_core
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/ament_index/resource_index/parent_prefix_path/abu_core
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/ament_prefix_path.sh
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/path.sh
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/path.dsv
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/local_setup.bash
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/local_setup.sh
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/local_setup.zsh
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/local_setup.dsv
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/package.dsv
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/ament_index/resource_index/packages/abu_core
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/cmake/abu_coreConfig.cmake
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/cmake/abu_coreConfig-version.cmake
+-- Up-to-date: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/package.xml
