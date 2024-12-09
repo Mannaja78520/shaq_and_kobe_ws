@@ -36,7 +36,7 @@ class HelloWorld(Node):
         self.i = self.i + 1
         
     def timer_a(self):
-        print("")
+        print("Hello am Guy")
         # self.send_twist_msg()
         
         
