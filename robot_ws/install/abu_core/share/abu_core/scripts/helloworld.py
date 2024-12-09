@@ -30,13 +30,13 @@ class HelloWorld(Node):
         
     def timer_callback(self):
         msg_HelloWorld = String()
-        manpub = "Hello am man " + str(self.i)
+        manpub = "Hello am Guy " + str(self.i)
         msg_HelloWorld.data = manpub
         self.hello.publish(msg_HelloWorld)
         self.i = self.i + 1
         
     def timer_a(self):
-        print("A")
+        print("Hello am Guy ")
         # self.send_twist_msg()
         
         
