@@ -1,0 +1,3 @@
+source;share/abu_core/environment/ament_prefix_path.sh
+source;share/abu_core/environment/path.sh
+source;share/abu_core/environment/pythonpath.sh

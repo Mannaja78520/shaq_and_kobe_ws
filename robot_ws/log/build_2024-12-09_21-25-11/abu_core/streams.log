@@ -1,0 +1,31 @@
+[0.007s] Invoking command in '/home/ppha/shaq_and_koby_ws/robot_ws/build/abu_core': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/ppha/shaq_and_koby_ws/robot_ws/src/abu_core -DCMAKE_INSTALL_PREFIX=/home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core
+[0.018s] -- Found ament_cmake: 2.5.2 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.165s] -- Found tf2: 0.36.4 (/opt/ros/jazzy/share/tf2/cmake)
+[0.182s] -- Found rosidl_generator_c: 4.6.4 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+[0.187s] -- Found rosidl_generator_cpp: 4.6.4 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+[0.194s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.202s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.230s] -- Found rclpy: 7.1.2 (/opt/ros/jazzy/share/rclpy/cmake)
+[0.230s] -- Found rclcpp: 28.1.5 (/opt/ros/jazzy/share/rclcpp/cmake)
+[0.263s] -- Found rmw_implementation_cmake: 7.3.1 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+[0.264s] -- Found rmw_fastrtps_cpp: 8.4.1 (/opt/ros/jazzy/share/rmw_fastrtps_cpp/cmake)
+[0.319s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.364s] -- Configuring incomplete, errors occurred!
+[0.365s] [31mCMake Error at CMakeLists.txt:25 (find_package):
+[0.365s]   By not providing "Findnav2_msgs.cmake" in CMAKE_MODULE_PATH this project
+[0.365s]   has asked CMake to find a package configuration file provided by
+[0.365s]   "nav2_msgs", but CMake did not find one.
+[0.365s] 
+[0.365s]   Could not find a package configuration file provided by "nav2_msgs" with
+[0.365s]   any of the following names:
+[0.365s] 
+[0.365s]     nav2_msgsConfig.cmake
+[0.365s]     nav2_msgs-config.cmake
+[0.365s] 
+[0.365s]   Add the installation prefix of "nav2_msgs" to CMAKE_PREFIX_PATH or set
+[0.365s]   "nav2_msgs_DIR" to a directory containing one of the above files.  If
+[0.366s]   "nav2_msgs" provides a separate development package or SDK, be sure it has
+[0.366s]   been installed.
+[0.366s] 
+[0.366s] [0m
+[0.369s] Invoked command in '/home/ppha/shaq_and_koby_ws/robot_ws/build/abu_core' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/ppha/shaq_and_koby_ws/robot_ws/src/abu_core -DCMAKE_INSTALL_PREFIX=/home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core

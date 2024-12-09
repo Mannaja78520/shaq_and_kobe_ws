@@ -1,0 +1,17 @@
+[31mCMake Error at CMakeLists.txt:32 (find_package):
+  By not providing "Findbehaviortree_cpp_v3.cmake" in CMAKE_MODULE_PATH this
+  project has asked CMake to find a package configuration file provided by
+  "behaviortree_cpp_v3", but CMake did not find one.
+
+  Could not find a package configuration file provided by
+  "behaviortree_cpp_v3" with any of the following names:
+
+    behaviortree_cpp_v3Config.cmake
+    behaviortree_cpp_v3-config.cmake
+
+  Add the installation prefix of "behaviortree_cpp_v3" to CMAKE_PREFIX_PATH
+  or set "behaviortree_cpp_v3_DIR" to a directory containing one of the above
+  files.  If "behaviortree_cpp_v3" provides a separate development package or
+  SDK, be sure it has been installed.
+
+[0m

@@ -1,0 +1,46 @@
+[0.007s] Invoking command in '/home/ppha/shaq_and_koby_ws/robot_ws/build/abu_core': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/ppha/shaq_and_koby_ws/robot_ws/src/abu_core -DCMAKE_INSTALL_PREFIX=/home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core
+[0.075s] -- The C compiler identification is GNU 13.2.0
+[0.131s] -- The CXX compiler identification is GNU 13.2.0
+[0.148s] -- Detecting C compiler ABI info
+[0.217s] -- Detecting C compiler ABI info - done
+[0.223s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.223s] -- Detecting C compile features
+[0.223s] -- Detecting C compile features - done
+[0.232s] -- Detecting CXX compiler ABI info
+[0.312s] -- Detecting CXX compiler ABI info - done
+[0.318s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.318s] -- Detecting CXX compile features
+[0.319s] -- Detecting CXX compile features - done
+[0.322s] -- Found ament_cmake: 2.5.2 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.424s] -- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+[0.503s] -- Found tf2: 0.36.4 (/opt/ros/jazzy/share/tf2/cmake)
+[0.538s] -- Found rosidl_generator_c: 4.6.4 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+[0.547s] -- Found rosidl_generator_cpp: 4.6.4 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+[0.560s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.573s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.611s] -- Found rclpy: 7.1.2 (/opt/ros/jazzy/share/rclpy/cmake)
+[0.612s] -- Found rclcpp: 28.1.5 (/opt/ros/jazzy/share/rclcpp/cmake)
+[0.661s] -- Found rmw_implementation_cmake: 7.3.1 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+[0.664s] -- Found rmw_fastrtps_cpp: 8.4.1 (/opt/ros/jazzy/share/rmw_fastrtps_cpp/cmake)
+[0.728s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.13")  
+[0.744s] -- Found FastRTPS: /opt/ros/jazzy/include (Required is at least version "2.13") 
+[0.762s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.824s] [31mCMake Error at CMakeLists.txt:25 (find_package):
+[0.824s]   By not providing "Findnav2_msgs.cmake" in CMAKE_MODULE_PATH this project
+[0.824s]   has asked CMake to find a package configuration file provided by
+[0.824s]   "nav2_msgs", but CMake did not find one.
+[0.824s] 
+[0.824s]   Could not find a package configuration file provided by "nav2_msgs" with
+[0.825s]   any of the following names:
+[0.825s] 
+[0.825s]     nav2_msgsConfig.cmake
+[0.825s]     nav2_msgs-config.cmake
+[0.825s] 
+[0.825s]   Add the installation prefix of "nav2_msgs" to CMAKE_PREFIX_PATH or set
+[0.825s]   "nav2_msgs_DIR" to a directory containing one of the above files.  If
+[0.825s]   "nav2_msgs" provides a separate development package or SDK, be sure it has
+[0.825s]   been installed.
+[0.825s] 
+[0.825s] [0m
+[0.825s] -- Configuring incomplete, errors occurred!
+[0.831s] Invoked command in '/home/ppha/shaq_and_koby_ws/robot_ws/build/abu_core' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/ppha/shaq_and_koby_ws/robot_ws/src/abu_core -DCMAKE_INSTALL_PREFIX=/home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core

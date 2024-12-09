@@ -1,0 +1,79 @@
+-- Found ament_cmake: 2.5.2 (/opt/ros/jazzy/share/ament_cmake/cmake)
+-- Found tf2: 0.36.4 (/opt/ros/jazzy/share/tf2/cmake)
+-- Found rosidl_generator_c: 4.6.4 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+-- Found rosidl_generator_cpp: 4.6.4 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rclpy: 7.1.2 (/opt/ros/jazzy/share/rclpy/cmake)
+-- Found rclcpp: 28.1.5 (/opt/ros/jazzy/share/rclcpp/cmake)
+-- Found rmw_implementation_cmake: 7.3.1 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+-- Found rmw_fastrtps_cpp: 8.4.1 (/opt/ros/jazzy/share/rmw_fastrtps_cpp/cmake)
+-- Using RMW implementation 'rmw_fastrtps_cpp' as default
+-- Found nav2_msgs: 1.3.3 (/opt/ros/jazzy/share/nav2_msgs/cmake)
+-- Found rclcpp_action: 28.1.5 (/opt/ros/jazzy/share/rclcpp_action/cmake)
+-- Found tf2_geometry_msgs: 0.36.4 (/opt/ros/jazzy/share/tf2_geometry_msgs/cmake)
+-- Found eigen3_cmake_module: 0.3.0 (/opt/ros/jazzy/share/eigen3_cmake_module/cmake)
+-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+-- Found ament_lint_auto: 0.17.1 (/opt/ros/jazzy/share/ament_lint_auto/cmake)
+-- Configuring done (0.7s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/ppha/shaq_and_koby_ws/robot_ws/build/abu_core
+Built target ament_cmake_python_copy_abu_core
+running egg_info
+creating abu_core.egg-info
+writing abu_core.egg-info/PKG-INFO
+writing dependency_links to abu_core.egg-info/dependency_links.txt
+writing top-level names to abu_core.egg-info/top_level.txt
+writing manifest file 'abu_core.egg-info/SOURCES.txt'
+reading manifest file 'abu_core.egg-info/SOURCES.txt'
+writing manifest file 'abu_core.egg-info/SOURCES.txt'
+Built target ament_cmake_python_build_abu_core_egg
+-- Install configuration: ""
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/helloWorld.launch.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/state.launch.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/bot_bringup.launch.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/microros.launch.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/launch/navigate.launch.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/keyboard_control.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/test_sub_cmd_vel.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/robot_main_state.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/helloworld.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/scripts/__init__.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/abu_core
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/abu_core/__init__.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/config
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/config/locations.yaml
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/pythonpath.sh
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/pythonpath.dsv
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info/dependency_links.txt
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info/top_level.txt
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info/SOURCES.txt
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core-2.1.5-py3.12.egg-info/PKG-INFO
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core/__init__.py
+Listing '/home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core'...
+Compiling '/home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/python3.12/site-packages/abu_core/__init__.py'...
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/robot_main_state.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/helloworld.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/keyboard_control.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/test_sub_cmd_vel.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/src/controller.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/lib/abu_core/src/utilize.py
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/ament_index/resource_index/package_run_dependencies/abu_core
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/ament_index/resource_index/parent_prefix_path/abu_core
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/ament_prefix_path.sh
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/ament_prefix_path.dsv
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/path.sh
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/environment/path.dsv
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/local_setup.bash
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/local_setup.sh
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/local_setup.zsh
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/local_setup.dsv
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/package.dsv
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/ament_index/resource_index/packages/abu_core
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/cmake/abu_coreConfig.cmake
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/cmake/abu_coreConfig-version.cmake
+-- Installing: /home/ppha/shaq_and_koby_ws/robot_ws/install/abu_core/share/abu_core/package.xml

@@ -1,0 +1,8 @@
+source;share/abu_core/hook/cmake_prefix_path.dsv
+source;share/abu_core/hook/cmake_prefix_path.sh
+source;share/abu_core/hook/pythonpath.dsv
+source;share/abu_core/hook/pythonpath.sh
+source;share/abu_core/local_setup.bash
+source;share/abu_core/local_setup.dsv
+source;share/abu_core/local_setup.sh
+source;share/abu_core/local_setup.zsh
