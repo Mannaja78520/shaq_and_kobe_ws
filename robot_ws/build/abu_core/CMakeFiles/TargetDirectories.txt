@@ -1,0 +1,11 @@
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/uninstall.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/abu_core_uninstall.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/ament_cmake_python_copy_abu_core.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/ament_cmake_python_build_abu_core_egg.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/test.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/edit_cache.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/rebuild_cache.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/list_install_components.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/install.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/install/local.dir
+/home/mrg/ABU/shaq_and_koby_ws/robot_ws/build/abu_core/CMakeFiles/install/strip.dir
