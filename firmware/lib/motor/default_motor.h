@@ -59,6 +59,14 @@ public:
         digitalWrite(in_b_pin_, LOW);
         analogWrite(pwm_pin_, 0);
     }
+
+    void setPWMFrequency(float frequency)
+    {
+        if (frequency > 0)
+        {
+            analogWriteFrequency(frequency);
+        }
+    }
 };
 
 #endif
