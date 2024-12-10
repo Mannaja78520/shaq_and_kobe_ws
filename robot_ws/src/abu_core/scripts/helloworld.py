@@ -30,7 +30,7 @@ class HelloWorld(Node):
         
     def timer_callback(self):
         msg_HelloWorld = String()
-        manpub = "Hello am man " + str(self.i)
+        manpub = "Hello am earn " + str(self.i)
         msg_HelloWorld.data = manpub
         self.hello.publish(msg_HelloWorld)
         self.i = self.i + 1
