@@ -16,13 +16,23 @@ class test_sub_cmd_vel(Node):
     turnSpeed: float = 0.0
 
     maxSpeed : int = 1024 # pwm
+    motor1Speed : float = 0
+    motor2Speed : float = 0
+    motor3Speed : float = 0
+    motor4Speed : float = 0
 
     def __init__(self):
         super().__init__("Test_sub_cmd_vel_Node")
 
+        self.send_robot_speed = self.create_publisher(
+            Twist, "/motor_speed", qos_profile=qos.qos_profile_system_default
+        )
+
         self.create_subscription(
             Twist, '/cmd_vel', self.cmd_vel, 10
         )
+
+        self.sent_data_timer = self.create_timer(0.01, self.sendData)
         
     def cmd_vel(self, msg):
         self.moveSpeed = msg.linear.x
@@ -30,11 +40,20 @@ class test_sub_cmd_vel(Node):
         self.turnSpeed = msg.angular.z
         
         D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(self.turnSpeed), 2.0)
-        motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + self.turnSpeed) / D * self.maxSpeed))
-        motor2Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - self.turnSpeed) / D * self.maxSpeed))
-        motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + self.turnSpeed) / D * self.maxSpeed))
-        motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - self.turnSpeed) / D * self.maxSpeed))
-        print("motor 1 : " + str(motor1Speed),"motor 2 : " +  str(motor2Speed),"motor 3 : " +  str(motor3Speed),"motor 4 : " +  str(motor4Speed))
+        self.motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + self.turnSpeed) / D * self.maxSpeed))
+        self.motor2Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - self.turnSpeed) / D * self.maxSpeed))
+        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + self.turnSpeed) / D * self.maxSpeed))
+        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - self.turnSpeed) / D * self.maxSpeed))
+        print("motor 1 : " + str(self.motor1Speed),"motor 2 : " +  str(self.motor2Speed),"motor 3 : " +  str(self.motor3Speed),"motor 4 : " +  str(self.motor4Speed))
+
+
+    def sendData(self):
+        motorspeed_msg = Twist()
+        motorspeed_msg.linear.x = float(self.motor1Speed)
+        motorspeed_msg.linear.y = float(self.motor2Speed)
+        motorspeed_msg.linear.z = float(self.motor3Speed)
+        motorspeed_msg.angular.x = float(self.motor4Speed)
+        self.send_robot_speed.publish(motorspeed_msg)
 
 def main():
     rclpy.init()

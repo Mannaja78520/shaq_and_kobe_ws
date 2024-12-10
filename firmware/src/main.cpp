@@ -16,7 +16,7 @@
 #include <geometry_msgs/msg/twist.h>
 
 #include <motor.h>
-// #include "config.h"
+#include "drive_output.h"
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -78,7 +78,11 @@ enum states
 } state;
 
 // Move motor
-Motor motor1(20000, 10, 0, 1, 19, 18, 5);
+Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
+Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+Motor motor3(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTOR3_PWM, MOTOR3_IN_A, MOTOR3_IN_B);
+Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTOR4_INV, MOTOR4_BREAK, MOTOR4_PWM, MOTOR4_IN_A, MOTOR4_IN_B);
+
 
 //------------------------------ < Fuction Prototype > ------------------------------//
 
@@ -134,9 +138,12 @@ void loop()
 
 //------------------------------ < Fuction > -------------------------------------//
 
-void MovePower(float Motor1Power, float Motor2Speed, float Motor3Speed, float Motor4Speed)
+void MovePower(float Motor1Speed, float Motor2Speed, float Motor3Speed, float Motor4Speed)
 {
-    motor1.spin(Motor1Power);
+    motor1.spin(Motor1Speed);
+    motor2.spin(Motor2Speed);
+    motor3.spin(Motor3Speed);
+    motor4.spin(Motor4Speed);
 }
 
 void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
@@ -181,7 +188,7 @@ bool createEntities()
         &moveMotor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/cmd_vel"));
+        "/motor_speed"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -224,13 +231,12 @@ bool destroyEntities()
 
 void Move()
 {
-  float linearX = moveMotor_msg.linear.x;
-    // float motor1Speed = moveMotor_msg.linear.x;
-    // float motor2Speed = moveMotor_msg.linear.y;
-    // float motor3Speed = moveMotor_msg.linear.z;
-    // float motor4Speed = moveMotor_msg.angular.x;
-    // MovePower(motor1Speed, motor2Speed,
-    //           motor3Speed, motor4Speed);
+    float motor1Speed = moveMotor_msg.linear.x;
+    float motor2Speed = moveMotor_msg.linear.y;
+    float motor3Speed = moveMotor_msg.linear.z;
+    float motor4Speed = moveMotor_msg.angular.x;
+    MovePower(motor1Speed, motor2Speed,
+              motor3Speed, motor4Speed);
 }
 
 void syncTime()
