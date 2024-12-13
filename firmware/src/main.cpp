@@ -50,11 +50,11 @@
 
 //------------------------------ < Define > -------------------------------------//
 
-// rcl_publisher_t debug_motor_publisher;
+rcl_publisher_t debug_motor_publisher;
 
 rcl_subscription_t moveMotor_subscriber;
 
-// geometry_msgs__msg__Twist debug_motor_msg;
+geometry_msgs__msg__Twist debug_motor_msg;
 geometry_msgs__msg__Twist moveMotor_msg;
 
 rclc_executor_t executor;
@@ -90,7 +90,7 @@ void rclErrorLoop();
 void syncTime();
 bool createEntities();
 bool destroyEntities();
-// void publishData();
+void publishData();
 struct timespec getTime();
 
 void MovePower(float, float, float, float);
@@ -152,6 +152,7 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     if (timer != NULL)
     {
         Move();
+        publishData();
     }
 }
 
@@ -178,11 +179,11 @@ bool createEntities()
     // create node
     RCCHECK(rclc_node_init_default(&node, "int32_publisher_rclc", "", &support));
 
-    // RCCHECK(rclc_publisher_init_best_effort(
-    //     &debug_motor_publisher,
-    //     &node,
-    //     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-    //     "debug/motor"));
+    RCCHECK(rclc_publisher_init_best_effort(
+        &debug_motor_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "debug/motor"));
 
     RCCHECK(rclc_subscription_init_default(
         &moveMotor_subscriber,
@@ -237,6 +238,16 @@ void Move()
     float motor4Speed = moveMotor_msg.angular.x;
     MovePower(motor1Speed, motor2Speed,
               motor3Speed, motor4Speed);
+}
+
+void publishData()
+{
+    debug_motor_msg.linear.x = moveMotor_msg.linear.x;
+    debug_motor_msg.linear.y = moveMotor_msg.linear.y;
+    debug_motor_msg.linear.z = moveMotor_msg.linear.z;
+    debug_motor_msg.angular.x = moveMotor_msg.angular.x;
+    struct timespec time_stamp = getTime();
+    rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
 }
 
 void syncTime()
