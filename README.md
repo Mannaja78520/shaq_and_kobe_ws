@@ -10,3 +10,9 @@
 
 # 3rd - 4th Week 
 - ทำโปรแกรมรับส่งข้อมูลผ่าน ros2 
+
+# คำสั่ง launch ณ เวลานี้ 16/12/2024
+## controller_node
+### ros2 launch abu_core keyboardController.launch.py
+## pi_node
+### ros2 launch abu_core bot_bringup.launch.py
