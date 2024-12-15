@@ -19,6 +19,7 @@ class keyboard_control(Node):
     plusMoveSpeed: float = 0.01
     plusSlideSpeed: float = 0.01
     plusturnSpeed: float = 0.01
+    plusSpeedSize = 0.01
     maxSpeed : float = 2.0 # m/s
 
     def __init__(self):
@@ -43,9 +44,9 @@ class keyboard_control(Node):
             self.slideSpeed = self.slideSpeed + self.plusSlideSpeed if key.char == 'd' else self.slideSpeed - self.plusSlideSpeed if key.char == 'a' else self.slideSpeed
             self.turnSpeed = self.turnSpeed + self.plusturnSpeed if key.char == 'e' else self.turnSpeed - self.plusturnSpeed if key.char == 'q' else self.turnSpeed
 
-            self.plusMoveSpeed = self.plusMoveSpeed + 0.01 if key.char == 'y' else self.plusMoveSpeed - 0.01 if key.char == 'h' else self.plusMoveSpeed
-            self.plusSlideSpeed = self.plusSlideSpeed + 0.01 if key.char == 'u' else self.plusSlideSpeed - 0.01 if key.char == 'j' else self.plusSlideSpeed
-            self.plusturnSpeed = self.plusturnSpeed + 0.01 if key.char == 'i' else self.plusturnSpeed - 0.01 if key.char == 'k' else self.plusturnSpeed
+            self.plusMoveSpeed = self.plusMoveSpeed + self.plusSpeedSize if key.char == 'y' else self.plusMoveSpeed - self.plusSpeedSize if key.char == 'h' else self.plusMoveSpeed
+            self.plusSlideSpeed = self.plusSlideSpeed + self.plusSpeedSize if key.char == 'u' else self.plusSlideSpeed - self.plusSpeedSize if key.char == 'j' else self.plusSlideSpeed
+            self.plusturnSpeed = self.plusturnSpeed + self.plusSpeedSize if key.char == 'i' else self.plusturnSpeed - self.plusSpeedSize if key.char == 'k' else self.plusturnSpeed
 
             if key.char == 'b':
                 self.moveSpeed = 0.0
@@ -56,6 +57,9 @@ class keyboard_control(Node):
             self.moveSpeed = clip(self.moveSpeed, -self.maxSpeed, self.maxSpeed)
             self.slideSpeed = clip(self.slideSpeed, -self.maxSpeed, self.maxSpeed)
             self.turnSpeed = clip(self.turnSpeed, -self.maxSpeed, self.maxSpeed)
+            self.plusMoveSpeed = clip(self.plusMoveSpeed, 0, self.maxSpeed)
+            self.plusSlideSpeed = clip(self.plusSlideSpeed, 0, self.maxSpeed)
+            self.plusturnSpeed = clip(self.plusturnSpeed, 0, self.maxSpeed)
 
             keyboard_msg.data = str(key.char)
             self.send_keyboard.publish(keyboard_msg)
