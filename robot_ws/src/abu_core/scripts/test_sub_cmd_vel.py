@@ -35,8 +35,8 @@ class test_sub_cmd_vel(Node):
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
         
     def cmd_vel(self, msg):
-        self.moveSpeed = msg.linear.x
-        self.slideSpeed = msg.linear.y
+        self.slideSpeed = msg.linear.x
+        self.moveSpeed = msg.linear.y
         self.turnSpeed = msg.angular.z
         
         D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(self.turnSpeed), 2.0)

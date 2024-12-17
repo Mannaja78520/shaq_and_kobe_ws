@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "esp_system.h"
 #include <micro_ros_platformio.h>
 #include <stdio.h>
 // #include <Adafruit_NeoPixel.h>
@@ -69,6 +70,12 @@ unsigned long prev_cmd_time = 0;
 unsigned long prev_odom_update = 0;
 unsigned long LastHarvest_time = 0;
 
+// Retry settings
+const int max_retries = 3;               // Max retries before hard reset
+const int base_retry_delay_ms = 1000;    // Base delay for exponential backoff
+static int retry_count = 0;              // Retry counter
+
+
 enum states
 {
     WAITING_AGENT,
@@ -88,8 +95,10 @@ Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTOR4_INV, MOTOR4_BREAK, MOTOR4_PWM, MOTO
 
 void rclErrorLoop();
 void syncTime();
+void retryConnection();
 bool createEntities();
 bool destroyEntities();
+void hardReset();
 void publishData();
 struct timespec getTime();
 
@@ -107,68 +116,75 @@ void setup()
 
 void loop()
 {
-    static int retry_count = 0; // To count retries
-    const int max_retries = 10; // Maximum retry attempts
-    const int retry_delay_ms = 1000; // Delay between retries
-
     switch (state)
     {
     case WAITING_AGENT:
-        EXECUTE_EVERY_N_MS(500, 
-            if (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) 
+        Serial.println("State: WAITING_AGENT");
+
+        // Attempt to ping agent
+        EXECUTE_EVERY_N_MS(500,
+            if (RMW_RET_OK == rmw_uros_ping_agent(100, 1))
             {
+                Serial.println("Agent is available. Transitioning to AGENT_AVAILABLE.");
                 state = AGENT_AVAILABLE;
                 retry_count = 0; // Reset retry counter on success
             }
-            else 
+            else
             {
-                retry_count++;
-                if (retry_count >= max_retries) 
-                {
-                    Serial.println("Max retries reached. Waiting before retrying...");
-                    delay(retry_delay_ms); // Exponential backoff
-                }
-            });
+                Serial.println("Ping failed. Retrying...");
+                retryConnection();
+            }
+        );
         break;
+
     case AGENT_AVAILABLE:
+        Serial.println("State: AGENT_AVAILABLE");
+
         if (createEntities())
         {
+            Serial.println("Entities created successfully. Transitioning to AGENT_CONNECTED.");
             state = AGENT_CONNECTED;
-            retry_count = 0; // Reset retry counter on success
+            retry_count = 0; // Reset retry counter
         }
         else
         {
+            Serial.println("Failed to create entities. Cleaning up...");
             destroyEntities();
+            retryConnection();
             state = WAITING_AGENT;
         }
         break;
+
     case AGENT_CONNECTED:
-        EXECUTE_EVERY_N_MS(200, 
-            if (RMW_RET_OK != rmw_uros_ping_agent(100, 1)) 
+        Serial.println("State: AGENT_CONNECTED");
+
+        EXECUTE_EVERY_N_MS(200,
+            if (RMW_RET_OK != rmw_uros_ping_agent(100, 1))
             {
-                Serial.println("Agent disconnected. Attempting reconnection...");
+                Serial.println("Agent disconnected. Transitioning to AGENT_DISCONNECTED...");
                 state = AGENT_DISCONNECTED;
             }
-            else 
+            else
             {
                 rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
-            });
+            }
+        );
         break;
+
     case AGENT_DISCONNECTED:
+        Serial.println("State: AGENT_DISCONNECTED");
         MovePower(0, 0, 0, 0); // Stop motors for safety
         destroyEntities();
-        retry_count++;
-        if (retry_count >= max_retries)
-        {
-            Serial.println("Max retries reached while disconnected. Waiting...");
-            delay(retry_delay_ms * retry_count); // Exponential backoff
-        }
-        state = WAITING_AGENT; // Try reconnecting
+        retryConnection();
+        state = WAITING_AGENT; // Retry connection
         break;
+
     default:
+        Serial.println("Unknown state.");
         break;
     }
 }
+
 
 //------------------------------ < Fuction > -------------------------------------//
 
@@ -249,18 +265,28 @@ bool createEntities()
     return true;
 }
 
+void hardReset()
+{
+    Serial.println("Hard reset triggered. Restarting the system...");
+    delay(1000);
+    esp_restart(); // Perform hardware reset
+}
+
 bool destroyEntities()
 {
+    Serial.println("Destroying entities...");
+
     rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
-    // rcl_publisher_fini(&debug_motor_publisher, &node);
+    // Finalize all ROS 2 entities
     rcl_subscription_fini(&moveMotor_subscriber, &node);
-    rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rclc_executor_fini(&executor);
     rclc_support_fini(&support);
+    rcl_node_fini(&node);
 
+    Serial.println("Entities destroyed successfully.");
     return true;
 }
 
@@ -320,4 +346,25 @@ void flashLED(int n_times)
 
     }
     delay(1000);
+}
+
+void retryConnection()
+{
+    retry_count++;
+    Serial.print("Retry attempt: ");
+    Serial.println(retry_count);
+
+    if (retry_count >= max_retries)
+    {
+        Serial.println("Max retries exceeded. Triggering hard reset...");
+        destroyEntities(); // Clean up before reset
+        hardReset();
+    }
+    else
+    {
+        int delay_time = base_retry_delay_ms * retry_count; // Exponential backoff
+        Serial.print("Retrying after delay (ms): ");
+        Serial.println(delay_time);
+        delay(delay_time);
+    }
 }

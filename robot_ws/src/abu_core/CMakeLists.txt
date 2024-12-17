@@ -51,10 +51,11 @@ ament_python_install_package(${PROJECT_NAME})
 # Install Programs
 ################################################################################
 install(PROGRAMS
-  scripts/robot_main_state.py
-  scripts/helloworld.py
+# scripts/helloworld.py
+scripts/robot_main_state.py
   scripts/keyboard_control.py
   scripts/test_sub_cmd_vel.py
+  scripts/joystick_control.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
