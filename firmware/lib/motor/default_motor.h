@@ -11,6 +11,7 @@ private:
     int in_a_pin_;
     int in_b_pin_;
     int pwm_pin_;
+    int pwm_bits;
 
 protected:
     void forward(int pwm) override
@@ -33,6 +34,8 @@ public:
                                                                                                                          in_b_pin_(in_b_pin),
                                                                                                                          pwm_pin_(pwm_pin)
     {
+
+        this->pwm_bits = pwm_bits;
         pinMode(in_a_pin_, OUTPUT);
         pinMode(in_b_pin_, OUTPUT);
         pinMode(pwm_pin_, OUTPUT);
@@ -57,7 +60,7 @@ public:
     {
         digitalWrite(in_a_pin_, LOW);
         digitalWrite(in_b_pin_, LOW);
-        analogWrite(pwm_pin_, 0);
+        analogWrite(pwm_pin_, pow(2.0, this->pwm_bits));
     }
 };
 

@@ -15,7 +15,7 @@ class test_sub_cmd_vel(Node):
     slideSpeed: float = 0.0
     turnSpeed: float = 0.0
 
-    maxSpeed : int = 1024 # pwm
+    maxSpeed : int = 1023.0 # pwm
     motor1Speed : float = 0
     motor2Speed : float = 0
     motor3Speed : float = 0
@@ -49,10 +49,10 @@ class test_sub_cmd_vel(Node):
 
     def sendData(self):
         motorspeed_msg = Twist()
-        motorspeed_msg.linear.x = float(self.motor1Speed)
-        motorspeed_msg.linear.y = float(self.motor2Speed)
-        motorspeed_msg.linear.z = float(self.motor3Speed)
-        motorspeed_msg.angular.x = float(self.motor4Speed)
+        motorspeed_msg.linear.x = float(-self.motor1Speed)
+        motorspeed_msg.linear.y = float(-self.motor2Speed)
+        motorspeed_msg.linear.z = float(-self.motor3Speed)
+        motorspeed_msg.angular.x = float(-self.motor4Speed)
         self.send_robot_speed.publish(motorspeed_msg)
 
 def main():
