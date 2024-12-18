@@ -43,7 +43,7 @@ class joystick(Node):
         self.gamepad.rx = float(msg.axes[3] * -1)
         self.gamepad.ry = float(msg.axes[4])
         self.gamepad.rt = float((msg.axes[5] + 1) / 2)
-        # print(self.gamepad.lx, self.gamepad.ly, self.gamepad.lt)
+        print(self.gamepad.lx, self.gamepad.ly, self.gamepad.rx)
 
     def sendData(self):
         cmd_vel_msg = Twist()
