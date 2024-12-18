@@ -47,8 +47,8 @@ class joystick(Node):
 
     def sendData(self):
         cmd_vel_msg = Twist()
-        cmd_vel_msg.linear.x = float(self.gamepad.lx * self.maxspeed)
-        cmd_vel_msg.linear.y = float(self.gamepad.ly * self.maxspeed)
+        cmd_vel_msg.linear.x = float(self.gamepad.ly * self.maxspeed)
+        cmd_vel_msg.linear.y = float(self.gamepad.lx * self.maxspeed)
         cmd_vel_msg.angular.z = float(self.gamepad.rx * self.maxspeed)
         self.pub_cmd.publish(cmd_vel_msg)
 

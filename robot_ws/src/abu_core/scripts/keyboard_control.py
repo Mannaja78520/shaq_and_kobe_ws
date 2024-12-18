@@ -103,8 +103,8 @@ class keyboard_control(Node):
         self.get_logger().info(log_message)
 
         # Assign speeds to the Twist message, ensuring they're floats
-        cmd_vel_msg.linear.x = float(self.slideSpeed)
-        cmd_vel_msg.linear.y = float(self.moveSpeed)
+        cmd_vel_msg.linear.x = float(self.moveSpeed)
+        cmd_vel_msg.linear.y = float(self.slideSpeed)
         cmd_vel_msg.angular.z = float(self.turnSpeed)
 
         # Publish the message
