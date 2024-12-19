@@ -15,7 +15,7 @@ class test_sub_cmd_vel(Node):
     slideSpeed: float = 0.0
     turnSpeed: float = 0.0
 
-    maxSpeed : int = 1023.0/1.5 # pwm
+    maxSpeed : int = 1023.0 # pwm
     motor1Speed : float = 0
     motor2Speed : float = 0
     motor3Speed : float = 0
