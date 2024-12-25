@@ -16,12 +16,12 @@ ROBOT ORIENTATION
 #define MOTOR1_INV false
 #define MOTOR2_INV true
 #define MOTOR3_INV false
-#define MOTOR4_INV false
+#define MOTOR4_INV true
 
-#define MOTOR1_BREAK true
-#define MOTOR2_BREAK true
+#define MOTOR1_BREAK false
+#define MOTOR2_BREAK false
 #define MOTOR3_BREAK false
-#define MOTOR4_BREAK true
+#define MOTOR4_BREAK false
 
 #define MOTOR1_PWM 32
 #define MOTOR1_IN_A 33

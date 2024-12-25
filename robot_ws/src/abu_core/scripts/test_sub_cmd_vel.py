@@ -42,10 +42,10 @@ class test_sub_cmd_vel(Node):
         print(msg.linear.x)
         
         D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(self.turnSpeed), 2.0)
-        self.motor1Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + self.turnSpeed) / D * self.maxSpeed))
+        self.motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - self.turnSpeed) / D * self.maxSpeed))
         self.motor2Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + self.turnSpeed) / D * self.maxSpeed))
         self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - self.turnSpeed) / D * self.maxSpeed))
-        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - self.turnSpeed) / D * self.maxSpeed))
+        self.motor4Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + self.turnSpeed) / D * self.maxSpeed))
         # print("motor 1 : " + str(self.motor1Speed),"motor 2 : " +  str(self.motor2Speed),"motor 3 : " +  str(self.motor3Speed),"motor 4 : " +  str(self.motor4Speed))
 
 
