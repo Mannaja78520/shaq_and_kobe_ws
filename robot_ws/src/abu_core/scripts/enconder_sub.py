@@ -1,16 +1,17 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int64
+from geometry_msgs.msg import Twist
 
 class EncoderSubscriber(Node):
     def __init__(self):
         super().__init__('encoder_subscriber')
         self.subscription = self.create_subscription(
-            Int64, '/encoder_data', self.listener_callback, 10
+            Twist, '/debug/move_encoder', self.listener_callback, 10
         )
 
     def listener_callback(self, msg):
         self.get_logger().info(f'Received encoder data: {msg.data}')
+
 
 def main(args=None):
     rclpy.init(args=args)

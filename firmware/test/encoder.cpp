@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
 #include <stdio.h>
-// #include <Adafruit_NeoPixel.h>
-// #include <ESP32Servo.h>
 
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
@@ -15,8 +13,8 @@
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
 
-#include <motor.h>
-#include "drive_output.h"
+#include "encoder_input.h"
+#include <ESP32Encoder.h> 
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -50,14 +48,9 @@
 
 //------------------------------ < Define > -------------------------------------//
 
-rcl_publisher_t debug_motor_publisher;
 rcl_publisher_t debug_encoder_publisher;
 
-rcl_subscription_t moveMotor_subscriber;
-
-geometry_msgs__msg__Twist debug_motor_msg;
 geometry_msgs__msg__Twist debug_encoder_msg;
-geometry_msgs__msg__Twist moveMotor_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -80,11 +73,21 @@ enum states
     AGENT_DISCONNECTED
 } state;
 
-// Move motor
-Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
-Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
-Motor motor3(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTOR3_PWM, MOTOR3_IN_A, MOTOR3_IN_B);
-Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTOR4_INV, MOTOR4_BREAK, MOTOR4_PWM, MOTOR4_IN_A, MOTOR4_IN_B);
+ESP32Encoder encoder1;
+ESP32Encoder encoder2;
+ESP32Encoder encoder3;
+ESP32Encoder encoder4;
+
+int32_t lastPosition = 0;
+unsigned long lastTime = 0;
+
+float motor1RPM = 0;
+float motor2RPM = 0;
+float motor3RPM = 0;
+float motor4RPM = 0;
+
+float GEAR_RATIO = 1.15;
+int PULSES_PER_REVOLUTION = 2500;
 
 //------------------------------ < Fuction Prototype > ------------------------------//
 
@@ -95,15 +98,25 @@ bool destroyEntities();
 void publishData();
 struct timespec getTime();
 
-void MovePower(float, float, float, float);
-void Move();
-void Spin_Ball();
+void Encoder_read();
 //------------------------------ < Main > -------------------------------------//
 
 void setup()
 {
 
     Serial.begin(115200);
+    if (ENCODER1_INV) encoder1.attachHalfQuad(ENCODER1_PIN_B, ENCODER1_PIN_A);
+    else encoder1.attachHalfQuad(ENCODER1_PIN_A, ENCODER1_PIN_B);
+    if (ENCODER2_INV) encoder2.attachHalfQuad(ENCODER2_PIN_B, ENCODER2_PIN_A);
+    else encoder2.attachHalfQuad(ENCODER2_PIN_A, ENCODER2_PIN_B);
+    if (ENCODER3_INV) encoder3.attachHalfQuad(ENCODER3_PIN_B, ENCODER3_PIN_A);
+    else encoder3.attachHalfQuad(ENCODER3_PIN_A, ENCODER3_PIN_B);
+    if (ENCODER4_INV) encoder4.attachHalfQuad(ENCODER4_PIN_B, ENCODER4_PIN_A);
+    else encoder4.attachHalfQuad(ENCODER4_PIN_A, ENCODER4_PIN_B);
+    encoder1.clearCount();
+    encoder2.clearCount();
+    encoder3.clearCount();
+    encoder4.clearCount();
     set_microros_serial_transports(Serial);
 }
 
@@ -129,7 +142,6 @@ void loop()
         }
         break;
     case AGENT_DISCONNECTED:
-        MovePower(0, 0, 0, 0);
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -140,20 +152,12 @@ void loop()
 
 //------------------------------ < Fuction > -------------------------------------//
 
-void MovePower(float Motor1Speed, float Motor2Speed, float Motor3Speed, float Motor4Speed)
-{
-    motor1.spin(Motor1Speed);
-    motor2.spin(Motor2Speed);
-    motor3.spin(Motor3Speed);
-    motor4.spin(Motor4Speed);
-}
-
 void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
 {
     RCLC_UNUSED(last_call_time);
     if (timer != NULL)
     {
-        Move();
+        Encoder_read();
         publishData();
     }
 }
@@ -179,19 +183,13 @@ bool createEntities()
     rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
 
     // create node
-    RCCHECK(rclc_node_init_default(&node, "int32_publisher_rclc", "", &support));
+    RCCHECK(rclc_node_init_default(&node, "encoder", "", &support));
 
     RCCHECK(rclc_publisher_init_best_effort(
-        &debug_motor_publisher,
+        &debug_encoder_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "debug/motor"));
-
-    RCCHECK(rclc_subscription_init_default(
-        &moveMotor_subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/motor_speed"));
+        "debug/move_encoder"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -203,12 +201,12 @@ bool createEntities()
     executor = rclc_executor_get_zero_initialized_executor();
     RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
 
-    RCCHECK(rclc_executor_add_subscription(
-        &executor,
-        &moveMotor_subscriber,
-        &moveMotor_msg,
-        &twistCallback,
-        ON_NEW_DATA));
+    // RCCHECK(rclc_executor_add_subscription(
+    //     &executor,
+    //     &moveMotor_subscriber,
+    //     &moveMotor_msg,
+    //     &twistCallback,
+    //     ON_NEW_DATA));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
 
     // synchronize time with the agent
@@ -222,8 +220,8 @@ bool destroyEntities()
     rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
-    // rcl_publisher_fini(&debug_motor_publisher, &node);
-    rcl_subscription_fini(&moveMotor_subscriber, &node);
+    rcl_publisher_fini(&debug_encoder_publisher, &node);
+    // rcl_subscription_fini(&moveMotor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rclc_executor_fini(&executor);
@@ -232,24 +230,14 @@ bool destroyEntities()
     return true;
 }
 
-void Move()
-{
-    float motor1Speed = moveMotor_msg.linear.x;
-    float motor2Speed = moveMotor_msg.linear.y;
-    float motor3Speed = moveMotor_msg.linear.z;
-    float motor4Speed = moveMotor_msg.angular.x;
-    MovePower(motor1Speed, motor2Speed,
-              motor3Speed, motor4Speed);
-}
-
 void publishData()
 {
-    debug_motor_msg.linear.x = moveMotor_msg.linear.x;
-    debug_motor_msg.linear.y = moveMotor_msg.linear.y;
-    debug_motor_msg.linear.z = moveMotor_msg.linear.z;
-    debug_motor_msg.angular.x = moveMotor_msg.angular.x;
+    debug_encoder_msg.linear.x = (float)motor1RPM;
+    debug_encoder_msg.linear.y = (float)motor2RPM;
+    debug_encoder_msg.linear.z = (float)motor3RPM;
+    debug_encoder_msg.angular.x = (float)motor4RPM;
     struct timespec time_stamp = getTime();
-    rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
+    rcl_publish(&debug_encoder_publisher, &debug_encoder_msg, NULL);
 }
 
 void syncTime()
@@ -288,4 +276,31 @@ void flashLED(int n_times)
 
     }
     delay(1000);
+}
+
+void Encoder_read(){
+    // Read the current time in milliseconds
+    current_time = millis();
+
+    // Calculate the time difference between the current time and the last time the position was updated
+    unsigned long time_diff = (current_time - lastTime);
+    long encoder1Position = encoder1.getCount();
+    long encoder2Position = encoder2.getCount();
+    long encoder3Position = encoder3.getCount();
+    long encoder4Position = encoder4.getCount();
+
+    // motor1RPM = (encoder1Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
+    // motor2RPM = (encoder2Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
+    // motor3RPM = (encoder3Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
+    // motor4RPM = (encoder4Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
+    motor1RPM = (encoder1Position / (float)2000.0) * (60000.0 / time_diff);
+    motor2RPM = (encoder2Position / (float)PULSES_PER_REVOLUTION) * (60000.0 / time_diff);
+    motor3RPM = (encoder3Position / (float)PULSES_PER_REVOLUTION) * (60000.0 / time_diff);
+    motor4RPM = (encoder4Position / (float)PULSES_PER_REVOLUTION) * (60000.0 / time_diff);
+
+    encoder1.clearCount();
+    encoder2.clearCount();
+    encoder3.clearCount();
+    encoder4.clearCount();
+    
 }

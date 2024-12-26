@@ -13,7 +13,7 @@ ROBOT ORIENTATION
 #define PWM_BITS 10
 
 // INVERT MOTOR DIRECTIONS
-#define MOTOR1_INV false
+#define MOTOR1_INV true
 #define MOTOR2_INV true
 #define MOTOR3_INV false
 #define MOTOR4_INV true

@@ -4,8 +4,8 @@
 
 
 //Encoder1
-#define ENCODER1_OUT_A
-#define ENCODER1_OUT_B
+#define ENCODER1_OUT_A 33
+#define ENCODER1_OUT_B 25
 #define ENCODER1_OUT_Z
 
 //Encoder2
