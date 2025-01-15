@@ -191,8 +191,7 @@ void publishData()
 {
     debug_encoder_msg.linear.x = (float)motor1RPM;
     debug_encoder_msg.linear.y = (float)motor2RPM;
-    debug_encoder_msg.linear.z = (float)motor3RPM;
-    debug_encoder_msg.angular.x = (float)motor4RPM;
+
     struct timespec time_stamp = getTime();
     rcl_publish(&debug_encoder_publisher, &debug_encoder_msg, NULL);
 }
@@ -240,7 +239,8 @@ void Encoder_read(){
     // motor2RPM = (encoder2Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
     // motor3RPM = (encoder3Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
     // motor4RPM = (encoder4Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
-    motor1RPM = (encoder1Position / (float)2000.0) * (60000.0 / time_diff);
+
+    motor1RPM = (encoder1Position / (float)PULSES_PER_REVOLUTION) * (60000.0 / time_diff);
     motor2RPM = (encoder2Position / (float)PULSES_PER_REVOLUTION) * (60000.0 / time_diff);
 
     encoder1.clearCount();
