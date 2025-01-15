@@ -39,10 +39,10 @@ class joystick(Node):
     def joy(self, msg):
         self.gamepad.lx = float(msg.axes[0] * -1)
         self.gamepad.ly = float(msg.axes[1])
-        self.gamepad.rx = float(msg.axes[2] * -1)
-        # self.gamepad.lt = float((msg.axes[2] + 1) / 2)
-        # self.gamepad.ry = float(msg.axes[4])
-        # self.gamepad.rt = float((msg.axes[5] + 1) / 2)
+        self.gamepad.lt = float((msg.axes[2] + 1) / 2)
+        self.gamepad.rx = float(msg.axes[3] * -1)
+        self.gamepad.ry = float(msg.axes[4])
+        self.gamepad.rt = float((msg.axes[5] + 1) / 2)
         print(self.gamepad.lx, self.gamepad.ly, self.gamepad.rx)
 
     def sendData(self):

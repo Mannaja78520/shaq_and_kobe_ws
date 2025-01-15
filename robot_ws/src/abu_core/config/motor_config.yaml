@@ -1,0 +1,6 @@
+Test_sub_cmd_vel_Node:
+  ros__parameters:
+    motor1: true
+    motor2: true
+    motor3: true
+    motor4: true

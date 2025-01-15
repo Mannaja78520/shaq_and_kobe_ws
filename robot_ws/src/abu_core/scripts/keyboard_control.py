@@ -20,7 +20,7 @@ class keyboard_control(Node):
     plusSlideSpeed: float = 0.01
     plusturnSpeed: float = 0.01
     plusSpeedSize = 0.01
-    maxSpeed : float = 2.0 # m/s
+    maxSpeed : float = 1.0 # m/s
 
     def __init__(self):
         super().__init__("KeyboardControl_Node")
@@ -32,9 +32,33 @@ class keyboard_control(Node):
         self.send_keyboard = self.create_publisher(
             String, '/keyboard', 10
         )
+        
+        self.show_log()
+        # self.sent_data_timer = self.create_timer(0.01, self.sendData)
 
-        self.sent_data_timer = self.create_timer(0.01, self.sendData)
+    def show_log(self):
+        log_message = (
+            "Use the following keys to control the robot: \n"
+            "'w' : Increase move speed, \n"
+            "'s' : Decrease move speed, \n"
+            "'a' : Slide left, \n"
+            "'d' : Slide right, \n"
+            "'q' : Turn left, \n"
+            "'e' : Turn right, \n"
+            "'y' : Increase move speed increment. \n"
+            "'h' : Decrease move speed increment. \n"
+            "'u' : Increase slide speed increment. \n"
+            "'j' : Decrease slide speed increment. \n"
+            "'i' : Increase turn speed increment. \n"
+            "'k' : Decrease turn speed increment. \n"
+            "'b' : Brake. \n"
+            f"Current Speeds: Move={self.moveSpeed:.2f}, Slide={self.slideSpeed:.2f}, Turn={self.turnSpeed:.2f}\n"
+            f"Current Speed increment: Move={self.plusMoveSpeed:.2f}, Slide={self.plusSlideSpeed:.2f}, Turn={self.plusturnSpeed:.2f}"
+        )
 
+        # Log the combined message
+        self.get_logger().info(log_message)
+    
     def on_press(self, key):
         try:
             keyboard_msg = String()
@@ -63,6 +87,19 @@ class keyboard_control(Node):
 
             keyboard_msg.data = str(key.char)
             self.send_keyboard.publish(keyboard_msg)
+            
+            
+            cmd_vel_msg = Twist()
+
+            self.show_log()
+
+            # Assign speeds to the Twist message, ensuring they're floats
+            cmd_vel_msg.linear.x = float(self.moveSpeed)
+            cmd_vel_msg.linear.y = float(self.slideSpeed)
+            cmd_vel_msg.angular.z = float(self.turnSpeed)
+
+            # Publish the message
+            self.send_robot_speed.publish(cmd_vel_msg)
 
         except AttributeError:
             return
@@ -77,38 +114,38 @@ class keyboard_control(Node):
             self.get_logger().info('Listening for keyboard input...')
             listener.join()
 
-    def sendData(self):
-        cmd_vel_msg = Twist()
+    # def sendData(self):
+    #     cmd_vel_msg = Twist()
 
-        log_message = (
-            "Use the following keys to control the robot: \n"
-            "'w' : Increase move speed, \n"
-            "'s' : Decrease move speed, \n"
-            "'a' : Slide left, \n"
-            "'d' : Slide right, \n"
-            "'q' : Turn left, \n"
-            "'e' : Turn right, \n"
-            "'y' : Increase move speed increment. \n"
-            "'h' : Decrease move speed increment. \n"
-            "'u' : Increase slide speed increment. \n"
-            "'j' : Decrease slide speed increment. \n"
-            "'i' : Increase turn speed increment. \n"
-            "'k' : Decrease turn speed increment. \n"
-            "'b' : Brake. \n"
-            f"Current Speeds: Move={self.moveSpeed:.2f}, Slide={self.slideSpeed:.2f}, Turn={self.turnSpeed:.2f}\n"
-            f"Current Speed increment: Move={self.plusMoveSpeed:.2f}, Slide={self.plusSlideSpeed:.2f}, Turn={self.plusturnSpeed:.2f}"
-        )
+    #     log_message = (
+    #         "Use the following keys to control the robot: \n"
+    #         "'w' : Increase move speed, \n"
+    #         "'s' : Decrease move speed, \n"
+    #         "'a' : Slide left, \n"
+    #         "'d' : Slide right, \n"
+    #         "'q' : Turn left, \n"
+    #         "'e' : Turn right, \n"
+    #         "'y' : Increase move speed increment. \n"
+    #         "'h' : Decrease move speed increment. \n"
+    #         "'u' : Increase slide speed increment. \n"
+    #         "'j' : Decrease slide speed increment. \n"
+    #         "'i' : Increase turn speed increment. \n"
+    #         "'k' : Decrease turn speed increment. \n"
+    #         "'b' : Brake. \n"
+    #         f"Current Speeds: Move={self.moveSpeed:.2f}, Slide={self.slideSpeed:.2f}, Turn={self.turnSpeed:.2f}\n"
+    #         f"Current Speed increment: Move={self.plusMoveSpeed:.2f}, Slide={self.plusSlideSpeed:.2f}, Turn={self.plusturnSpeed:.2f}"
+    #     )
 
-        # Log the combined message
-        self.get_logger().info(log_message)
+    #     # Log the combined message
+    #     self.get_logger().info(log_message)
 
-        # Assign speeds to the Twist message, ensuring they're floats
-        cmd_vel_msg.linear.x = float(self.moveSpeed)
-        cmd_vel_msg.linear.y = float(self.slideSpeed)
-        cmd_vel_msg.angular.z = float(self.turnSpeed)
+    #     # Assign speeds to the Twist message, ensuring they're floats
+    #     cmd_vel_msg.linear.x = float(self.moveSpeed)
+    #     cmd_vel_msg.linear.y = float(self.slideSpeed)
+    #     cmd_vel_msg.angular.z = float(self.turnSpeed)
 
-        # Publish the message
-        self.send_robot_speed.publish(cmd_vel_msg)
+    #     # Publish the message
+    #     self.send_robot_speed.publish(cmd_vel_msg)
 
 
 def main():

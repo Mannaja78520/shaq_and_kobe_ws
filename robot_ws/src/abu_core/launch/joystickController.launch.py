@@ -31,7 +31,7 @@ def generate_launch_description():
         package="abu_core",
         executable="test_sub_cmd_vel.py",
         name="Test_sub_cmd_vel_Node",
-        # output="screen",
+        output="screen",
         namespace="",
     )
     
