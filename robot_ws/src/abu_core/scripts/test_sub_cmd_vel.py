@@ -12,6 +12,11 @@ from src.controller import *
 
 class test_sub_cmd_vel(Node):
     # PID controllers for motors
+    # controller1 = Controller(kp=9.0, ki=0.42, kd=0.0, kf = 199.59, errorTolerance=0.01)
+    # controller2 = Controller(kp=7.0, ki=0.42, kd=0.0, kf = 196.2, errorTolerance=0.01)
+    # controller3 = Controller(kp=7.0, ki=0.42, kd=0.0, kf = 199.1, errorTolerance=0.01)
+    # controller4 = Controller(kp=13.0, ki=0.42, kd=0.0, kf = 234.7, errorTolerance=0.01)
+
     controller1 = Controller(kp=1.0, ki=0.1, kd=0.05, errorTolerance=0.01)
     controller2 = Controller(kp=1.0, ki=0.1, kd=0.05, errorTolerance=0.01)
     controller3 = Controller(kp=1.0, ki=0.1, kd=0.05, errorTolerance=0.01)
@@ -21,7 +26,7 @@ class test_sub_cmd_vel(Node):
     slideSpeed: float = 0.0
     turnSpeed: float = 0.0
 
-    maxSpeed : int = 1023.0 # pwm
+    maxSpeed : int = 1023.0/2 # pwm
     max_linear_speed = 2.0  # m/s max
     motor1Speed : float = 0
     motor2Speed : float = 0
@@ -90,6 +95,19 @@ class test_sub_cmd_vel(Node):
         motorspeed_msg.linear.y = float(self.controller2.Calculate(self.motor_speeds[1] - self.encoder_speeds[1]))
         motorspeed_msg.linear.z = float(self.controller3.Calculate(self.motor_speeds[2] - self.encoder_speeds[2]))
         motorspeed_msg.angular.x = float(self.controller4.Calculate(self.motor_speeds[3] - self.encoder_speeds[3]))
+
+        # if self.motor1_enabled:
+        #     motorspeed_msg.linear.x = float(clip(self.controller1.CalculateWithSetpoint(self.motor_speeds[0], self.encoder_speeds[0]), -self.maxSpeed, self.maxSpeed))
+        #     # motorspeed_msg.linear.x = float(self.motor1Speed)
+        # if self.motor2_enabled:
+        #     motorspeed_msg.linear.y = float(clip(self.controller2.CalculateWithSetpoint(self.motor_speeds[1], self.encoder_speeds[1]), -self.maxSpeed, self.maxSpeed))
+        #     # motorspeed_msg.linear.y = float(self.motor2Speed)
+        # if self.motor3_enabled:
+        #     motorspeed_msg.linear.z = float(clip(self.controller3.CalculateWithSetpoint(self.motor_speeds[2], self.encoder_speeds[2]), -self.maxSpeed, self.maxSpeed))
+        #     # motorspeed_msg.linear.z = float(self.motor3Speed)
+        # if self.motor4_enabled:
+        #     motorspeed_msg.angular.x = float(clip(self.controller4.CalculateWithSetpoint(self.motor_speeds[3], self.encoder_speeds[3]), -self.maxSpeed, self.maxSpeed))
+        #     # motorspeed_msg.angular.x = float(self.motor4Speed)
 
         self.send_robot_speed.publish(motorspeed_msg)
 
