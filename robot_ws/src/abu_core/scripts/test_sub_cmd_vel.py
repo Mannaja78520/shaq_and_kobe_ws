@@ -6,7 +6,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
-from sensor_msgs.msg import Imu
+from sensor_msgs.msg import Imu, MagneticField
 from rclpy import qos
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, DurabilityPolicy
 from src.utilize import * 
@@ -84,6 +84,10 @@ class test_sub_cmd_vel(Node):
             Imu, 'imu/data', self.imu_data_callback, qos_profile=qos.qos_profile_sensor_data
         )
         
+        self.imu_data_sub = self.create_subscription(
+            MagneticField, 'imu/mag', self.imu_mag_callback, qos_profile=qos.qos_profile_sensor_data
+        )
+        
         self.keyboard_sub = self.create_subscription(
             String, '/keyboard', self.keyboard_callback, 10
         )
@@ -129,14 +133,21 @@ class test_sub_cmd_vel(Node):
         angular_velocity_covariance = msg.angular_velocity_covariance
         orientation_covariance = msg.orientation_covariance
 
-        self.get_logger().debug(
-            f"Covariance Matrices:\n"
-            f"Linear Acceleration: {linear_accel_covariance}\n"
-            f"Angular Velocity: {angular_velocity_covariance}\n"
-            f"Orientation: {orientation_covariance}"
-        )
+        # self.get_logger().debug(
+        #     f"Covariance Matrices:\n"
+        #     f"Linear Acceleration: {linear_accel_covariance}\n"
+        #     f"Angular Velocity: {angular_velocity_covariance}\n"
+        #     f"Orientation: {orientation_covariance}"
+        # )
 
-        # Additional processing can go here
+        pass
+    
+    def imu_mag_callback(self, msg):
+        mag_covariance = msg.magnetic_field_covariance
+        
+        # self.get_logger().debug(
+        #     f"Magnetic Field Covariance: {mag_covariance}"
+        # )
         pass
     
     def encoder_callback(self, msg):
