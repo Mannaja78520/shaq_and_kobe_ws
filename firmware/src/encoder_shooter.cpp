@@ -22,7 +22,7 @@
 #include <Adafruit_Sensor.h>
 #include <utility/imumaths.h>
 
-#include "../config/encoder_input.h"
+#include "../config/encoder_shooter_input.h"
 // #include "../config/encoder_input_teensy.h"
 
 #define RCCHECK(fn)                  \
