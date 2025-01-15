@@ -15,43 +15,6 @@ from src.controller import *
 import time
 
 class test_sub_cmd_vel(Node):
-    
-    
-    # PID controllers for motors
-    controller1 = Controller(kp=9.0, ki=0.42, kd=0.0, kf = 199.59, errorTolerance=0.01)
-    controller2 = Controller(kp=7.0, ki=0.42, kd=0.0, kf = 196.2, errorTolerance=0.01)
-    controller3 = Controller(kp=7.0, ki=0.42, kd=0.0, kf = 199.1, errorTolerance=0.01)
-    controller4 = Controller(kp=13.0, ki=0.42, kd=0.0, kf = 234.7, errorTolerance=0.01)
-    controllerRotageYawRobot = Controller(kp=2.32, ki=0.1, kd=0.0, errorTolerance=To_Radians(0.5), i_max=1)
-
-    moveSpeed: float = 0.0
-    slideSpeed: float = 0.0
-    turnSpeed: float = 0.0
-
-    maxSpeed : int = 1023.0*1.0/2.0 # pwm
-    max_linear_speed = 3.0  # m/s max
-    motor1Speed : float = 0
-    motor2Speed : float = 0
-    motor3Speed : float = 0
-    motor4Speed : float = 0
-
-    # encoder1RPM : float = 0
-    # encoder2RPM : float = 0
-    # encoder3RPM : float = 0
-    # encoder4RPM : float = 0
-
-    # encoder1MPS : float = 0
-    # encoder2MPS : float = 0
-    # encoder3MPS : float = 0
-    # encoder4MPS : float = 0
-    wheel_radians = 0.05
-    gearRatio: float = 20.0 / 23.0
-
-    motor_speeds = [0.0, 0.0, 0.0, 0.0]
-    encoder_speeds = [0.0, 0.0, 0.0, 0.0]  # Speeds in m/s
-    
-    lastTurnTime = time.time()
-    setpoint = 0
 
 
     def __init__(self):
@@ -67,6 +30,36 @@ class test_sub_cmd_vel(Node):
         self.motor3_enabled = self.get_parameter("motor3").get_parameter_value().bool_value
         self.motor4_enabled = self.get_parameter("motor4").get_parameter_value().bool_value
 
+        # PID controllers for motors
+        self.controller1 = Controller(kp=9.0, ki=0.42, kd=0.0, kf = 199.59, errorTolerance=0.01)
+        self.controller2 = Controller(kp=7.0, ki=0.42, kd=0.0, kf = 196.2, errorTolerance=0.01)
+        self.controller3 = Controller(kp=7.0, ki=0.42, kd=0.0, kf = 199.1, errorTolerance=0.01)
+        self.controller4 = Controller(kp=13.0, ki=0.42, kd=0.0, kf = 234.7, errorTolerance=0.01)
+        self.controllerRotageYawRobot = Controller(kp=2.32, ki=0.1, kd=0.0, errorTolerance=To_Radians(0.5), i_max=1)
+
+        self.moveSpeed: float = 0.0
+        self.slideSpeed: float = 0.0
+        self.turnSpeed: float = 0.0
+
+        self.maxSpeed : int = 1023.0*1.0/2.0 # pwm
+        self.max_linear_speed = 3.0  # m/s max
+        self.motor1Speed : float = 0
+        self.motor2Speed : float = 0
+        self.motor3Speed : float = 0
+        self.motor4Speed : float = 0
+
+        self.wheel_radians = 0.05
+        self.gearRatio: float = 20.0 / 23.0
+
+        self.motor_speeds = [0.0, 0.0, 0.0, 0.0]
+        self.encoder_speeds = [0.0, 0.0, 0.0, 0.0]  # Speeds in m/s
+        
+        self.lastTurnTime = time.time()
+        self.setpoint = 0
+        self.yaw:float = 0.0
+        self.pitch:float = 0.0
+        self.roll:float = 0.0
+        
         self.send_robot_speed = self.create_publisher(
             Twist, "/motor_speed", qos_profile=qos.qos_profile_system_default
         )
@@ -83,8 +76,12 @@ class test_sub_cmd_vel(Node):
             Twist, '/debug/move_encoder', self.encoder_callback, qos_profile=qos.qos_profile_system_default
         )
         
-        self.imu_sub = self.create_subscription(
-            Imu, '/debug/imu', self.imu_callback, qos_profile=qos.qos_profile_sensor_data
+        self.imu_pos_angle_sub = self.create_subscription(
+            Twist, 'imu/pos_angle', self.imu_pos_angle_callback, qos_profile=qos.qos_profile_system_default
+        )
+        
+        self.imu_data_sub = self.create_subscription(
+            Imu, 'imu/data', self.imu_data_callback, qos_profile=qos.qos_profile_sensor_data
         )
         
         self.keyboard_sub = self.create_subscription(
@@ -92,9 +89,6 @@ class test_sub_cmd_vel(Node):
         )
 
         self.sent_data_timer = self.create_timer(0.03, self.sendData)
-        self.yaw:float = 0.0
-        self.pitch:float = 0.0
-        self.roll:float = 0.0
 
     def keyboard_callback(self, msg):
         if msg.data == '1':
@@ -123,17 +117,32 @@ class test_sub_cmd_vel(Node):
             self.motor3_enabled = True
             self.motor4_enabled = True
             
-    def imu_callback(self, msg):
-        self.roll = WrapRads(To_Radians(msg.orientation.x))
-        self.pitch = WrapRads(To_Radians(msg.orientation.y))
-        self.yaw = WrapRads(To_Radians(msg.orientation.z))
+    def imu_pos_angle_callback(self, msg):
+        self.roll = WrapRads(To_Radians(msg.angular.x))
+        self.pitch = WrapRads(To_Radians(msg.angular.y))
+        self.yaw = WrapRads(To_Radians(msg.angular.z))
         
         # self.get_logger().info(f"IMU Update - Yaw: {self.yaw}, Pitch: {self.pitch}, Roll: {self.roll}")
             
+    def imu_data_callback(self, msg):
+        linear_accel_covariance = msg.linear_acceleration_covariance
+        angular_velocity_covariance = msg.angular_velocity_covariance
+        orientation_covariance = msg.orientation_covariance
+
+        self.get_logger().debug(
+            f"Covariance Matrices:\n"
+            f"Linear Acceleration: {linear_accel_covariance}\n"
+            f"Angular Velocity: {angular_velocity_covariance}\n"
+            f"Orientation: {orientation_covariance}"
+        )
+
+        # Additional processing can go here
+        pass
+    
     def encoder_callback(self, msg):
-        self.encoder_speeds[0] = (msg.linear.x * ((2 * 3.14 * self.wheel_radians) / 60) * self.gearRatio)   #m/s
-        self.encoder_speeds[1] = (msg.linear.y * ((2 * 3.14 * self.wheel_radians) / 60) * self.gearRatio)
-        self.encoder_speeds[2] = (msg.linear.z * ((2 * 3.14 * self.wheel_radians) / 60) * self.gearRatio)
+        self.encoder_speeds[0] = (msg.linear.x  * ((2 * 3.14 * self.wheel_radians) / 60) * self.gearRatio)   #m/s
+        self.encoder_speeds[1] = (msg.linear.y  * ((2 * 3.14 * self.wheel_radians) / 60) * self.gearRatio)
+        self.encoder_speeds[2] = (msg.linear.z  * ((2 * 3.14 * self.wheel_radians) / 60) * self.gearRatio)
         self.encoder_speeds[3] = (msg.angular.x * ((2 * 3.14 * self.wheel_radians) / 60) * self.gearRatio)
         
         wheelSpeed_msg = Twist()

@@ -16,6 +16,7 @@
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
 #include <sensor_msgs/msg/imu.h>
+#include <sensor_msgs/msg/magnetic_field.h>
 
 #include <ESP32Encoder.h> 
 #include <Adafruit_BNO055.h>
@@ -58,10 +59,14 @@
 //------------------------------ < Define > -------------------------------------//
 
 rcl_publisher_t debug_encoder_publisher;
-rcl_publisher_t imu_publisher;
+rcl_publisher_t imu_data_publisher;
+rcl_publisher_t imu_pos_angle_publisher;
+rcl_publisher_t imu_mag_publisher;
 
 geometry_msgs__msg__Twist debug_encoder_msg;
-sensor_msgs__msg__Imu imu_msg;
+geometry_msgs__msg__Twist imu_pos_angle_msg;
+sensor_msgs__msg__Imu imu_data_msg;
+sensor_msgs__msg__MagneticField imu_mag_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -70,12 +75,6 @@ rcl_node_t node;
 rcl_timer_t control_timer;
 rcl_init_options_t init_options;
 
-unsigned long long time_offset = 0;
-unsigned long prev_cmd_time = 0;
-unsigned long prev_odom_update = 0;
-unsigned long LastHarvest_time = 0;
-unsigned long long current_time = 0;
-unsigned long long lastTime = 0;
 
 enum states
 {
@@ -92,7 +91,13 @@ ESP32Encoder encoder2;
 ESP32Encoder encoder3;
 ESP32Encoder encoder4;
 
-int32_t lastPosition = 0;
+unsigned long long time_offset = 0;
+unsigned long prev_cmd_time = 0;
+unsigned long prev_odom_update = 0;
+unsigned long LastHarvest_time = 0;
+unsigned long long current_time = 0;
+unsigned long long lastTime = 0;
+double time_diff;
 
 float motor1RPM = 0;
 float motor2RPM = 0;
@@ -102,6 +107,12 @@ float motor4RPM = 0;
 // float GEAR_RATIO = 1.15;
 const int PULSES_PER_REVOLUTION = 2500;
 const int encoderTick = 2;
+
+double xPos = 0, yPos = 0, zPos = 0, headingVel = 0, vX = 0, vY = 0, vZ = 0;
+double DEG_2_RAD = 0.01745329251; //trig functions require radians, BNO055 outputs degrees
+imu::Vector<3> gavity;
+
+bool checkTime = false;
 //------------------------------ < Fuction Prototype > ------------------------------//
 
 void rclErrorLoop();
@@ -169,6 +180,8 @@ void setup()
     // if (ENCODER4_INV) encoder4.attachSingleEdge(ENCODER4_PIN_B, ENCODER4_PIN_A);
     // else encoder4.attachSingleEdge(ENCODER4_PIN_A, ENCODER4_PIN_B);
 
+    gavity = bno.getVector(Adafruit_BNO055::VECTOR_GRAVITY);
+
     encoder1.clearCount();
     encoder2.clearCount();
     encoder3.clearCount();
@@ -188,6 +201,7 @@ void loop()
         state = (true == createEntities()) ? AGENT_CONNECTED : WAITING_AGENT;
         if (state == WAITING_AGENT)
         {
+            checkTime = false;
             destroyEntities();
         }
         break;
@@ -214,9 +228,15 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     RCLC_UNUSED(last_call_time);
     if (timer != NULL)
     {
+        current_time = micros();
+        if (!checkTime) lastTime = current_time;
+        checkTime = true;
+        time_diff = (double)(current_time - lastTime) / 1000.0;
         Encoder_read();
         getBNO055Data();
         publishData();
+        // Update lastTime for the next loop
+        lastTime = current_time;
     }
 }
 
@@ -250,10 +270,22 @@ bool createEntities()
         "debug/move_encoder"));
 
     RCCHECK(rclc_publisher_init_best_effort(
-        &imu_publisher,
+        &imu_pos_angle_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "imu"));
+        "imu/pos_angle"));
+
+    RCCHECK(rclc_publisher_init_best_effort(
+        &imu_data_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+        "imu/data"));
+
+    RCCHECK(rclc_publisher_init_best_effort(
+        &imu_mag_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, MagneticField),
+        "imu/mag"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -286,7 +318,9 @@ bool destroyEntities()
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
     rcl_publisher_fini(&debug_encoder_publisher, &node);
-    rcl_publisher_fini(&imu_publisher, &node);
+    rcl_publisher_fini(&imu_pos_angle_publisher, &node);
+    rcl_publisher_fini(&imu_data_publisher, &node);
+    rcl_publisher_fini(&imu_mag_publisher, &node);
     // rcl_subscription_fini(&moveMotor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
@@ -299,19 +333,22 @@ bool destroyEntities()
 void publishData()
 {
     struct timespec time_stamp = getTime();
+    imu_data_msg.header.stamp.sec = time_stamp.tv_sec;
+    imu_data_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+    imu_mag_msg.header.stamp.sec = time_stamp.tv_sec;
+    imu_mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
     rcl_publish(&debug_encoder_publisher, &debug_encoder_msg, NULL);
-    rcl_publish(&imu_publisher, &imu_msg, NULL);
+    rcl_publish(&imu_pos_angle_publisher, &imu_pos_angle_msg, NULL);
+    rcl_publish(&imu_data_publisher, &imu_data_msg, NULL);
+    rcl_publish(&imu_mag_publisher, &imu_mag_msg, NULL);
     
 }
 
 void syncTime()
 {
-    // get the current time from the agent
-    unsigned long now = millis();
-    RCCHECK(rmw_uros_sync_session(10));
-    unsigned long long ros_time_ms = rmw_uros_epoch_millis();
-    // now we can find the difference between ROS time and uC time
-    time_offset = ros_time_ms - now;
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    time_offset = (uint64_t)ts.tv_sec * 1000000ULL + ts.tv_nsec / 1000ULL - uxr_millis() * 1000ULL;
 }
 
 struct timespec getTime()
@@ -344,23 +381,13 @@ void flashLED(int n_times)
 
 void Encoder_read()
 {
-    // Read the current time in milliseconds
-    current_time = micros();
-
-    // Calculate the time difference in seconds
-    // float time_diff = (current_time - lastTime) /1000.0;
-    unsigned long long time_diff = current_time - lastTime;
-
     // Ensure time_diff is not zero to avoid division errors
-    if (time_diff <= 0.0)
-    {
-        return;
-    }
+    if (time_diff <= 0.0) return;
 
-    float motor1RPM = ((float) encoder1.getCount() / (ENCODER1_PULSES_PER_REVOLUTION * encoderTick)) * (60000.0 / (float) time_diff);
-    float motor2RPM = ((float) encoder2.getCount() / (ENCODER2_PULSES_PER_REVOLUTION * encoderTick)) * (60000.0 / (float) time_diff);
-    float motor3RPM = ((float) encoder3.getCount() / (ENCODER3_PULSES_PER_REVOLUTION * encoderTick)) * (60000.0 / (float) time_diff);
-    float motor4RPM = ((float) encoder4.getCount() / (ENCODER4_PULSES_PER_REVOLUTION * encoderTick)) * (60000.0 / (float) time_diff);
+    float motor1RPM = ((double) encoder1.getCount() / (double)(ENCODER1_PULSES_PER_REVOLUTION * encoderTick)) * (60.0 / time_diff);
+    float motor2RPM = ((double) encoder2.getCount() / (double)(ENCODER2_PULSES_PER_REVOLUTION * encoderTick)) * (60.0 / time_diff);
+    float motor3RPM = ((double) encoder3.getCount() / (double)(ENCODER3_PULSES_PER_REVOLUTION * encoderTick)) * (60.0 / time_diff);
+    float motor4RPM = ((double) encoder4.getCount() / (double)(ENCODER4_PULSES_PER_REVOLUTION * encoderTick)) * (60.0 / time_diff);
 
     // Log or use the RPM values
     debug_encoder_msg.linear.x = motor1RPM;
@@ -374,20 +401,93 @@ void Encoder_read()
     encoder3.clearCount();
     encoder4.clearCount();
 
-    // Update lastTime for the next loop
-    lastTime = current_time;
 }
 
 void getBNO055Data(){
+    if (time_diff <= 0.0) return;
+    // sensors_event_t orientationData , angVelocityData , linearAccelData, magnetometerData, accelerometerData, gravityData;
+    // bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+    // bno.getEvent(&angVelocityData, Adafruit_BNO055::VECTOR_GYROSCOPE);
+    // bno.getEvent(&linearAccelData, Adafruit_BNO055::VECTOR_LINEARACCEL);
+    // bno.getEvent(&magnetometerData, Adafruit_BNO055::VECTOR_MAGNETOMETER);
+    // bno.getEvent(&accelerometerData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    // bno.getEvent(&gravityData, Adafruit_BNO055::VECTOR_GRAVITY);
+
+    imu::Quaternion quat = bno.getQuat();
+    imu::Vector<3> accel = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
+    imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    imu::Vector<3> mag = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
     sensors_event_t event;
     bno.getEvent(&event);
-    imu_msg.linear_acceleration.x = event.acceleration.x;
-    imu_msg.linear_acceleration.y = event.acceleration.y;
-    imu_msg.linear_acceleration.z = event.acceleration.z;
-    imu_msg.angular_velocity.x = event.gyro.roll;
-    imu_msg.angular_velocity.y = event.gyro.pitch;
-    imu_msg.angular_velocity.z = event.gyro.heading;
-    imu_msg.orientation.x = event.orientation.roll;
-    imu_msg.orientation.y = event.orientation.pitch;
-    imu_msg.orientation.z = event.orientation.heading;
+
+    imu_data_msg.orientation.w = quat.w();
+    imu_data_msg.orientation.x = quat.x();
+    imu_data_msg.orientation.y = quat.y();
+    imu_data_msg.orientation.z = quat.z();
+
+    imu_data_msg.linear_acceleration.x = accel.x();
+    imu_data_msg.linear_acceleration.y = accel.y();
+    imu_data_msg.linear_acceleration.z = accel.z();
+
+    imu_data_msg.angular_velocity.x = gyro.x();
+    imu_data_msg.angular_velocity.y = gyro.y();
+    imu_data_msg.angular_velocity.z = gyro.z();
+
+    imu_mag_msg.magnetic_field.x = mag.x();
+    imu_mag_msg.magnetic_field.y = mag.y();
+    imu_mag_msg.magnetic_field.z = mag.z();
+
+    // Convert degrees to radians
+    double roll = DEG_2_RAD * event.orientation.roll;
+    double pitch = DEG_2_RAD * event.orientation.pitch;
+    double yaw = DEG_2_RAD * event.orientation.heading;
+    
+    // Compute the rotation matrix
+    double R[3][3] = {
+        {
+            cos(yaw) * cos(pitch),
+            cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll),
+            cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll)
+        },
+        {
+            sin(yaw) * cos(pitch),
+            sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll),
+            sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll)
+        },
+        {
+            -sin(pitch),
+            cos(pitch) * sin(roll),
+            cos(pitch) * cos(roll)
+        }
+    };
+
+    // Transform local acceleration to world frame
+    double accel_world_x = R[0][0] * accel.x() + R[0][1] * accel.y() + R[0][2] * accel.z();
+    double accel_world_y = R[1][0] * accel.x() + R[1][1] * accel.y() + R[1][2] * accel.z();
+    double accel_world_z = R[2][0] * accel.x() + R[2][1] * accel.y() + R[2][2] * accel.z();
+
+    accel_world_z -= 9.81;
+    
+
+    //velocity = accel*dt (dt in seconds)
+    //position = 0.5*accel*dt^2
+    double ACCEL_POS_TRANSITION = 0.5 * time_diff * time_diff;
+    // Update position using velocity and acceleration
+    xPos += (vX * time_diff) + (accel_world_x * ACCEL_POS_TRANSITION);
+    yPos += (vY * time_diff) + (accel_world_y * ACCEL_POS_TRANSITION);
+    zPos += (vZ * time_diff) + (accel_world_z * ACCEL_POS_TRANSITION);
+
+    vX += accel_world_x * time_diff;
+    vY += accel_world_y * time_diff;
+    vZ += accel_world_z * time_diff;
+    // velocity of sensor in the direction it's facing
+    // orientation.x from event is yaw heading from BNO in degree 0-360 degrees
+    // headingVel = time_diff * accel.x() / cos(DEG_2_RAD * event.orientation.x);
+
+    imu_pos_angle_msg.linear.x = xPos;
+    imu_pos_angle_msg.linear.y = yPos;
+    imu_pos_angle_msg.linear.z = zPos;
+    imu_pos_angle_msg.angular.x = event.orientation.roll;
+    imu_pos_angle_msg.angular.y = event.orientation.pitch;
+    imu_pos_angle_msg.angular.z = event.orientation.heading;
 }
