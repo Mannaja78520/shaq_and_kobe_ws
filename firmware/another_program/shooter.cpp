@@ -1,17 +1,24 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include <SPI.h>
+
 #include <micro_ros_platformio.h>
 #include <stdio.h>
+
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
+
 #include <std_msgs/msg/string.h>
 #include <std_msgs/msg/bool.h>
 #include <std_msgs/msg/int8.h>
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
-#include "encoder_shooter_input.h"
-#include <ESP32Encoder.h> 
+
+#include <motor.h>
+#include "../config/drive_output.h"
+// #include "../config/drive_output_teensy.h"
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -42,20 +49,30 @@
             init = uxr_millis();           \
         }                                  \
     } while (0)
+
 //------------------------------ < Define > -------------------------------------//
+
+rcl_publisher_t debug_motor_publisher;
 rcl_publisher_t debug_encoder_publisher;
+
+rcl_subscription_t moveMotor_subscriber;
+
+geometry_msgs__msg__Twist debug_motor_msg;
 geometry_msgs__msg__Twist debug_encoder_msg;
+geometry_msgs__msg__Twist moveMotor_msg;
+
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t control_timer;
 rcl_init_options_t init_options;
+
 unsigned long long time_offset = 0;
 unsigned long prev_cmd_time = 0;
 unsigned long prev_odom_update = 0;
-unsigned long LastHarvest_time = 0;
 unsigned long current_time = 0;
+
 enum states
 {
     WAITING_AGENT,
@@ -63,37 +80,34 @@ enum states
     AGENT_CONNECTED,
     AGENT_DISCONNECTED
 } state;
-ESP32Encoder encoder1;
-ESP32Encoder encoder2;
 
-int32_t lastPosition = 0;
-unsigned long lastTime = 0;
-float motor1RPM = 0;
-float motor2RPM = 0;
-
-float GEAR_RATIO = 1.15;
+// Move motor
+Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
+Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+Motor motor3(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTOR3_PWM, MOTOR3_IN_A, MOTOR3_IN_B);
+Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTOR4_INV, MOTOR4_BREAK, MOTOR4_PWM, MOTOR4_IN_A, MOTOR4_IN_B);
 
 //------------------------------ < Fuction Prototype > ------------------------------//
+
 void rclErrorLoop();
 void syncTime();
 bool createEntities();
 bool destroyEntities();
 void publishData();
 struct timespec getTime();
-void Encoder_read();
+
+void MovePower(float, float, float, float);
+void Move();
+void Spin_Ball();
 //------------------------------ < Main > -------------------------------------//
+
 void setup()
 {
+
     Serial.begin(115200);
-    if (ENCODER1_INV) encoder1.attachHalfQuad(ENCODER1_PIN_B, ENCODER1_PIN_A);
-    else encoder1.attachHalfQuad(ENCODER1_PIN_A, ENCODER1_PIN_B);
-    if (ENCODER2_INV) encoder2.attachHalfQuad(ENCODER2_PIN_B, ENCODER2_PIN_A);
-    else encoder2.attachHalfQuad(ENCODER2_PIN_A, ENCODER2_PIN_B);
-
-    encoder2.clearCount();
-
     set_microros_serial_transports(Serial);
 }
+
 void loop()
 {
     switch (state)
@@ -116,6 +130,7 @@ void loop()
         }
         break;
     case AGENT_DISCONNECTED:
+        MovePower(0, 0, 0, 0);
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -123,38 +138,61 @@ void loop()
         break;
     }
 }
+
 //------------------------------ < Fuction > -------------------------------------//
+
+void MovePower(float Motor1Speed, float Motor2Speed,)
+{
+    motor1.spin(Motor1Speed);
+    motor2.spin(Motor2Speed);
+
+}
+
 void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
 {
     RCLC_UNUSED(last_call_time);
     if (timer != NULL)
     {
-        Encoder_read();
+        Move();
         publishData();
     }
 }
+
 void twistCallback(const void *msgin)
 {
     prev_cmd_time = millis();
 }
+
 void twist2Callback(const void *msgin)
 {
     prev_cmd_time = millis();
 }
+
 bool createEntities()
 {
     allocator = rcl_get_default_allocator();
+
     init_options = rcl_get_zero_initialized_init_options();
     rcl_init_options_init(&init_options, allocator);
     rcl_init_options_set_domain_id(&init_options, 10);
+
     rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
+
     // create node
-    RCCHECK(rclc_node_init_default(&node, "encoder", "", &support));
+    RCCHECK(rclc_node_init_default(&node, "int32_publisher_rclc", "", &support));
+
     RCCHECK(rclc_publisher_init_best_effort(
-        &debug_encoder_publisher,
+        &debug_motor_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "debug/shooter_encoder"));
+        "debug/motor"));
+
+    RCCHECK(rclc_subscription_init_default(
+        &moveMotor_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/motor_shooter_speed"));
+
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
     RCCHECK(rclc_timer_init_default(
@@ -164,37 +202,52 @@ bool createEntities()
         controlCallback));
     executor = rclc_executor_get_zero_initialized_executor();
     RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
-    // RCCHECK(rclc_executor_add_subscription(
-    //     &executor,
-    //     &moveMotor_subscriber,
-    //     &moveMotor_msg,
-    //     &twistCallback,
-    //     ON_NEW_DATA));
+
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &moveMotor_subscriber,
+        &moveMotor_msg,
+        &twistCallback,
+        ON_NEW_DATA));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
+
     // synchronize time with the agent
     syncTime();
+
     return true;
 }
+
 bool destroyEntities()
 {
     rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
-    rcl_publisher_fini(&debug_encoder_publisher, &node);
-    // rcl_subscription_fini(&moveMotor_subscriber, &node);
+
+    // rcl_publisher_fini(&debug_motor_publisher, &node);
+    rcl_subscription_fini(&moveMotor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rclc_executor_fini(&executor);
     rclc_support_fini(&support);
+
     return true;
 }
+
+void Move()
+{
+    float motor1Speed = moveMotor_msg.linear.x;
+    float motor2Speed = moveMotor_msg.linear.y;
+
+    MovePower(motor1Speed, motor2Speed);
+}
+
 void publishData()
 {
-    debug_encoder_msg.linear.x = (float)motor1RPM;
-    debug_encoder_msg.linear.y = (float)motor2RPM;
-
+    debug_motor_msg.linear.x = moveMotor_msg.linear.x;
+    debug_motor_msg.linear.y = moveMotor_msg.linear.y;
     struct timespec time_stamp = getTime();
-    rcl_publish(&debug_encoder_publisher, &debug_encoder_msg, NULL);
+    rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
 }
+
 void syncTime()
 {
     // get the current time from the agent
@@ -204,6 +257,7 @@ void syncTime()
     // now we can find the difference between ROS time and uC time
     time_offset = ros_time_ms - now;
 }
+
 struct timespec getTime()
 {
     struct timespec tp = {0};
@@ -212,39 +266,22 @@ struct timespec getTime()
     unsigned long long now = millis() + time_offset;
     tp.tv_sec = now / 1000;
     tp.tv_nsec = (now % 1000) * 1000000;
+
     return tp;
 }
+
 void rclErrorLoop()
 {
     while (true)
     {
     }
 }
+
 void flashLED(int n_times)
 {
     for (int i = 0; i < n_times; i++)
     {
+
     }
     delay(1000);
-}
-void Encoder_read(){
-    // Read the current time in milliseconds
-    current_time = millis();
-    // Calculate the time difference between the current time and the last time the position was updated
-    unsigned long time_diff = (current_time - lastTime);
-    long encoder1Position = encoder1.getCount();
-    long encoder2Position = encoder2.getCount();
-
-    // motor1RPM = (encoder1Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
-    // motor2RPM = (encoder2Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
-    // motor3RPM = (encoder3Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
-    // motor4RPM = (encoder4Position / (float)PULSES_PER_REVOLUTION) * (60.0 / (time_diff / 1000.0)) * 0.05 * 2.0 * 3.14 * GEAR_RATIO;
-
-    motor1RPM = (encoder1Position / (float)PULSES_PER_REVOLUTION) * (60000.0 / time_diff);
-    motor2RPM = (encoder2Position / (float)PULSES_PER_REVOLUTION) * (60000.0 / time_diff);
-
-    encoder1.clearCount();
-    encoder2.clearCount();
-
-    
 }
