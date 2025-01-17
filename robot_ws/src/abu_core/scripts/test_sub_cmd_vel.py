@@ -41,7 +41,7 @@ class test_sub_cmd_vel(Node):
         self.slideSpeed: float = 0.0
         self.turnSpeed: float = 0.0
 
-        self.maxSpeed : int = 1023.0*1.0/2.0 # pwm
+        self.maxSpeed : int = 1023.0 # pwm
         self.max_linear_speed = 3.0  # m/s max
         self.motor1Speed : float = 0
         self.motor2Speed : float = 0
@@ -166,9 +166,9 @@ class test_sub_cmd_vel(Node):
         
     def cmd_vel(self, msg):
         CurrentTime = time.time()
-        self.moveSpeed = msg.linear.x * 0.45
-        self.slideSpeed = msg.linear.y * 0.0
-        r = self.turnSpeed = msg.angular.z * 0.35
+        self.moveSpeed = msg.linear.x 
+        self.slideSpeed = msg.linear.y
+        r = self.turnSpeed = msg.angular.z
         
         # r = 0
         
