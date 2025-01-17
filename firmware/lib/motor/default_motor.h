@@ -11,7 +11,7 @@ private:
     int in_a_pin_;
     int in_b_pin_;
     int pwm_pin_;
-    int pwm_bits;
+    int pwm_bits;ABU_BASE_MOVE_H
 
 protected:
     void forward(int pwm) override
@@ -42,7 +42,7 @@ public:
 
         if (pwm_frequency > 0)
         {
-            analogWriteFrequency(pwm_frequency);
+            analogWriteFrequency(pwm_pin, pwm_frequency);
         }
         analogWriteResolution(pwm_bits);
 
