@@ -2,7 +2,7 @@
 # Set minimum required version of cmake, project name and compile options
 ################################################################################
 cmake_minimum_required(VERSION 3.8)
-project(abu_core)
+project(shaq_core)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -38,7 +38,7 @@ find_package(behaviortree_cpp_v3 REQUIRED)
 # Install
 ################################################################################
 install(
-  DIRECTORY launch scripts abu_core config
+  DIRECTORY launch scripts config
   DESTINATION share/${PROJECT_NAME}
 )
 

@@ -10,6 +10,12 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     ld = LaunchDescription()
 
+    motor_config = os.path.join(
+        get_package_share_directory('koby_core'),
+        'config',
+        'motor_config.yaml'
+    )
+
     joy = Node(
         package="joy",
         executable="joy_node",
@@ -20,7 +26,7 @@ def generate_launch_description():
     )
 
     joystick_control = Node(
-        package="abu_core",
+        package="koby_core",
         executable="joystick_control.py",
         name="Joystick_Node",
         # output="screen",
@@ -28,11 +34,12 @@ def generate_launch_description():
     )
     
     test_sub_control = Node(
-        package="abu_core",
+        package="koby_core",
         executable="test_sub_cmd_vel.py",
         name="Test_sub_cmd_vel_Node",
         output="screen",
         namespace="",
+        parameters=[motor_config],
     )
     
     ld.add_action(joy)

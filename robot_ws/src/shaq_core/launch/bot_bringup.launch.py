@@ -9,7 +9,7 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Define the path to the launch file directory
-    launch_file_dir = os.path.join(get_package_share_directory('abu_core'), 'launch')
+    launch_file_dir = os.path.join(get_package_share_directory('shaq_core'), 'launch')
     
     
     # Include microros.launch.py

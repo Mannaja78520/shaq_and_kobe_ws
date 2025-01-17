@@ -10,23 +10,21 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     ld = LaunchDescription()
 
-    keyboard_control = Node(
-        package="abu_core",
-        executable="keyboard_control.py",
-        name="KeyboardControl_Node",
-        output="screen",
-        namespace="",
-    )
-    
-    test_sub_control = Node(
-        package="abu_core",
-        executable="test_sub_cmd_vel.py",
-        name="Test_sub_cmd_vel_Node",
+    # locations = os.path.join(
+    #     get_package_share_directory('wrg_core'),
+    #     'config',
+    #     'locations.yaml'
+    # )
+
+    node_hello = Node(
+        package="shaq_core",
+        executable="helloworld.py",
+        name="hello_world_node",
         # output="screen",
         namespace="",
     )
+        
     
-    ld.add_action(keyboard_control)
-    ld.add_action(test_sub_control)
+    ld.add_action(node_hello)
 
     return ld
