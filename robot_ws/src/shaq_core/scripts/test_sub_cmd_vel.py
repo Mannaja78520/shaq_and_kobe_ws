@@ -134,10 +134,10 @@ class test_sub_cmd_vel(Node):
         #     self.setpoint = self.yaw
                 
         D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(r), 1.0)
-        self.motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - r) / D * self.maxSpeed))
-        self.motor2Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + r) / D * self.maxSpeed))
-        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - r) / D * self.maxSpeed))
-        self.motor4Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + r) / D * self.maxSpeed))
+        self.motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + r) / D * self.maxSpeed))
+        self.motor2Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - r) / D * self.maxSpeed))
+        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + r) / D * self.maxSpeed))
+        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - r) / D * self.maxSpeed))
         # self.motor1Speed = round((self.moveSpeed + self.slideSpeed - r) / D * self.maxSpeed, 1)
         # self.motor2Speed = round((self.moveSpeed + self.slideSpeed + r) / D * self.maxSpeed, 1)
         # self.motor3Speed = round((self.moveSpeed - self.slideSpeed - r) / D * self.maxSpeed, 1)
