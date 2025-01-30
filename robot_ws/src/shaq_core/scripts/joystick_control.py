@@ -15,11 +15,12 @@ class Gamepad:
         self.rx : float = 0.0
         self.ry : float = 0.0
         self.rt : float = 0.0
+        
         # self.dpadLeftRight : float = 0.0
         # self.dpadUpDown : float = 0.0
 
 
-class joystick(Node):
+class Joystick(Node):
     def __init__(self):
         super().__init__("joystick")
 
@@ -28,7 +29,7 @@ class joystick(Node):
         )
 
         self.create_subscription(
-            Joy, '/joy', self.joy, 10
+            Joy, '/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
         self.gamepad = Gamepad()
@@ -41,6 +42,7 @@ class joystick(Node):
         self.gamepad.ly = float(msg.axes[1])
         self.gamepad.rx = float(msg.axes[3] * -1)
         self.gamepad.ry = float(msg.axes[4])
+        
         # self.gamepad.lt = float((msg.axes[2] + 1) / 2)
         # self.gamepad.rt = float((msg.axes[5] + 1) / 2)
         # print(self.gamepad.lx, self.gamepad.ly, self.gamepad.rx)
