@@ -10,9 +10,16 @@
   <license>Apache 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
-  <depend>tf-transformations</depend>
+
+  <!-- ROS 2 Dependencies -->
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
+  <depend>std_msgs</depend>  <!-- Add std_msgs for Float32 messages -->
+
+  <!-- Python Dependencies -->
+  <depend>tf-transformations</depend>
+  <depend>python3-matplotlib</depend>  <!-- Add matplotlib dependency -->
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

@@ -59,7 +59,7 @@ class Joystick(Node):
 def main():
     rclpy.init()
 
-    sub = joystick()
+    sub = Joystick()
     rclpy.spin(sub)
     rclpy.shutdown()
 

@@ -22,14 +22,14 @@ find_package(rclcpp REQUIRED)
 # find_package(OpenCV REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(nav2_msgs REQUIRED)
+#find_package(nav2_msgs REQUIRED)
 # find_package(cv_bridge REQUIRED)
 # find_package(sensor_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
+#find_package(behaviortree_cpp_v3 REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -52,10 +52,11 @@ ament_python_install_package(${PROJECT_NAME})
 ################################################################################
 install(PROGRAMS
 # scripts/helloworld.py
-scripts/robot_main_state.py
+# scripts/robot_main_state.py
   scripts/keyboard_control.py
   scripts/test_sub_cmd_vel.py
   scripts/joystick_control.py
+  scripts/encoder_graph.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
