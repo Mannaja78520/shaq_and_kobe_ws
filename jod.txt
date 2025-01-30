@@ -1,0 +1,11 @@
+
+#source robot_ws
+echo "source /home/shaq/shaq_and_koby_ws/shaq_and_koby_venv/bin/acti" >> ~/.bashrc
+
+#ลง venv 
+sudo apt update
+sudo apt install python3.12-venv
+#Make venv
+python3 -m venv shaq_and_koby_venv
+echo "source /home/shaq/shaq_and_koby_ws/shaq_and_koby_venv/bin/activate" >> ~/.bashrc
+

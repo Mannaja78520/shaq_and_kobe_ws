@@ -187,10 +187,15 @@ void motor_control(){
   current_rpm_motor3 = motor3_encoder.getRPM();
   current_rpm_motor4 = motor4_encoder.getRPM();
 
-  motor1_controller.spin(motor1_pid.compute(target_rpm_motor1, current_rpm_motor1));
-  motor2_controller.spin(motor2_pid.compute(target_rpm_motor2, current_rpm_motor2));
-  motor3_controller.spin(motor3_pid.compute(target_rpm_motor3, current_rpm_motor3));
-  motor4_controller.spin(motor4_pid.compute(target_rpm_motor4, current_rpm_motor4));
+  // motor1_controller.spin(motor1_pid.compute(target_rpm_motor1, current_rpm_motor1));
+  // motor2_controller.spin(motor2_pid.compute(target_rpm_motor2, current_rpm_motor2));
+  // motor3_controller.spin(motor3_pid.compute(target_rpm_motor3, current_rpm_motor3));
+  // motor4_controller.spin(motor4_pid.compute(target_rpm_motor4, current_rpm_motor4));
+
+  motor1_controller.spin(target_rpm_motor1);
+  motor2_controller.spin(target_rpm_motor2;
+  motor3_controller.spin(target_rpm_motor3);
+  motor4_controller.spin(target_rpm_motor4);
 
 
   rpm_msg.linear.x = current_rpm_motor1;
@@ -271,7 +276,7 @@ bool create_entities()
       &motor_speed_subscriber, 
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-      "robot1/cmd_vel/rpm"
+      "shaq/cmd_vel/rpm"
   ));
 
   // create executor

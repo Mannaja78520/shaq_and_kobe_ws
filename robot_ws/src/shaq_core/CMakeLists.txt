@@ -57,6 +57,7 @@ install(PROGRAMS
   scripts/test_sub_cmd_vel.py
   scripts/joystick_control.py
   scripts/encoder_graph.py
+  scripts/cmd_vel_to_motor_speed.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -11,6 +11,7 @@ from src.utilize import *
 from src.controller import * 
 
 class test_sub_cmd_vel(Node):
+
     # PID controllers for motors
     # controller1 = Controller(kp=9.0, ki=0.42, kd=0.0, kf = 199.59, errorTolerance=0.01)
     # controller2 = Controller(kp=7.0, ki=0.42, kd=0.0, kf = 196.2, errorTolerance=0.01)
@@ -105,7 +106,7 @@ class test_sub_cmd_vel(Node):
     def cmd_vel(self, msg):
         CurrentTime = time.time()
         self.moveSpeed = msg.linear.x * 0.45
-        self.slideSpeed = msg.linear.y * 0.0
+        self.slideSpeed = msg.linear.y * 0.2 
         r = self.turnSpeed = msg.angular.z * 0.35
         
         # r = 0

@@ -25,7 +25,7 @@ class Joystick(Node):
         super().__init__("joystick")
 
         self.pub_cmd = self.create_publisher(
-            Twist, "/cmd_vel", qos_profile=qos.qos_profile_system_default
+            Twist, "shaq/cmd_vel", qos_profile=qos.qos_profile_system_default
         )
 
         self.create_subscription(
@@ -52,8 +52,9 @@ class Joystick(Node):
         cmd_vel_msg = Twist()
         cmd_vel_msg.linear.x = float(self.gamepad.lx * self.maxspeed)
         cmd_vel_msg.linear.y = float(self.gamepad.ly * self.maxspeed)
-        cmd_vel_msg.angular.x = float(self.gamepad.rx * self.maxspeed)
-        cmd_vel_msg.angular.y = float(self.gamepad.ry * self.maxspeed)
+        cmd_vel_msg.angular.z = float(self.gamepad.rx * self.maxspeed)
+        # cmd_vel_msg.angular.x = float(self.gamepad.rx * self.maxspeed)
+        # cmd_vel_msg.angular.y = float(self.gamepad.ry * self.maxspeed)
         self.pub_cmd.publish(cmd_vel_msg)
 
 def main():

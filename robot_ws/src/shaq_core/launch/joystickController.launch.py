@@ -33,9 +33,9 @@ def generate_launch_description():
         namespace="",
     )
     
-    test_sub_control = Node(
+    cmd_vel_to_motor_speed = Node(
         package="shaq_core",
-        executable="test_sub_cmd_vel.py",
+        executable="cmd_vel_to_motor_speed.py",
         name="Test_sub_cmd_vel_Node",
         output="screen",
         namespace="",
@@ -44,6 +44,6 @@ def generate_launch_description():
     
     ld.add_action(joy)
     ld.add_action(joystick_control)
-    ld.add_action(test_sub_control)
+    ld.add_action(cmd_vel_to_motor_speed)
 
     return ld
