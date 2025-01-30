@@ -1,6 +1,6 @@
 
 #source robot_ws
-echo "source /home/shaq/shaq_and_koby_ws/shaq_and_koby_venv/bin/acti" >> ~/.bashrc
+echo "source /home/shaq/shaq_and_koby_ws/robot_ws/install/setup.bash" >> ~/.bashrc
 
 #ลง venv 
 sudo apt update
@@ -9,3 +9,9 @@ sudo apt install python3.12-venv
 python3 -m venv shaq_and_koby_venv
 echo "source /home/shaq/shaq_and_koby_ws/shaq_and_koby_venv/bin/activate" >> ~/.bashrc
 
+pip install catkin_pkg empy lark-parser colcon-common-extensions
+
+#microros
+https://github.com/micro-ROS/micro_ros_setup/blob/jazzy/README.md
+
+sudo apt install teensy-loader-cli

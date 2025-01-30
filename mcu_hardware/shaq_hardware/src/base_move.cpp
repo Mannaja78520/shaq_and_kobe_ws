@@ -23,14 +23,36 @@
 
 #define LED_PIN 13
 #ifndef RCCHECK
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){rclErrorLoop();}}
+#define RCCHECK(fn)              \
+  {                              \
+    rcl_ret_t temp_rc = fn;      \
+    if ((temp_rc != RCL_RET_OK)) \
+    {                            \
+      rclErrorLoop();            \
+    }                            \
+  }
 #endif
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
-#define EXECUTE_EVERY_N_MS(MS, X)  do { \
-  static volatile int64_t init = -1; \
-  if (init == -1) { init = uxr_millis();} \
-  if (uxr_millis() - init > MS) { X; init = uxr_millis();} \
-} while (0)
+#define RCSOFTCHECK(fn)          \
+  {                              \
+    rcl_ret_t temp_rc = fn;      \
+    if ((temp_rc != RCL_RET_OK)) \
+    {                            \
+    }                            \
+  }
+#define EXECUTE_EVERY_N_MS(MS, X)      \
+  do                                   \
+  {                                    \
+    static volatile int64_t init = -1; \
+    if (init == -1)                    \
+    {                                  \
+      init = uxr_millis();             \
+    }                                  \
+    if (uxr_millis() - init > MS)      \
+    {                                  \
+      X;                               \
+      init = uxr_millis();             \
+    }                                  \
+  } while (0)
 
 rclc_support_t support;
 rcl_node_t node;
@@ -57,7 +79,8 @@ geometry_msgs__msg__Twist motor_speed_msg;
 unsigned long long time_offset = 0;
 unsigned long prev_cmd_time = 0;
 
-enum states {
+enum states
+{
   WAITING_AGENT,
   AGENT_AVAILABLE,
   AGENT_CONNECTED,
@@ -83,22 +106,23 @@ IMU_BNO055 bno055;
 
 void flashLED(int n_times)
 {
-    for(int i=0; i<n_times; i++)
-    {
-        digitalWrite(LED_PIN, HIGH);
-        delay(150);
-        digitalWrite(LED_PIN, LOW);
-        delay(150);
-    }
-    delay(1000);
+  for (int i = 0; i < n_times; i++)
+  {
+    digitalWrite(LED_PIN, HIGH);
+    delay(150);
+    digitalWrite(LED_PIN, LOW);
+    delay(150);
+  }
+  delay(1000);
 }
 
 // Reboot the board (Teensy Only)
-void doReboot() {
+void doReboot()
+{
   SCB_AIRCR = 0x05FA0004;
 }
 
-void rclErrorLoop() 
+void rclErrorLoop()
 {
   flashLED(2);
   doReboot();
@@ -106,73 +130,75 @@ void rclErrorLoop()
 
 void syncTime()
 {
-    // get the current time from the agent
-    unsigned long now = millis();
-    RCCHECK(rmw_uros_sync_session(10));
-    unsigned long long ros_time_ms = rmw_uros_epoch_millis(); 
-    // now we can find the difference between ROS time and uC time
-    time_offset = ros_time_ms - now;
+  // get the current time from the agent
+  unsigned long now = millis();
+  RCCHECK(rmw_uros_sync_session(10));
+  unsigned long long ros_time_ms = rmw_uros_epoch_millis();
+  // now we can find the difference between ROS time and uC time
+  time_offset = ros_time_ms - now;
 }
 
 struct timespec getTime()
 {
-    struct timespec tp = {0};
-    // add time difference between uC time and ROS time to
-    // synchronize time with ROS
-    unsigned long long now = millis() + time_offset;
-    tp.tv_sec = now / 1000;
-    tp.tv_nsec = (now % 1000) * 1000000;
-    return tp;
+  struct timespec tp = {0};
+  // add time difference between uC time and ROS time to
+  // synchronize time with ROS
+  unsigned long long now = millis() + time_offset;
+  tp.tv_sec = now / 1000;
+  tp.tv_nsec = (now % 1000) * 1000000;
+  return tp;
 }
 
-void imu_pub(){
-    bno055.getIMUData(imu_data_msg, imu_mag_msg, imu_pos_angle_msg);
+void imu_pub()
+{
+  bno055.getIMUData(imu_data_msg, imu_mag_msg, imu_pos_angle_msg);
 
-    struct timespec time_stamp = getTime();
-    imu_data_msg.header.stamp.sec = time_stamp.tv_sec;
-    imu_data_msg.header.stamp.nanosec = time_stamp.tv_nsec;
-    imu_data_msg.header.frame_id.data = "imu_link";
+  struct timespec time_stamp = getTime();
+  imu_data_msg.header.stamp.sec = time_stamp.tv_sec;
+  imu_data_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+  imu_data_msg.header.frame_id.data = "imu_link";
 
-    imu_data_msg.angular_velocity_covariance[0] = 0.0001;
-    imu_data_msg.angular_velocity_covariance[4] = 0.0001;
-    imu_data_msg.angular_velocity_covariance[8] = 0.0001;
+  imu_data_msg.angular_velocity_covariance[0] = 0.0001;
+  imu_data_msg.angular_velocity_covariance[4] = 0.0001;
+  imu_data_msg.angular_velocity_covariance[8] = 0.0001;
 
-    imu_data_msg.linear_acceleration_covariance[0] = 0.04;
-    imu_data_msg.linear_acceleration_covariance[4] = 0.04;
-    imu_data_msg.linear_acceleration_covariance[8] = 0.04;
+  imu_data_msg.linear_acceleration_covariance[0] = 0.04;
+  imu_data_msg.linear_acceleration_covariance[4] = 0.04;
+  imu_data_msg.linear_acceleration_covariance[8] = 0.04;
 
-    imu_data_msg.orientation_covariance[0] = 0.0025;
-    imu_data_msg.orientation_covariance[4] = 0.0025;
-    imu_data_msg.orientation_covariance[8] = 0.0025;
+  imu_data_msg.orientation_covariance[0] = 0.0025;
+  imu_data_msg.orientation_covariance[4] = 0.0025;
+  imu_data_msg.orientation_covariance[8] = 0.0025;
 
-    imu_mag_msg.header.stamp.sec = time_stamp.tv_sec;
-    imu_mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+  imu_mag_msg.header.stamp.sec = time_stamp.tv_sec;
+  imu_mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
 
-    rcl_publish(&imu_data_publisher, &imu_data_msg, NULL);
-    rcl_publish(&imu_mag_publisher, &imu_mag_msg, NULL);
-    rcl_publish(&imu_pos_angle_publisher, &imu_pos_angle_msg, NULL);
+  rcl_publish(&imu_data_publisher, &imu_data_msg, NULL);
+  rcl_publish(&imu_mag_publisher, &imu_mag_msg, NULL);
+  rcl_publish(&imu_pos_angle_publisher, &imu_pos_angle_msg, NULL);
 }
 
 void fullStop()
 {
-    motor_speed_msg.linear.x = 0.0;
-    motor_speed_msg.linear.y = 0.0;
-    motor_speed_msg.linear.z = 0.0;
-    motor_speed_msg.angular.x = 0.0;
-    motor_speed_msg.angular.y = 0.0;
-    motor_speed_msg.angular.z = 0.0;
+  motor_speed_msg.linear.x = 0.0;
+  motor_speed_msg.linear.y = 0.0;
+  motor_speed_msg.linear.z = 0.0;
+  motor_speed_msg.angular.x = 0.0;
+  motor_speed_msg.angular.y = 0.0;
+  motor_speed_msg.angular.z = 0.0;
 
-    motor1_controller.brake();
-    motor2_controller.brake();
-    motor3_controller.brake();
-    motor4_controller.brake();
+  motor1_controller.brake();
+  motor2_controller.brake();
+  motor3_controller.brake();
+  motor4_controller.brake();
 }
 
-void motor_control(){
-  if(((millis() - prev_cmd_time) >= 5000)) 
+void motor_control()
+{
+  if (((millis() - prev_cmd_time) >= 5000))
   {
-      fullStop();
-//      digitalWrite(LED_PIN, HIGH);
+    fullStop();
+    //      digitalWrite(LED_PIN, HIGH);
   }
 
   float target_rpm_motor1, target_rpm_motor2, target_rpm_motor3, target_rpm_motor4;
@@ -193,33 +219,38 @@ void motor_control(){
   // motor4_controller.spin(motor4_pid.compute(target_rpm_motor4, current_rpm_motor4));
 
   motor1_controller.spin(target_rpm_motor1);
-  motor2_controller.spin(target_rpm_motor2;
+  motor2_controller.spin(target_rpm_motor2);
   motor3_controller.spin(target_rpm_motor3);
   motor4_controller.spin(target_rpm_motor4);
 
+  // rpm_msg.linear.x = current_rpm_motor1;
+  // rpm_msg.linear.y = current_rpm_motor2;
+  // rpm_msg.angular.x = current_rpm_motor3;
+  // rpm_msg.angular.y = current_rpm_motor4;
 
-  rpm_msg.linear.x = current_rpm_motor1;
-  rpm_msg.linear.y = current_rpm_motor2;
-  rpm_msg.angular.x = current_rpm_motor3;
-  rpm_msg.angular.y = current_rpm_motor4;
+  rpm_msg.linear.x = target_rpm_motor1;
+  rpm_msg.linear.y = target_rpm_motor2;
+  rpm_msg.angular.x = target_rpm_motor3;
+  rpm_msg.angular.y = target_rpm_motor4;
   rcl_publish(&rpm_publisher, &rpm_msg, NULL);
 }
 
-void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
+void timer_callback(rcl_timer_t *timer, int64_t last_call_time)
 {
-  (void) last_call_time;
-  if (timer != NULL) {
+  (void)last_call_time;
+  if (timer != NULL)
+  {
     imu_pub();
     motor_control();
   }
 }
 
-void motor_speed_callback(const void * msgin) 
+void motor_speed_callback(const void *msgin)
 {
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-    const geometry_msgs__msg__Twist * msg = (const geometry_msgs__msg__Twist *)msgin;
-    motor_speed_msg = *msg;  // Update the global motor_speed_msg with the new data
-    prev_cmd_time = millis();
+  digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+  const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
+  motor_speed_msg = *msg; // Update the global motor_speed_msg with the new data
+  prev_cmd_time = millis();
 }
 
 bool create_entities()
@@ -239,57 +270,54 @@ bool create_entities()
 
   // create publisher
   RCCHECK(rclc_publisher_init_best_effort(
-    &rpm_publisher,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-    "robot1/rpm"));
-
-  RCCHECK(rclc_publisher_init_best_effort(
-    &imu_data_publisher,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-    "robot1/imu/data"));
-
-    RCCHECK(rclc_publisher_init_best_effort(
-    &imu_mag_publisher,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, MagneticField),
-    "robot1/imu/mag"));
-
-    RCCHECK(rclc_publisher_init_best_effort(
-    &imu_pos_angle_publisher,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-    "robot1/imu/pos_angle"));
-
-
-  // create timer,
-  const unsigned int timer_timeout = 20;    // in ms (50 Hz)  
-  RCCHECK(rclc_timer_init_default(
-    &timer,
-    &support,
-    RCL_MS_TO_NS(timer_timeout),
-    timer_callback));
-
-  // create twist command subscriber
-  RCCHECK(rclc_subscription_init_default( 
-      &motor_speed_subscriber, 
+      &rpm_publisher,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-      "shaq/cmd_vel/rpm"
-  ));
+      "robot1/rpm"));
+
+  RCCHECK(rclc_publisher_init_best_effort(
+      &imu_data_publisher,
+      &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+      "robot1/imu/data"));
+
+  RCCHECK(rclc_publisher_init_best_effort(
+      &imu_mag_publisher,
+      &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, MagneticField),
+      "robot1/imu/mag"));
+
+  RCCHECK(rclc_publisher_init_best_effort(
+      &imu_pos_angle_publisher,
+      &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+      "robot1/imu/pos_angle"));
+
+  // create timer,
+  const unsigned int timer_timeout = 20; // in ms (50 Hz)
+  RCCHECK(rclc_timer_init_default(
+      &timer,
+      &support,
+      RCL_MS_TO_NS(timer_timeout),
+      timer_callback));
+
+  // create twist command subscriber
+  RCCHECK(rclc_subscription_init_default(
+      &motor_speed_subscriber,
+      &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+      "shaq/cmd_vel/rpm"));
 
   // create executor
   executor = rclc_executor_get_zero_initialized_executor();
   RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
   RCCHECK(rclc_executor_add_subscription(
-      &executor, 
-      &motor_speed_subscriber, 
-      &motor_speed_msg, 
-      &motor_speed_callback, 
-      ON_NEW_DATA
-  ));
+      &executor,
+      &motor_speed_subscriber,
+      &motor_speed_msg,
+      &motor_speed_callback,
+      ON_NEW_DATA));
 
   syncTime();
 
@@ -298,8 +326,8 @@ bool create_entities()
 
 void destroy_entities()
 {
-  rmw_context_t * rmw_context = rcl_context_get_rmw_context(&support.context);
-  (void) rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
+  rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
+  (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
   rcl_publisher_fini(&rpm_publisher, &node);
   rcl_publisher_fini(&imu_data_publisher, &node);
@@ -316,7 +344,8 @@ void destroy_entities()
   flashLED(5);
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   set_microros_serial_transports(Serial);
   pinMode(LED_PIN, OUTPUT);
@@ -329,28 +358,32 @@ void setup() {
   digitalWrite(LED_PIN, LOW);
 }
 
-void loop() {
-  switch (state) {
-    case WAITING_AGENT:
-      EXECUTE_EVERY_N_MS(500, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_AVAILABLE : WAITING_AGENT;);
-      break;
-    case AGENT_AVAILABLE:
-      state = (true == create_entities()) ? AGENT_CONNECTED : WAITING_AGENT;
-      if (state == WAITING_AGENT) {
-        destroy_entities();
-      };
-      break;
-    case AGENT_CONNECTED:
-      EXECUTE_EVERY_N_MS(200, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
-      if (state == AGENT_CONNECTED) {
-        rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
-      }
-      break;
-    case AGENT_DISCONNECTED:
+void loop()
+{
+  switch (state)
+  {
+  case WAITING_AGENT:
+    EXECUTE_EVERY_N_MS(500, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_AVAILABLE : WAITING_AGENT;);
+    break;
+  case AGENT_AVAILABLE:
+    state = (true == create_entities()) ? AGENT_CONNECTED : WAITING_AGENT;
+    if (state == WAITING_AGENT)
+    {
       destroy_entities();
-      state = WAITING_AGENT;
-      break;
-    default:
-      break;
+    };
+    break;
+  case AGENT_CONNECTED:
+    EXECUTE_EVERY_N_MS(200, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
+    if (state == AGENT_CONNECTED)
+    {
+      rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
+    }
+    break;
+  case AGENT_DISCONNECTED:
+    destroy_entities();
+    state = WAITING_AGENT;
+    break;
+  default:
+    break;
   }
 }
