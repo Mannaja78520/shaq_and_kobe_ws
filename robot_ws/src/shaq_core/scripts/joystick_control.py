@@ -28,6 +28,10 @@ class Joystick(Node):
             Twist, "shaq/cmd_vel", qos_profile=qos.qos_profile_system_default
         )
 
+        self.pub_shooter = self.create_publisher(
+            Twist, "shaq/shooter_power", qos_profile=qos.qos_profile_system_default
+        )
+
         self.create_subscription(
             Joy, '/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
         )
@@ -43,19 +47,22 @@ class Joystick(Node):
         self.gamepad.rx = float(msg.axes[3] * -1)
         self.gamepad.ry = float(msg.axes[4])
         
-        # self.gamepad.lt = float((msg.axes[2] + 1) / 2)
-        # self.gamepad.rt = float((msg.axes[5] + 1) / 2)
-        # print(self.gamepad.lx, self.gamepad.ly, self.gamepad.rx)
-        print(self.gamepad.ry)
+        self.gamepad.lt = float((msg.axes[2] + 1)/ 2)
+        self.gamepad.rt = float((msg.axes[5] + 1) / 2)
+
 
     def sendData(self):
         cmd_vel_msg = Twist()
+        cmd_shooter_power = Twist()
+
         cmd_vel_msg.linear.x = float(self.gamepad.lx * self.maxspeed)
         cmd_vel_msg.linear.y = float(self.gamepad.ly * self.maxspeed)
         cmd_vel_msg.angular.z = float(self.gamepad.rx * self.maxspeed)
-        # cmd_vel_msg.angular.x = float(self.gamepad.rx * self.maxspeed)
-        # cmd_vel_msg.angular.y = float(self.gamepad.ry * self.maxspeed)
+        
+        cmd_shooter_power.linear.x = float(self.gamepad.lt * self.maxspeed)
+        cmd_shooter_power.linear.y = float(self.gamepad.rt * self.maxspeed)
         self.pub_cmd.publish(cmd_vel_msg)
+        self.pub_shooter.publish(cmd_shooter_power)
 
 def main():
     rclpy.init()

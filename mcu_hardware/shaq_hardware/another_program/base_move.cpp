@@ -16,7 +16,8 @@
 #include <imu_bno055.h>
 #include <encoder.h>
 #include <PIDF.h>
-#include <motor.h>
+#include <motorprik.h>
+
 
 #define ENCODER_USE_INTERRUPTS
 #define ENCODER_OPTIMIZE_INTERRUPTS

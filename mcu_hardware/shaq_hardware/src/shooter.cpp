@@ -16,8 +16,9 @@
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
 
-#include <motor.h>
-#include "../config/drive_output.h"
+#include <motorevo.h>
+#include <motorprik.h>
+#include "../config/shooter_output.h"
 // #include "../config/drive_output_teensy.h"
 
 #define RCCHECK(fn)                  \
@@ -55,11 +56,11 @@
 rcl_publisher_t debug_motor_publisher;
 rcl_publisher_t debug_encoder_publisher;
 
-rcl_subscription_t moveMotor_subscriber;
+rcl_subscription_t shooter_motor_subscriber;
+geometry_msgs__msg__Twist shooter_msg;
 
 geometry_msgs__msg__Twist debug_motor_msg;
 geometry_msgs__msg__Twist debug_encoder_msg;
-geometry_msgs__msg__Twist moveMotor_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -82,10 +83,12 @@ enum states
 } state;
 
 // Move motor
-Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
-Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+EVODrive motor1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
+EVODrive motor2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
 Motor motor3(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTOR3_PWM, MOTOR3_IN_A, MOTOR3_IN_B);
-Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTOR4_INV, MOTOR4_BREAK, MOTOR4_PWM, MOTOR4_IN_A, MOTOR4_IN_B);
+
+float shooter_rpm = 0;
+float lift_rpm = 0;
 
 //------------------------------ < Fuction Prototype > ------------------------------//
 
@@ -96,9 +99,8 @@ bool destroyEntities();
 void publishData();
 struct timespec getTime();
 
-void MovePower(float, float, float, float);
 void Move();
-void Spin_Ball();
+
 //------------------------------ < Main > -------------------------------------//
 
 void setup()
@@ -130,7 +132,8 @@ void loop()
         }
         break;
     case AGENT_DISCONNECTED:
-        MovePower(0, 0, 0, 0);
+        motor1.spin(0);
+        motor2.spin(0);
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -141,12 +144,6 @@ void loop()
 
 //------------------------------ < Fuction > -------------------------------------//
 
-void MovePower(float Motor1Speed, float Motor2Speed,)
-{
-    motor1.spin(Motor1Speed);
-    motor2.spin(Motor2Speed);
-
-}
 
 void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
 {
@@ -188,10 +185,10 @@ bool createEntities()
         "debug/motor"));
 
     RCCHECK(rclc_subscription_init_default(
-        &moveMotor_subscriber,
+        &shooter_motor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/motor_shooter_speed"));
+        "/shaq/shooter_power"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -205,8 +202,8 @@ bool createEntities()
 
     RCCHECK(rclc_executor_add_subscription(
         &executor,
-        &moveMotor_subscriber,
-        &moveMotor_msg,
+        &shooter_motor_subscriber,
+        &shooter_msg,
         &twistCallback,
         ON_NEW_DATA));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
@@ -223,7 +220,7 @@ bool destroyEntities()
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
     // rcl_publisher_fini(&debug_motor_publisher, &node);
-    rcl_subscription_fini(&moveMotor_subscriber, &node);
+    rcl_subscription_fini(&shooter_motor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rclc_executor_fini(&executor);
@@ -234,16 +231,39 @@ bool destroyEntities()
 
 void Move()
 {
-    float motor1Speed = moveMotor_msg.linear.x;
-    float motor2Speed = moveMotor_msg.linear.y;
 
-    MovePower(motor1Speed, motor2Speed);
+    if(shooter_msg.linear.x < 0.5 ){
+        shooter_rpm = 1023.0;
+    }else{
+        shooter_rpm = 0;
+    }
+
+    if(shooter_msg.linear.y < 0.5 ){
+        lift_rpm = 1023.0/2;
+    }else{
+        lift_rpm = 0;
+    }
+
+    float motor1Speed = shooter_rpm;
+    float motor2Speed = shooter_rpm;
+    float motor3Speed = lift_rpm;
+
+
+    motor1.spin(motor1Speed);
+    motor2.spin(motor2Speed);
+    motor3.spin(motor3Speed);
+
+
 }
+
+
 
 void publishData()
 {
-    debug_motor_msg.linear.x = moveMotor_msg.linear.x;
-    debug_motor_msg.linear.y = moveMotor_msg.linear.y;
+    debug_motor_msg.linear.x = shooter_rpm;
+    debug_motor_msg.linear.y = shooter_rpm;
+    debug_motor_msg.linear.z = lift_rpm;
+
     struct timespec time_stamp = getTime();
     rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
 }

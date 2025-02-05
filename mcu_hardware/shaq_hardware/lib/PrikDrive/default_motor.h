@@ -1,5 +1,5 @@
-#ifndef DEFAULT_MOTOR
-#define DEFAULT_MOTOR
+#ifndef DEFAULT_MOTOR_PRIK
+#define DEFAULT_MOTOR_PRIK
 
 #include <Arduino.h>
 
@@ -11,9 +11,10 @@ private:
     int in_a_pin_;
     int in_b_pin_;
     int pwm_pin_;
-    int pwm_bits;ABU_BASE_MOVE_H
+    int pwm_bits;
 
 protected:
+
     void forward(int pwm) override
     {
         digitalWrite(in_a_pin_, HIGH);
@@ -60,7 +61,7 @@ public:
     {
         digitalWrite(in_a_pin_, LOW);
         digitalWrite(in_b_pin_, LOW);
-        analogWrite(pwm_pin_, pow(2.0, this->pwm_bits) - 1);
+        analogWrite(pwm_pin_, 0);
     }
 };
 

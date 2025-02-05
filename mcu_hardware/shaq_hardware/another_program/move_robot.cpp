@@ -16,7 +16,7 @@
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
 
-#include <motor.h>
+#include <motorprik.h>
 #include "../config/drive_output.h"
 // #include "../config/drive_output_teensy.h"
 

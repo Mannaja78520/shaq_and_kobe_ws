@@ -1,5 +1,5 @@
-#ifndef MOTOR_H
-#define MOTOR_H
+#ifndef MOTORPRIK_H
+#define MOTORPRIK_H
 
 #include "default_motor.h"
 
