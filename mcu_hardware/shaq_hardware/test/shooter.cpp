@@ -83,12 +83,12 @@ enum states
 } state;
 
 // Move motor
-EVODrive motor1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
-EVODrive motor2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
-Motor motor3(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTOR3_PWM, MOTOR3_IN_A, MOTOR3_IN_B);
+EVODrive motorshooter1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTORSHOOTER1_PWM, MOTORSHOOTER1_IN_A, MOTORSHOOTER1_IN_B);
+EVODrive motorshooter2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTORSHOOTER2_PWM, MOTORSHOOTER2_IN_A, MOTORSHOOTER2_IN_B);
+Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
 
-float shooter_rpm = 0;
-float lift_rpm = 0;
+float motorshoot = 0;
+float lift = 0;
 
 //------------------------------ < Fuction Prototype > ------------------------------//
 
@@ -132,8 +132,9 @@ void loop()
         }
         break;
     case AGENT_DISCONNECTED:
-        motor1.spin(0);
-        motor2.spin(0);
+        motorshooter1.spin(0);
+        motorshooter2.spin(0);
+        motorlift.spin(0);
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -182,13 +183,13 @@ bool createEntities()
         &debug_motor_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "debug/motor"));
+        "debug/motor/shooter"));
 
     RCCHECK(rclc_subscription_init_default(
         &shooter_motor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/shaq/shooter_power"));
+        "shaq/shooter/rpm"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -232,26 +233,16 @@ bool destroyEntities()
 void Move()
 {
 
-    if(shooter_msg.linear.x < 0.5 ){
-        shooter_rpm = 1023.0;
-    }else{
-        shooter_rpm = 0;
-    }
+    
 
-    if(shooter_msg.linear.y < 0.5 ){
-        lift_rpm = 1023.0/2;
-    }else{
-        lift_rpm = 0;
-    }
+    float motor1Speed = shooter_msg.linear.x;
+    float motor2Speed = shooter_msg.linear.y;
+    float motor3Speed = shooter_msg.linear.z;
+    // float motor3Speed = shooter_msg.angular.x;
 
-    float motor1Speed = shooter_rpm;
-    float motor2Speed = shooter_rpm;
-    float motor3Speed = lift_rpm;
-
-
-    motor1.spin(motor1Speed);
-    motor2.spin(motor2Speed);
-    motor3.spin(motor3Speed);
+    motorshooter1.spin(motor1Speed);
+    motorshooter2.spin(motor2Speed);
+    motorlift.spin(motor3Speed);
 
 
 }
@@ -260,9 +251,11 @@ void Move()
 
 void publishData()
 {
-    debug_motor_msg.linear.x = shooter_rpm;
-    debug_motor_msg.linear.y = shooter_rpm;
-    debug_motor_msg.linear.z = lift_rpm;
+    debug_motor_msg.linear.x = shooter_msg.linear.x;
+    debug_motor_msg.linear.y = shooter_msg.linear.y;
+    debug_motor_msg.linear.z = shooter_msg.linear.z;
+    // debug_motor_msg.angular.x = shooter_msg.angular.x;
+
 
     struct timespec time_stamp = getTime();
     rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);

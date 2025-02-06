@@ -50,14 +50,28 @@ class Cmd_vel_to_motor_speed(Node):
         self.motor2Speed : float = 0
         self.motor3Speed : float = 0
         self.motor4Speed : float = 0
+
+        self.motorshooter1Speed : float = 0
+        self.motorshooter2Speed : float = 0
+        self.motorshooter3Speed : float = 0
+        self.lift : float = 0
+        
  
         
         self.send_robot_speed = self.create_publisher(
             Twist, "shaq/cmd_vel/rpm", qos_profile=qos.qos_profile_system_default
         )
 
+        self.send_shoot_speed = self.create_publisher(
+            Twist, "shaq/shooter/rpm", qos_profile=qos.qos_profile_system_default
+        )
+
         self.create_subscription(
             Twist, 'shaq/cmd_vel', self.cmd_vel, qos_profile=qos.qos_profile_system_default
+        )
+
+        self.create_subscription(
+            Twist, '/shaq/shooter_power', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
 
@@ -76,16 +90,38 @@ class Cmd_vel_to_motor_speed(Node):
         self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + r) / D * self.maxSpeed))
         self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - r) / D * self.maxSpeed))
         
+
+    def cmd_shoot(self, msg):
+
+        CurrentTime = time.time()
+        self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed  
+        self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
+        # self.motorshooter3Speed = max(abs(msg.linear.y - 1) * self.maxSpeed, (msg.linear.z * self.maxSpeed) / 2)
+        self.motorshooter3Speed = (msg.linear.z * self.maxSpeed)/2
+        # self.motorshooter3Speed = abs(msg.linear.y - 1) * self.maxSpeed
+
+
+        # self.lift = (msg.linear.z * self.maxSpeed)/2
+
             
     def sendData(self):
         motorspeed_msg = Twist()
+        motorshooter_msg = Twist()
        
         motorspeed_msg.linear.x = float(self.motor1Speed)
         motorspeed_msg.linear.y = float(self.motor2Speed)
         motorspeed_msg.angular.x = float(self.motor3Speed)
         motorspeed_msg.angular.y = float(self.motor4Speed)
 
+        motorshooter_msg.linear.x = float(self.motorshooter1Speed)
+        motorshooter_msg.linear.y = float(self.motorshooter2Speed)
+        motorshooter_msg.linear.z = float(self.motorshooter3Speed)
+        # motorshooter_msg.angular.x = float(self.lift)
+
+
+        self.send_shoot_speed.publish(motorshooter_msg)
         self.send_robot_speed.publish(motorspeed_msg)
+
 
 
 def main():

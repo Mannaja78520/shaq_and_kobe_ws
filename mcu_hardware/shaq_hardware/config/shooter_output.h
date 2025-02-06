@@ -6,7 +6,7 @@
 #define PWM_BITS 10
 
 
-#define MOTOR1_INV true
+#define MOTOR1_INV false
 #define MOTOR2_INV false
 #define MOTOR3_INV false
 
@@ -16,19 +16,19 @@
 #define MOTOR3_BREAK true
 
 
-#define MOTOR1_PWM 32
-#define MOTOR1_IN_A 33
-#define MOTOR1_IN_B 25
+#define MOTORSHOOTER1_PWM 0
+#define MOTORSHOOTER1_IN_A 1
+#define MOTORSHOOTER1_IN_B 2
 
 
-#define MOTOR2_PWM 19
-#define MOTOR2_IN_A 18 
-#define MOTOR2_IN_B 5
+#define MOTORSHOOTER2_PWM 3
+#define MOTORSHOOTER2_IN_A 4 
+#define MOTORSHOOTER2_IN_B 5
 
 
-#define MOTOR3_PWM 19
-#define MOTOR3_IN_A 18
-#define MOTOR3_IN_B 5
+#define MOTORLIFT_PWM 6
+#define MOTORLIFT_IN_A 7
+#define MOTORLIFT_IN_B 8
 
 
 #endif

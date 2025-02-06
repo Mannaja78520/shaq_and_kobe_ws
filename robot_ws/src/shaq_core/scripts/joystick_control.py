@@ -15,9 +15,10 @@ class Gamepad:
         self.rx : float = 0.0
         self.ry : float = 0.0
         self.rt : float = 0.0
+        self.buttonx : float = 0.0
         
         # self.dpadLeftRight : float = 0.0
-        # self.dpadUpDown : float = 0.0
+        self.dpadUpDown : float = 0.0
 
 
 class Joystick(Node):
@@ -46,9 +47,13 @@ class Joystick(Node):
         self.gamepad.ly = float(msg.axes[1])
         self.gamepad.rx = float(msg.axes[3] * -1)
         self.gamepad.ry = float(msg.axes[4])
+
+        self.gamepad.buttonx = float(msg.buttons[0])
         
         self.gamepad.lt = float((msg.axes[2] + 1)/ 2)
         self.gamepad.rt = float((msg.axes[5] + 1) / 2)
+
+        self.gamepad.dpadUpDown = float(msg.axes[7])
 
 
     def sendData(self):
@@ -61,6 +66,9 @@ class Joystick(Node):
         
         cmd_shooter_power.linear.x = float(self.gamepad.lt * self.maxspeed)
         cmd_shooter_power.linear.y = float(self.gamepad.rt * self.maxspeed)
+        cmd_shooter_power.linear.z = float(self.gamepad.dpadUpDown)
+        cmd_shooter_power.angular.x = float(self.gamepad.buttonx)
+        
         self.pub_cmd.publish(cmd_vel_msg)
         self.pub_shooter.publish(cmd_shooter_power)
 

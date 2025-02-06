@@ -36,7 +36,7 @@ def generate_launch_description():
     cmd_vel_to_motor_speed = Node(
         package="shaq_core",
         executable="cmd_vel_to_motor_speed.py",
-        name="Test_sub_cmd_vel_Node",
+        name="CMD_VEL_TO_RPM",
         output="screen",
         namespace="",
         parameters=[motor_config],
