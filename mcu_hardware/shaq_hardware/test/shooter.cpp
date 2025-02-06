@@ -238,6 +238,7 @@ void Move()
     float motor1Speed = shooter_msg.linear.x;
     float motor2Speed = shooter_msg.linear.y;
     float motor3Speed = shooter_msg.linear.z;
+    
     // float motor3Speed = shooter_msg.angular.x;
 
     motorshooter1.spin(motor1Speed);
