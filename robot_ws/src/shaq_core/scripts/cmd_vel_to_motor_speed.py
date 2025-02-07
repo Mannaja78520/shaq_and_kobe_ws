@@ -94,10 +94,19 @@ class Cmd_vel_to_motor_speed(Node):
     def cmd_shoot(self, msg):
 
         CurrentTime = time.time()
-        self.motorshooter1Speed = (abs(msg.linear.x - 1) * self.maxSpeed - 150) if (abs(msg.linear.x - 1) * self.maxSpeed > 500.0) else abs(msg.linear.x - 1) * self.maxSpeed
-        self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed  
-        self.motorshooter3Speed = (msg.linear.z * self.maxSpeed)/2
+        self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed  
+        self.motorshooter2Speed = (abs(msg.linear.x - 1) * self.maxSpeed - 100) if (abs(msg.linear.x - 1) * self.maxSpeed > 500.0) else abs(msg.linear.x - 1) * self.maxSpeed
+        # self.motorshooter3Speed = (msg.linear.z * self.maxSpeed)/2
+    
+        if msg.linear.z == 1:
+            self.motorshooter3Speed = msg.linear.z * self.maxSpeed
+        elif msg.linear.z == -1:
+            self.motorshooter3Speed = (msg.linear.z * self.maxSpeed) / 2
+        else:
+            self.motorshooter3Speed = 0
+
         
+
         # self.motorshooter3Speed = max(abs(msg.linear.y - 1) * self.maxSpeed, (msg.linear.z * self.maxSpeed) / 2)
         # self.motorshooter3Speed = abs(msg.linear.y - 1) * self.maxSpeed
 

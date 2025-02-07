@@ -64,8 +64,8 @@ class Joystick(Node):
         cmd_vel_msg.linear.y = float(self.gamepad.ly * self.maxspeed)
         cmd_vel_msg.angular.z = float(self.gamepad.rx * self.maxspeed)
         
-        cmd_shooter_power.linear.x = float(self.gamepad.lt * self.maxspeed)
-        cmd_shooter_power.linear.y = float(self.gamepad.rt * self.maxspeed)
+        cmd_shooter_power.linear.x = float(self.gamepad.rt * self.maxspeed)
+        # cmd_shooter_power.linear.y = float(self.gamepad.rt * self.maxspeed)
         cmd_shooter_power.linear.z = float(self.gamepad.dpadUpDown)
         cmd_shooter_power.angular.x = float(self.gamepad.buttonx)
         
