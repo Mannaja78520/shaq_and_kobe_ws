@@ -19,24 +19,18 @@ void setup() {
   potValue = 0;
   ESC1.write(0);
   ESC2.write(0);
-
-  ESC1.writeMicroseconds(1940);
-  ESC2.writeMicroseconds(1940);
-  delay(100);
-
-  ESC1.write(0);
-  ESC2.write(0);
-
   delay(3000);
 
-  
+  ESC1.writeMicroseconds(1940);
+  ESC2.writeMicroseconds(1940);
+  delay(5000);
 
   ESC1.writeMicroseconds(1940);
   ESC2.writeMicroseconds(1940);
-  delay(100);
+  // delay(100);
 
-  ESC1.write(0);
-  ESC2.write(0);
+  // ESC1.write(0);
+  // ESC2.write(0);
 
 
 }

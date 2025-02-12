@@ -19,7 +19,7 @@ def generate_launch_description():
     joy = Node(
         package="joy",
         executable="joy_node",
-        name="joy_node",
+        name="Joy_Node",
         # output="screen",
         namespace="",
         # arguments=["--dev", "/dev/input/js0"],  # replace with your joystick device path
@@ -36,8 +36,8 @@ def generate_launch_description():
     cmd_vel_to_motor_speed = Node(
         package="shaq_core",
         executable="cmd_vel_to_motor_speed.py",
-        name="CMD_VEL_TO_RPM",
-        output="screen",
+        name="Cmd_Vel_To_Rpm",
+        # output="screen",
         namespace="",
         parameters=[motor_config],
     )
