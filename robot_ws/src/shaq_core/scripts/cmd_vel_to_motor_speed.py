@@ -54,7 +54,9 @@ class Cmd_vel_to_motor_speed(Node):
         self.motorshooter1Speed : float = 0
         self.motorshooter2Speed : float = 0
         self.motorshooter3Speed : float = 0
-        self.lift : float = 0
+        
+        
+        self.macro_active = False
         
  
         
@@ -73,6 +75,10 @@ class Cmd_vel_to_motor_speed(Node):
         self.create_subscription(
             Twist, '/shaq/shooter_power', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
         )
+        
+        self.create_subscription(
+            Twist, '/shaq/cmd_vel/macro', self.cmd_macro, qos_profile=qos.qos_profile_sensor_data # 10
+        )
 
 
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
@@ -80,8 +86,8 @@ class Cmd_vel_to_motor_speed(Node):
     def cmd_vel(self, msg):
 
         CurrentTime = time.time()
-        self.moveSpeed = msg.linear.y  #swap
-        self.slideSpeed = msg.linear.x  #swap
+        self.moveSpeed = msg.linear.y  
+        self.slideSpeed = msg.linear.x  
         r = self.turnSpeed = msg.angular.z 
                 
         D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(r), 1.0)
@@ -92,28 +98,21 @@ class Cmd_vel_to_motor_speed(Node):
         
 
     def cmd_shoot(self, msg):
+        if not self.macro_active:  # Only update if macro is inactive
+            self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed
+            self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
+            self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
 
-        CurrentTime = time.time()
-        self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed  
-        self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
-        # self.motorshooter2Speed = (abs(msg.linear.x - 1) * self.maxSpeed - 100) if (abs(msg.linear.x - 1) * self.maxSpeed > 500.0) else abs(msg.linear.x - 1) * self.maxSpeed
-        self.motorshooter3Speed = (msg.linear.z * self.maxSpeed)
-    
-        # if msg.linear.z == 1:
-        #     self.motorshooter3Speed = msg.linear.z * self.maxSpeed
-        # elif msg.linear.z == -1:
-        #     self.motorshooter3Speed = (msg.linear.z * self.maxSpeed) / 2
-        # else:
-        #     self.motorshooter3Speed = 0
-
-        
-
-        # self.motorshooter3Speed = max(abs(msg.linear.y - 1) * self.maxSpeed, (msg.linear.z * self.maxSpeed) / 2)
-        # self.motorshooter3Speed = abs(msg.linear.y - 1) * self.maxSpeed
-
-
-        # self.lift = (msg.linear.z * self.maxSpeed)/2
-
+    def cmd_macro(self, msg):
+        if msg.linear.x == 1 :
+            
+            self.macro_active = True
+            self.motorshooter1Speed = 1023.0
+            self.motorshooter2Speed = -600.0
+         
+        else:
+            self.macro_active = False
+         
             
     def sendData(self):
         motorspeed_msg = Twist()
@@ -127,7 +126,6 @@ class Cmd_vel_to_motor_speed(Node):
         motorshooter_msg.linear.x = float(self.motorshooter1Speed)
         motorshooter_msg.linear.y = float(self.motorshooter2Speed)
         motorshooter_msg.linear.z = float(self.motorshooter3Speed)
-        # motorshooter_msg.angular.x = float(self.lift)
 
 
         self.send_shoot_speed.publish(motorshooter_msg)
