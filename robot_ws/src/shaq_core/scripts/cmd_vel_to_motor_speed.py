@@ -101,14 +101,22 @@ class Cmd_vel_to_motor_speed(Node):
         if not self.macro_active:  # Only update if macro is inactive
             self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed
             self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
-            self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
+        
+        self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
+        self.motorshooter3Speed += msg.angular.x * self.maxSpeed
+
+        if self.motorshooter3Speed >= 1023.0:
+            self.motorshooter3Speed = 1023.0
+
+        
+
 
     def cmd_macro(self, msg):
         if msg.linear.x == 1 :
             
             self.macro_active = True
-            self.motorshooter1Speed = 1023.0
-            self.motorshooter2Speed = -600.0
+            self.motorshooter1Speed = 500.0     #Upper
+            self.motorshooter2Speed = 800.0     #Lower
          
         else:
             self.macro_active = False
