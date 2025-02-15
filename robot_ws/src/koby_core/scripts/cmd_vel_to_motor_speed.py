@@ -30,7 +30,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.moveSpeed: float = 0.0
         self.turnSpeed: float = 0.0
 
-        self.maxSpeed : float = 2000.0
+        self.maxSpeed : float = 1023.0
         self.motor1Speed : float = 0
         self.motor2Speed : float = 0
         
@@ -87,6 +87,7 @@ class Cmd_vel_to_motor_speed(Node):
         # Map motor speed [-1.0, 1.0] to PWM range [1000, 2000]
         pwm = 1500 + int(speed * 500)  # Center at 1500ms, range from 1000ms to 2000ms
         return pwm    
+
 
     def cmd_shoot(self, msg):
         if not self.macro_active:  # Only update if macro is inactive
