@@ -13,19 +13,6 @@ import time
 
 class Cmd_vel_to_motor_speed(Node):
 
-
-    moveSpeed: float = 0.0
-    slideSpeed: float = 0.0
-    turnSpeed: float = 0.0
-
-    maxSpeed : int = 1023.0/2 # pwm
-    max_linear_speed = 2.0  # m/s max
-    motor1Speed : float = 0
-    motor2Speed : float = 0
-    motor3Speed : float = 0
-    motor4Speed : float = 0
-
-
     def __init__(self):
         super().__init__("Cmd_vel_to_motor_speed")
         
@@ -41,15 +28,14 @@ class Cmd_vel_to_motor_speed(Node):
 
         
         self.moveSpeed: float = 0.0
-        self.slideSpeed: float = 0.0
         self.turnSpeed: float = 0.0
 
-        self.maxSpeed : int = 1023.0 # pwm
-        self.max_linear_speed = 3.0  # m/s max
+        self.maxSpeed : float = 2000.0
         self.motor1Speed : float = 0
         self.motor2Speed : float = 0
-        self.motor3Speed : float = 0
-        self.motor4Speed : float = 0
+        
+        self.trackWidth : float = 2.0
+        
 
         self.motorshooter1Speed : float = 0
         self.motorshooter2Speed : float = 0
@@ -69,7 +55,7 @@ class Cmd_vel_to_motor_speed(Node):
         )
 
         self.create_subscription(
-            Twist, '/kobe/cmd_move', self.cmd_vel, qos_profile=qos.qos_profile_system_default
+            Twist, '/kobe/cmd_move', self.cmd_move, qos_profile=qos.qos_profile_system_default
         )
 
         self.create_subscription(
@@ -83,19 +69,24 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
         
-    def cmd_vel(self, msg):
+    def cmd_move(self, msg):
 
-        CurrentTime = time.time()
-        self.moveSpeed = msg.linear.y  
-        self.slideSpeed = msg.linear.x  
-        r = self.turnSpeed = msg.angular.z 
-                
-        D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(r), 1.0)
-        self.motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + r) / D * self.maxSpeed))
-        self.motor2Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - r) / D * self.maxSpeed))
-        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + r) / D * self.maxSpeed))
-        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - r) / D * self.maxSpeed))
+        self.moveSpeed = msg.linear.x
+        self.turnSpeed = msg.angular.x
+
+        self.motor1Speed = self.moveSpeed + self.turnSpeed
+        self.motor2Speed = self.moveSpeed - self.turnSpeed
         
+        self.motor1Speed = max(min(self.motor1Speed, 1.0), -1.0)
+        self.motor2Speed = max(min(self.motor2Speed, 1.0), -1.0)
+        
+        self.motor1Speed = self.map_speed_to_pwm(self.motor1Speed)
+        self.motor2Speed = self.map_speed_to_pwm(self.motor2Speed)
+        
+    def map_speed_to_pwm(self, speed):
+        # Map motor speed [-1.0, 1.0] to PWM range [1000, 2000]
+        pwm = 1500 + int(speed * 500)  # Center at 1500ms, range from 1000ms to 2000ms
+        return pwm    
 
     def cmd_shoot(self, msg):
         if not self.macro_active:  # Only update if macro is inactive
@@ -128,8 +119,7 @@ class Cmd_vel_to_motor_speed(Node):
        
         motorspeed_msg.linear.x = float(self.motor1Speed)
         motorspeed_msg.linear.y = float(self.motor2Speed)
-        motorspeed_msg.angular.x = float(self.motor3Speed)
-        motorspeed_msg.angular.y = float(self.motor4Speed)
+
 
         motorshooter_msg.linear.x = float(self.motorshooter1Speed)
         motorshooter_msg.linear.y = float(self.motorshooter2Speed)
