@@ -39,7 +39,7 @@ def generate_launch_description():
         name="Cmd_Vel_To_Rpm",
         # output="screen",
         namespace="",
-        parameters=[motor_config],
+        # parameters=[motor_config], #Testing
     )
     
     ld.add_action(joy)

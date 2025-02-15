@@ -29,15 +29,15 @@ class Cmd_vel_to_motor_speed(Node):
     def __init__(self):
         super().__init__("Cmd_vel_to_motor_speed")
         
-        # self.declare_parameter("motor1", True)
-        # self.declare_parameter("motor2", True)
-        # self.declare_parameter("motor3", True)
-        # self.declare_parameter("motor4", True)
+        self.declare_parameter("motor1", True)
+        self.declare_parameter("motor2", True)
+        self.declare_parameter("motor3", True)
+        self.declare_parameter("motor4", True)
         
-        # self.motor1_enabled = self.get_parameter("motor1").get_parameter_value().bool_value
-        # self.motor2_enabled = self.get_parameter("motor2").get_parameter_value().bool_value
-        # self.motor3_enabled = self.get_parameter("motor3").get_parameter_value().bool_value
-        # self.motor4_enabled = self.get_parameter("motor4").get_parameter_value().bool_value
+        self.motor1_enabled = self.get_parameter("motor1").get_parameter_value().bool_value
+        self.motor2_enabled = self.get_parameter("motor2").get_parameter_value().bool_value
+        self.motor3_enabled = self.get_parameter("motor3").get_parameter_value().bool_value
+        self.motor4_enabled = self.get_parameter("motor4").get_parameter_value().bool_value
 
         
         self.moveSpeed: float = 0.0

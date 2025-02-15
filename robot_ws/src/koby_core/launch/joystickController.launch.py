@@ -33,17 +33,17 @@ def generate_launch_description():
         namespace="",
     )
     
-    test_sub_control = Node(
+    cmd_vel_to_motor_speed = Node(
         package="koby_core",
-        executable="test_sub_cmd_vel.py",
-        name="Test_sub_cmd_vel_Node",
-        output="screen",
+        executable="cmd_vel_to_motor_speed.py",
+        name="Cmd_Vel_To_Motor_Speed.py",
+        # output="screen",
         namespace="",
-        parameters=[motor_config],
+        # parameters=[motor_config],
     )
     
     ld.add_action(joy)
     ld.add_action(joystick_control)
-    ld.add_action(test_sub_control)
+    ld.add_action(cmd_vel_to_motor_speed)
 
     return ld

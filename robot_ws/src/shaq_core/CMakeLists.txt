@@ -53,10 +53,10 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
 # scripts/helloworld.py
 # scripts/robot_main_state.py
-  scripts/keyboard_control.py
-  scripts/test_sub_cmd_vel.py
+  # scripts/keyboard_control.py
+  # scripts/test_sub_cmd_vel.py
+  # scripts/encoder_graph.py
   scripts/joystick_control.py
-  scripts/encoder_graph.py
   scripts/cmd_vel_to_motor_speed.py
   DESTINATION lib/${PROJECT_NAME}
 )
