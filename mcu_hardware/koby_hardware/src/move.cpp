@@ -10,18 +10,55 @@
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
+#include <std_msgs/msg/string.h>
+#include <std_msgs/msg/bool.h>
+#include <std_msgs/msg/int8.h>
+#include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
+
 #include <motorevo.h>
 #include <motorprik.h>
 
-// Motor definitions for differential drive
-EVODrive left_motor(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
-EVODrive right_motor(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+#define RCCHECK(fn)                  \
+    {                                \
+        rcl_ret_t temp_rc = fn;      \
+        if ((temp_rc != RCL_RET_OK)) \
+        {                            \
+            rclErrorLoop();          \
+        }                            \
+    }
+#define RCSOFTCHECK(fn)              \
+    {                                \
+        rcl_ret_t temp_rc = fn;      \
+        if ((temp_rc != RCL_RET_OK)) \
+        {                            \
+        }                            \
+    }
+#define EXECUTE_EVERY_N_MS(MS, X)          \
+    do                                     \
+    {                                      \
+        static volatile int64_t init = -1; \
+        if (init == -1)                    \
+        {                                  \
+            init = uxr_millis();           \
+        }                                  \
+        if (uxr_millis() - init > MS)      \
+        {                                  \
+            X;                             \
+            init = uxr_millis();           \
+        }                                  \
+    } while (0)
+
+//------------------------------ < Define > -------------------------------------//
 
 rcl_publisher_t debug_motor_publisher;
-rcl_subscription_t cmd_vel_subscriber;
-geometry_msgs__msg__Twist cmd_vel_msg;
+rcl_publisher_t debug_encoder_publisher;
+
+rcl_subscription_t shooter_motor_subscriber;
+geometry_msgs__msg__Twist shooter_msg;
+
 geometry_msgs__msg__Twist debug_motor_msg;
+geometry_msgs__msg__Twist debug_encoder_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -32,6 +69,8 @@ rcl_init_options_t init_options;
 
 unsigned long long time_offset = 0;
 unsigned long prev_cmd_time = 0;
+unsigned long prev_odom_update = 0;
+unsigned long current_time = 0;
 
 enum states
 {
@@ -41,25 +80,25 @@ enum states
     AGENT_DISCONNECTED
 } state;
 
-//------------------------------ < Function Prototypes > ------------------------------//
+
+//------------------------------ < Fuction Prototype > ------------------------------//
+
 void rclErrorLoop();
 void syncTime();
 bool createEntities();
 bool destroyEntities();
 void publishData();
 struct timespec getTime();
-void controlCallback(rcl_timer_t *timer, int64_t last_call_time);
-void cmdVelCallback(const void *msgin);
+
+void Move();
 
 //------------------------------ < Main > -------------------------------------//
 
 void setup()
 {
-    Serial.begin(115200);
-    set_microros_serial_transports(Serial);  // Set up micro-ROS communication
 
-    // Initialize micro-ROS
-    state = WAITING_AGENT;
+    Serial.begin(115200);
+    set_microros_serial_transports(Serial);
 }
 
 void loop()
@@ -84,8 +123,7 @@ void loop()
         }
         break;
     case AGENT_DISCONNECTED:
-        left_motor.spin(0);
-        right_motor.spin(0);
+        //Dont Forget Here!!
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -94,34 +132,26 @@ void loop()
     }
 }
 
-//------------------------------ < Function Definitions > ------------------------------//
+//------------------------------ < Fuction > -------------------------------------//
+
 
 void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
 {
     RCLC_UNUSED(last_call_time);
     if (timer != NULL)
     {
-        // Differential drive control based on cmd_vel message
-        float linear_x = cmd_vel_msg.linear.x;   // Forward/backward speed
-        float angular_z = cmd_vel_msg.angular.z; // Rotation speed
-
-        // Calculate wheel speeds for differential drive
-        float left_speed = linear_x - angular_z;
-        float right_speed = linear_x + angular_z;
-
-        // Set motor speeds
-        left_motor.spin(left_speed);
-        right_motor.spin(right_speed);
-
-        // Publish motor control data for debugging
+        Move();
         publishData();
     }
 }
 
-void cmdVelCallback(const void *msgin)
+void twistCallback(const void *msgin)
 {
-    const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
-    cmd_vel_msg = *msg;
+    prev_cmd_time = millis();
+}
+
+void twist2Callback(const void *msgin)
+{
     prev_cmd_time = millis();
 }
 
@@ -135,47 +165,40 @@ bool createEntities()
 
     rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
 
-    // Create micro-ROS node
-    RCCHECK(rclc_node_init_default(&node, "differential_drive_node", "", &support));
+    // create node
+    RCCHECK(rclc_node_init_default(&node, "int32_publisher_rclc", "", &support));
 
-    // Create a publisher for debugging
     RCCHECK(rclc_publisher_init_best_effort(
         &debug_motor_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "debug/motor/velocity"));
+        "debug/motor/shooter"));
 
-    // Create a subscriber to receive cmd_vel messages for controlling the robot
     RCCHECK(rclc_subscription_init_default(
-        &cmd_vel_subscriber,
+        &shooter_motor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "cmd_vel"));
+        "shaq/shooter/rpm"));
 
-    // Create a timer for controlling motors at 50 Hz
+    // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
     RCCHECK(rclc_timer_init_default(
         &control_timer,
         &support,
         RCL_MS_TO_NS(control_timeout),
         controlCallback));
-
-    // Create an executor for handling subscriptions and timers
     executor = rclc_executor_get_zero_initialized_executor();
     RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
 
-    // Add the cmd_vel subscription to the executor
     RCCHECK(rclc_executor_add_subscription(
         &executor,
-        &cmd_vel_subscriber,
-        &cmd_vel_msg,
-        &cmdVelCallback,
+        &shooter_motor_subscriber,
+        &shooter_msg,
+        &twistCallback,
         ON_NEW_DATA));
-
-    // Add the control timer to the executor
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
 
-    // Synchronize time with the ROS2 agent
+    // synchronize time with the agent
     syncTime();
 
     return true;
@@ -186,8 +209,8 @@ bool destroyEntities()
     rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
-    rcl_subscription_fini(&cmd_vel_subscriber, &node);
-    rcl_publisher_fini(&debug_motor_publisher, &node);
+    // rcl_publisher_fini(&debug_motor_publisher, &node);
+    rcl_subscription_fini(&shooter_motor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rclc_executor_fini(&executor);
@@ -196,10 +219,30 @@ bool destroyEntities()
     return true;
 }
 
+void Move()
+{
+
+    
+
+    float motor1Speed = shooter_msg.linear.x;
+    float motor2Speed = shooter_msg.linear.y;
+    float motor3Speed = shooter_msg.linear.z;
+    
+    // float motor3Speed = shooter_msg.angular.x;
+
+
+
+}
+
+
+
 void publishData()
 {
-    debug_motor_msg.linear.x = cmd_vel_msg.linear.x;
-    debug_motor_msg.angular.z = cmd_vel_msg.angular.z;
+    debug_motor_msg.linear.x = shooter_msg.linear.x;
+    debug_motor_msg.linear.y = shooter_msg.linear.y;
+    debug_motor_msg.linear.z = shooter_msg.linear.z;
+    // debug_motor_msg.angular.x = shooter_msg.angular.x;
+
 
     struct timespec time_stamp = getTime();
     rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
@@ -207,19 +250,23 @@ void publishData()
 
 void syncTime()
 {
-    // Synchronize time with the ROS2 agent
+    // get the current time from the agent
     unsigned long now = millis();
     RCCHECK(rmw_uros_sync_session(10));
     unsigned long long ros_time_ms = rmw_uros_epoch_millis();
+    // now we can find the difference between ROS time and uC time
     time_offset = ros_time_ms - now;
 }
 
 struct timespec getTime()
 {
     struct timespec tp = {0};
+    // add time difference between uC time and ROS time to
+    // synchronize time with ROS
     unsigned long long now = millis() + time_offset;
     tp.tv_sec = now / 1000;
     tp.tv_nsec = (now % 1000) * 1000000;
+
     return tp;
 }
 
@@ -230,3 +277,11 @@ void rclErrorLoop()
     }
 }
 
+void flashLED(int n_times)
+{
+    for (int i = 0; i < n_times; i++)
+    {
+
+    }
+    delay(1000);
+}

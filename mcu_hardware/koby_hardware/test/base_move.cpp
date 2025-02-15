@@ -14,9 +14,7 @@
 #include <motorevo.h>
 #include <motorprik.h>
 
-// Motor definitions for differential drive
-EVODrive left_motor(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
-EVODrive right_motor(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+
 
 rcl_publisher_t debug_motor_publisher;
 rcl_subscription_t cmd_vel_subscriber;
