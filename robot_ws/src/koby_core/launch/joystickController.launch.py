@@ -36,7 +36,7 @@ def generate_launch_description():
     cmd_vel_to_motor_speed = Node(
         package="koby_core",
         executable="cmd_vel_to_motor_speed.py",
-        name="Cmd_Vel_To_Motor_Speed.py",
+        name="Cmd_Vel_To_Rpm",
         # output="screen",
         namespace="",
         # parameters=[motor_config],
