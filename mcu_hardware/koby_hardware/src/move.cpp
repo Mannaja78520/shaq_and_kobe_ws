@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
+#include <Servo.h>
 
 #include <micro_ros_platformio.h>
 #include <stdio.h>
@@ -16,8 +17,8 @@
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
 
-#include <motorevo.h>
-#include <motorprik.h>
+Servo ESC1;
+Servo ESC2;
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -54,8 +55,8 @@
 rcl_publisher_t debug_motor_publisher;
 rcl_publisher_t debug_encoder_publisher;
 
-rcl_subscription_t shooter_motor_subscriber;
-geometry_msgs__msg__Twist shooter_msg;
+rcl_subscription_t move_motor_subscriber;
+geometry_msgs__msg__Twist move_msg;
 
 geometry_msgs__msg__Twist debug_motor_msg;
 geometry_msgs__msg__Twist debug_encoder_msg;
@@ -96,7 +97,8 @@ void Move();
 
 void setup()
 {
-
+    ESC1.attach(8,1000,2000);
+    ESC2.attach(9,1000,2000);
     Serial.begin(115200);
     set_microros_serial_transports(Serial);
 }
@@ -124,6 +126,8 @@ void loop()
         break;
     case AGENT_DISCONNECTED:
         //Dont Forget Here!!
+        ESC1.writeMicroseconds(1500);
+        ESC2.writeMicroseconds(1500);
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -172,13 +176,13 @@ bool createEntities()
         &debug_motor_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "debug/motor/shooter"));
+        "debug/motor/move"));
 
     RCCHECK(rclc_subscription_init_default(
-        &shooter_motor_subscriber,
+        &move_motor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "shaq/shooter/rpm"));
+        "kobe/cmd_move/rpm"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -192,8 +196,8 @@ bool createEntities()
 
     RCCHECK(rclc_executor_add_subscription(
         &executor,
-        &shooter_motor_subscriber,
-        &shooter_msg,
+        &move_motor_subscriber,
+        &move_msg,
         &twistCallback,
         ON_NEW_DATA));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
@@ -210,7 +214,7 @@ bool destroyEntities()
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
     // rcl_publisher_fini(&debug_motor_publisher, &node);
-    rcl_subscription_fini(&shooter_motor_subscriber, &node);
+    rcl_subscription_fini(&move_motor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rclc_executor_fini(&executor);
@@ -224,12 +228,11 @@ void Move()
 
     
 
-    float motor1Speed = shooter_msg.linear.x;
-    float motor2Speed = shooter_msg.linear.y;
-    float motor3Speed = shooter_msg.linear.z;
-    
-    // float motor3Speed = shooter_msg.angular.x;
+    float motor1Speed = move_msg.linear.x;
+    float motor2Speed = move_msg.linear.y;
 
+    ESC1.writeMicroseconds(motor1Speed);
+    ESC2.writeMicroseconds(motor2Speed);
 
 
 }
@@ -238,10 +241,8 @@ void Move()
 
 void publishData()
 {
-    debug_motor_msg.linear.x = shooter_msg.linear.x;
-    debug_motor_msg.linear.y = shooter_msg.linear.y;
-    debug_motor_msg.linear.z = shooter_msg.linear.z;
-    // debug_motor_msg.angular.x = shooter_msg.angular.x;
+    debug_motor_msg.linear.x = move_msg.linear.x;
+    debug_motor_msg.linear.y = move_msg.linear.y;
 
 
     struct timespec time_stamp = getTime();
