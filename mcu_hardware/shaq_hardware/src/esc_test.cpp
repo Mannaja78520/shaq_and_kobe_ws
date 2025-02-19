@@ -24,26 +24,26 @@ void setup() {
   delay(3000);
 
 
-  ESC1.writeMicroseconds(1600);
+
+  ESC1.writeMicroseconds(1000);
+  ESC2.writeMicroseconds(2000);
+  delay(450);
 
 
-  // ESC1.writeMicroseconds(1000);
-  // ESC2.writeMicroseconds(2000);
-  // delay(500);
+  ESC1.writeMicroseconds(1500);
+  ESC2.writeMicroseconds(1500);
+  delay(100);
 
 
-  // ESC1.writeMicroseconds(1500);
-  // ESC2.writeMicroseconds(1500);
-  // delay(100);
+  ESC1.writeMicroseconds(1800); 
+  ESC2.writeMicroseconds(1200);
+  delay(300);
 
 
-  // ESC1.writeMicroseconds(2000); 
-  // ESC2.writeMicroseconds(1000);
-  // delay(500);
+  ESC1.writeMicroseconds(1500);
+  ESC2.writeMicroseconds(1500);
 
   
-  // ESC1.writeMicroseconds(1500);
-  // ESC2.writeMicroseconds(1500);
   
 
 

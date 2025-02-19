@@ -69,6 +69,10 @@ class Joystick(Node):
             Joy, '/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
+        self.pub_nadeem = self.create_publisher(
+            Twist, "/kobe/cmd_nadeem", qos_profile=qos.qos_profile_system_default
+        )
+
         self.gamepad = Gamepad()
         self.maxspeed : float = 1.0
         
@@ -118,6 +122,7 @@ class Joystick(Node):
         cmd_vel_move = Twist()
         cmd_vel_shoot = Twist()
         cmd_vel_macro = Twist()
+        cmd_vel_nadeem = Twist()
 
         cmd_vel_move.linear.x = float(self.gamepad.ly * self.maxspeed)
         cmd_vel_move.angular.x = float(self.gamepad.rx * self.maxspeed)
@@ -126,6 +131,10 @@ class Joystick(Node):
         cmd_vel_shoot.linear.y = float(self.gamepad.r2 * self.maxspeed)
         cmd_vel_shoot.linear.z = float(self.gamepad.l2 * self.maxspeed)
         cmd_vel_shoot.angular.x = float(self.gamepad.dpadUpDown * self.maxspeed)
+
+        cmd_vel_nadeem.linear.x = float(self.gamepad.r2 * self.maxspeed)
+
+        
         
         
         
@@ -138,6 +147,7 @@ class Joystick(Node):
         self.pub_macro.publish(cmd_vel_macro)
         self.pub_move.publish(cmd_vel_move)
         self.pub_shoot.publish(cmd_vel_shoot)
+        self.pub_nadeem.publish(cmd_vel_nadeem)
 
 def main():
     rclpy.init()

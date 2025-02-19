@@ -4,7 +4,7 @@ from pynput import keyboard
 import threading
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Int16MultiArray
 from geometry_msgs.msg import Twist
 from rclpy import qos
 from src.utilize import * 
@@ -40,6 +40,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.motorshooter1Speed : float = 0
         self.motorshooter2Speed : float = 0
         self.motorshooter3Speed : float = 0
+
+        self.motornadeem : float = 0
         
         
         self.macro_active = False
@@ -54,6 +56,10 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, "/kobe/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
         )
 
+        self.send_nadeem_speed = self.create_publisher(
+            Twist, "/kobe/cmd_nadeem/rpm", qos_profile=qos.qos_profile_system_default
+        )
+
         self.create_subscription(
             Twist, '/kobe/cmd_move', self.cmd_move, qos_profile=qos.qos_profile_system_default
         )
@@ -64,6 +70,9 @@ class Cmd_vel_to_motor_speed(Node):
         
         self.create_subscription(
             Twist, '/kobe/cmd_macro', self.cmd_macro, qos_profile=qos.qos_profile_sensor_data # 10
+        )
+        self.create_subscription(
+            Twist, '/kobe/cmd_nadeem', self.cmd_nadeem, qos_profile=qos.qos_profile_sensor_data #10
         )
 
 
@@ -85,7 +94,7 @@ class Cmd_vel_to_motor_speed(Node):
         
     def map_speed_to_pwm(self, speed):
         # Map motor speed [-1.0, 1.0] to PWM range [1000, 2000]
-        pwm = 1500 + int(speed * 500)  # Center at 1500ms, range from 1000ms to 2000ms
+        pwm = int(speed * self.maxSpeed)  # Center at 1500ms, range from 1000ms to 2000ms
         return pwm    
 
 
@@ -100,8 +109,10 @@ class Cmd_vel_to_motor_speed(Node):
         if self.motorshooter3Speed >= 1023.0:
             self.motorshooter3Speed = 1023.0
 
-        
-
+    def cmd_nadeem(self, msg):
+        if not self.macro_active:  # Only update if macro is inactive
+            self.motornadeem = abs(msg.linear.x - 1) * self.maxSpeed
+            
 
     def cmd_macro(self, msg):
         if msg.linear.x == 1 :
@@ -117,6 +128,11 @@ class Cmd_vel_to_motor_speed(Node):
     def sendData(self):
         motorspeed_msg = Twist()
         motorshooter_msg = Twist()
+        motornadeem_msg = Twist()
+
+        servo_pos = Int16MultiArray()
+        servo_pos.data[0] = 100
+
        
         motorspeed_msg.linear.x = float(self.motor1Speed)
         motorspeed_msg.linear.y = float(self.motor2Speed)
@@ -126,9 +142,12 @@ class Cmd_vel_to_motor_speed(Node):
         motorshooter_msg.linear.y = float(self.motorshooter2Speed)
         motorshooter_msg.linear.z = float(self.motorshooter3Speed)
 
+        motornadeem_msg.linear.x = float(self.motornadeem)
+
 
         self.send_shoot_speed.publish(motorshooter_msg)
         self.send_robot_speed.publish(motorspeed_msg)
+        self.send_nadeem_speed.publish(motornadeem_msg)
 
 
 
