@@ -192,7 +192,7 @@ bool createEntities()
         &move_motor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "kobe/cmd_move/rpm"));
+        "/kobe/cmd_move/rpm"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;

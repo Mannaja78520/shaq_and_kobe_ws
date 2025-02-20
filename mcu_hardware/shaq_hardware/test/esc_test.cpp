@@ -1,5 +1,4 @@
 #include <Arduino.h>
-<<<<<<< HEAD
 #include <stdio.h>
 
 #include <Servo.h>

@@ -18,8 +18,8 @@ class Cmd_vel_to_motor_speed(Node):
     slideSpeed: float = 0.0
     turnSpeed: float = 0.0
 
-    maxSpeed : int = 1023.0/2 # pwm
-    max_linear_speed = 2.0  # m/s max
+    # maxSpeed : int = 1023.0/2 # pwm
+    # max_linear_speed = 2.0  # m/s max
     motor1Speed : float = 0
     motor2Speed : float = 0
     motor3Speed : float = 0

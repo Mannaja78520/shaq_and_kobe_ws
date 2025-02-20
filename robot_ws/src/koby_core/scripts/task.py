@@ -140,6 +140,9 @@ class Cmd_vel_to_motor_speed(Node):
         motorshooter_msg = Twist()
         motornadeem_msg = Twist()
 
+        servo_pos = Int16MultiArray()
+        servo_pos.data[0] = 100
+
        
         motorspeed_msg.linear.x = float(self.motor1Speed)
         motorspeed_msg.linear.y = float(self.motor2Speed)
