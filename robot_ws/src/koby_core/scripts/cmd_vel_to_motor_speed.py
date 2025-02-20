@@ -4,7 +4,7 @@ from pynput import keyboard
 import threading
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String, Int16MultiArray
+from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 from rclpy import qos
 from src.utilize import * 
@@ -30,9 +30,12 @@ class Cmd_vel_to_motor_speed(Node):
         self.moveSpeed: float = 0.0
         self.turnSpeed: float = 0.0
 
+
         self.maxSpeed : float = 1023.0
         self.motor1Speed : float = 0
         self.motor2Speed : float = 0
+        self.motor3Speed : float = 0
+        self.motor4Speed : float = 0
         
         self.trackWidth : float = 2.0
         
@@ -45,6 +48,7 @@ class Cmd_vel_to_motor_speed(Node):
         
         
         self.macro_active = False
+
         
  
         
@@ -63,7 +67,6 @@ class Cmd_vel_to_motor_speed(Node):
         self.create_subscription(
             Twist, '/kobe/cmd_move', self.cmd_move, qos_profile=qos.qos_profile_system_default
         )
-
         self.create_subscription(
             Twist, '/kobe/cmd_shoot', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
         )
@@ -80,21 +83,20 @@ class Cmd_vel_to_motor_speed(Node):
         
     def cmd_move(self, msg):
 
-        self.moveSpeed = msg.linear.x
-        self.turnSpeed = msg.angular.x
-
-        self.motor1Speed = self.moveSpeed + self.turnSpeed
-        self.motor2Speed = self.moveSpeed - self.turnSpeed
+        CurrentTime = time.time()
+        self.moveSpeed = msg.linear.y  
+        self.slideSpeed = msg.linear.x  
+                
+        D = max(abs(self.moveSpeed)+abs(self.slideSpeed), 1.0)
+        self.motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed ) / D * self.maxSpeed))
+        self.motor2Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed ) / D * self.maxSpeed))
+        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed ) / D * self.maxSpeed))
+        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed ) / D * self.maxSpeed))
         
-        self.motor1Speed = max(min(self.motor1Speed, 1.0), -1.0)
-        self.motor2Speed = max(min(self.motor2Speed, 1.0), -1.0)
-        
-        self.motor1Speed = self.map_speed_to_pwm(self.motor1Speed)
-        self.motor2Speed = self.map_speed_to_pwm(self.motor2Speed)
         
     def map_speed_to_pwm(self, speed):
         # Map motor speed [-1.0, 1.0] to PWM range [1000, 2000]
-        pwm = int(speed * self.maxSpeed)  # Center at 1500ms, range from 1000ms to 2000ms
+        pwm = 1500 + int(speed * 500)  # Center at 1500ms, range from 1000ms to 2000ms
         return pwm    
 
 
@@ -130,12 +132,10 @@ class Cmd_vel_to_motor_speed(Node):
         motorshooter_msg = Twist()
         motornadeem_msg = Twist()
 
-        servo_pos = Int16MultiArray()
-        servo_pos.data[0] = 100
-
-       
         motorspeed_msg.linear.x = float(self.motor1Speed)
         motorspeed_msg.linear.y = float(self.motor2Speed)
+        motorspeed_msg.angular.x = float(self.motor3Speed)
+        motorspeed_msg.angular.y = float(self.motor4Speed)
 
 
         motorshooter_msg.linear.x = float(self.motorshooter1Speed)
@@ -148,6 +148,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.send_shoot_speed.publish(motorshooter_msg)
         self.send_robot_speed.publish(motorspeed_msg)
         self.send_nadeem_speed.publish(motornadeem_msg)
+        
 
 
 

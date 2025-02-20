@@ -152,7 +152,7 @@ struct timespec getTime()
 
 void imu_pub()
 {
-  bno055.getIMUData(imu_data_msg, imu_mag_msg, imu_pos_angle_msg);
+  bno055.getIMUData(imu_data_msg, imu_mag_msg, imu_pos_angle_msg);:
 
   struct timespec time_stamp = getTime();
   imu_data_msg.header.stamp.sec = time_stamp.tv_sec;
