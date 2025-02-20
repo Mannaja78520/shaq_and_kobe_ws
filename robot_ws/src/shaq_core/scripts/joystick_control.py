@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Int16MultiArray
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Joy
 from rclpy import qos
@@ -64,6 +64,10 @@ class Joystick(Node):
         self.pub_shoot = self.create_publisher(
             Twist, "shaq/shooter_power", qos_profile=qos.qos_profile_system_default
         )
+        
+        self.pub_cmd_koby = self.create_publisher(
+            Int16MultiArray, "shaq/cmd_koby", qos_profile=qos.qos_profile_system_default
+        )
 
         self.create_subscription(
             Joy, '/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
@@ -118,6 +122,7 @@ class Joystick(Node):
         cmd_vel_move = Twist()
         cmd_vel_shoot = Twist()
         cmd_vel_macro = Twist()
+        cmd_koby = Int16MultiArray()
 
         cmd_vel_move.linear.x = float(self.gamepad.lx * self.maxspeed)
         cmd_vel_move.linear.y = float(self.gamepad.ly * self.maxspeed)
@@ -128,17 +133,18 @@ class Joystick(Node):
         cmd_vel_shoot.linear.z = float(self.gamepad.l2 * self.maxspeed)
         cmd_vel_shoot.angular.x = float(self.gamepad.dpadUpDown * self.maxspeed)
         
-        
-        
         if self.gamepad.dribble:
             cmd_vel_macro.linear.x = 1.0
               
         else:
             cmd_vel_macro.linear.x = 0.0  
         
+        cmd_koby.data = [int(self.gamepad.button_logo)]
+        
         self.pub_macro.publish(cmd_vel_macro)
         self.pub_move.publish(cmd_vel_move)
         self.pub_shoot.publish(cmd_vel_shoot)
+        self.pub_cmd_koby.publish(cmd_koby)
 
 def main():
     rclpy.init()

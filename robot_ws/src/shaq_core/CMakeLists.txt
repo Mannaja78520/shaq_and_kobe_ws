@@ -58,6 +58,7 @@ install(PROGRAMS
   # scripts/encoder_graph.py
   scripts/joystick_control.py
   scripts/cmd_vel_to_motor_speed.py
+  scripts/cmd_koby_task.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
