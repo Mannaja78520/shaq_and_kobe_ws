@@ -93,6 +93,24 @@ class Cmd_vel_to_motor_speed(Node):
         self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed ) / D * self.maxSpeed))
         self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed ) / D * self.maxSpeed))
         
+<<<<<<< HEAD
+=======
+        self.motor1Speed = self.motor1Speed * self.maxSpeed
+        self.motor2Speed = self.motor2Speed * self.maxSpeed
+
+        if self.motor1Speed >= 1023.0:
+            self.motor1Speed = 1023.0
+        
+        if self.motor2Speed >= 1023.0:
+            self.motor2Speed = 1023.0
+
+        
+        # self.motor1Speed = max(min(self.motor1Speed, 1.0), -1.0)
+        # self.motor2Speed = max(min(self.motor2Speed, 1.0), -1.0)
+        
+        # self.motor1Speed = self.map_speed_to_pwm(self.motor1Speed)
+        # self.motor2Speed = self.map_speed_to_pwm(self.motor2Speed)
+>>>>>>> af653efcd3dd90c737cfff6178660f582c3bff7c
         
     def map_speed_to_pwm(self, speed):
         # Map motor speed [-1.0, 1.0] to PWM range [1000, 2000]

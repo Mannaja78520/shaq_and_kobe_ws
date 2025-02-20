@@ -1,4 +1,5 @@
 #include <Arduino.h>
+<<<<<<< HEAD
 #include <stdio.h>
 #include <Servo.h>
 
@@ -38,7 +39,12 @@ void loop() {
  
 
 }
+<<<<<<< HEAD
 
+=======
+=======
+#include <Servo.h>
+>>>>>>> af653efcd3dd90c737cfff6178660f582c3bff7c
 
 Servo ESC1;
 Servo ESC2;
@@ -52,6 +58,10 @@ void setup() {
 
   ESC1.writeMicroseconds(1500);
   ESC2.writeMicroseconds(1500);
+<<<<<<< HEAD
+=======
+<<<<<<<< HEAD:mcu_hardware/shaq_hardware/src/esc_test.cpp
+>>>>>>> af653efcd3dd90c737cfff6178660f582c3bff7c
   delay(3000);  
 
   ESC1.writeMicroseconds(1500);
@@ -83,7 +93,11 @@ void setup() {
   ESC2.writeMicroseconds(1500);
 
   
+<<<<<<< HEAD
 
+=======
+========
+>>>>>>> af653efcd3dd90c737cfff6178660f582c3bff7c
   delay(8000);  
 
   // ESC1.writeMicroseconds(1500);
@@ -113,6 +127,10 @@ void setup() {
   
   ESC1.writeMicroseconds(1500);
   ESC2.writeMicroseconds(1500);
+<<<<<<< HEAD
+=======
+>>>>>>>> 0b63dd0 (add dc kobe drive):mcu_hardware/shaq_hardware/test/esc_test.cpp
+>>>>>>> af653efcd3dd90c737cfff6178660f582c3bff7c
   
 
 
@@ -121,4 +139,9 @@ void setup() {
 
 void loop() {
   // No continuous loop logic yet
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 0b63dd0 (add dc kobe drive)
+>>>>>>> af653efcd3dd90c737cfff6178660f582c3bff7c
