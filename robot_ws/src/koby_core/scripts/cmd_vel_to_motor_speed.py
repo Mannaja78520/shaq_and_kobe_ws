@@ -54,6 +54,8 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, "/kobe/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
         )
 
+
+
         self.create_subscription(
             Twist, '/kobe/cmd_move', self.cmd_move, qos_profile=qos.qos_profile_system_default
         )
@@ -94,11 +96,11 @@ class Cmd_vel_to_motor_speed(Node):
             self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed
             self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
         
-        self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
-        self.motorshooter3Speed += msg.angular.x * self.maxSpeed
+            self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
+            self.motorshooter3Speed += msg.angular.x * self.maxSpeed
 
         if self.motorshooter3Speed >= 1023.0:
-            self.motorshooter3Speed = 1023.0
+            self.motorshooter3Speed = 1023.0 
 
         
 

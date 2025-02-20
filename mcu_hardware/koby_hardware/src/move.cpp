@@ -17,8 +17,11 @@
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
 
-Servo ESC1;
-Servo ESC2;
+#include <motorprik.h>
+#include <config.h>
+
+// Servo ESC1;
+// Servo ESC2;
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -73,6 +76,9 @@ unsigned long prev_cmd_time = 0;
 unsigned long prev_odom_update = 0;
 unsigned long current_time = 0;
 
+Motor motor1_controller(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
+Motor motor2_controller(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BRAKE, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+
 enum states
 {
     WAITING_AGENT,
@@ -97,8 +103,8 @@ void Move();
 
 void setup()
 {
-    ESC1.attach(8,1000,2000);
-    ESC2.attach(9,1000,2000);
+    // ESC1.attach(11,1000,2000);
+    // ESC2.attach(12,1000,2000);
     Serial.begin(115200);
     set_microros_serial_transports(Serial);
 }
@@ -126,8 +132,8 @@ void loop()
         break;
     case AGENT_DISCONNECTED:
         //Dont Forget Here!!
-        ESC1.writeMicroseconds(1500);
-        ESC2.writeMicroseconds(1500);
+        // ESC1.writeMicroseconds(1500);
+        // ESC2.writeMicroseconds(1500);
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -230,9 +236,12 @@ void Move()
 
     float motor1Speed = move_msg.linear.x;
     float motor2Speed = move_msg.linear.y;
+    motor1_controller.spin(motor1Speed);
+    motor2_controller.spin(motor2Speed);
+    // ESC1.writeMicroseconds(motor1_controller);
+    // ESC2.writeMicroseconds(motor2_controller);
 
-    ESC1.writeMicroseconds(motor1Speed);
-    ESC2.writeMicroseconds(motor2Speed);
+    
 
 
 }

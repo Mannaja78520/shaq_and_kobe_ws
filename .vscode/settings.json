@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "/home/mannaja/coding/project/shaq_and_koby_ws/firmware/.pio/libdeps/teensy41/micro_ros_platformio/build/dev/src/ament_cmake/ament_cmake_auto",
+    "cmake.sourceDirectory": "/home/aing/shaq_and_koby_ws/robot_ws/src/koby_core",
     "files.associations": {
         "*.ipp": "cpp",
         "*.tcc": "cpp"
