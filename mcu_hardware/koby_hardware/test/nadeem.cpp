@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-#include <Servo.h>
 
 #include <micro_ros_platformio.h>
 #include <stdio.h>
@@ -17,19 +16,10 @@
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
 
+#include <motorevo.h>
 #include <motorprik.h>
-#include <config.h>
-
-// Servo ESC1;
-// Servo ESC2;
-<<<<<<< HEAD
-=======
-
-Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
-Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BRAKE, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
-
-
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
+#include "../config/nadeem_output.h"
+// #include "../config/drive_output_teensy.h"
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -66,8 +56,8 @@ Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BRAKE, MOTOR2_PWM, MOTO
 rcl_publisher_t debug_motor_publisher;
 rcl_publisher_t debug_encoder_publisher;
 
-rcl_subscription_t move_motor_subscriber;
-geometry_msgs__msg__Twist move_msg;
+rcl_subscription_t nadeem_motor_subscriber;
+geometry_msgs__msg__Twist nadeem_msg;
 
 geometry_msgs__msg__Twist debug_motor_msg;
 geometry_msgs__msg__Twist debug_encoder_msg;
@@ -84,9 +74,6 @@ unsigned long prev_cmd_time = 0;
 unsigned long prev_odom_update = 0;
 unsigned long current_time = 0;
 
-Motor motor1_controller(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
-Motor motor2_controller(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BRAKE, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
-
 enum states
 {
     WAITING_AGENT,
@@ -95,6 +82,10 @@ enum states
     AGENT_DISCONNECTED
 } state;
 
+// Move motor
+EVODrive motornadeem(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTORNADEEM_PWM, MOTORNADEEM_IN_A, MOTORNADEEM_IN_B);
+float motorshoot = 0;
+float lift = 0;
 
 //------------------------------ < Fuction Prototype > ------------------------------//
 
@@ -111,13 +102,7 @@ void Move();
 
 void setup()
 {
-<<<<<<< HEAD
-    // ESC1.attach(11,1000,2000);
-    // ESC2.attach(12,1000,2000);
-=======
-    // ESC1.attach(8,1000,2000);
-    // ESC2.attach(9,1000,2000);
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
+
     Serial.begin(115200);
     set_microros_serial_transports(Serial);
 }
@@ -144,14 +129,7 @@ void loop()
         }
         break;
     case AGENT_DISCONNECTED:
-        //Dont Forget Here!!
-        // ESC1.writeMicroseconds(1500);
-        // ESC2.writeMicroseconds(1500);
-<<<<<<< HEAD
-=======
-        motor1.spin(0);
-        motor2.spin(0);
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
+        motornadeem.spin(0);
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -200,13 +178,13 @@ bool createEntities()
         &debug_motor_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "debug/motor/move"));
+        "debug/motor/nadeem"));
 
     RCCHECK(rclc_subscription_init_default(
-        &move_motor_subscriber,
+        &nadeem_motor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/kobe/cmd_move/rpm"));
+        "/kobe/cmd_nadeem/rpm"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -220,8 +198,8 @@ bool createEntities()
 
     RCCHECK(rclc_executor_add_subscription(
         &executor,
-        &move_motor_subscriber,
-        &move_msg,
+        &nadeem_motor_subscriber,
+        &nadeem_msg,
         &twistCallback,
         ON_NEW_DATA));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
@@ -238,7 +216,7 @@ bool destroyEntities()
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
     // rcl_publisher_fini(&debug_motor_publisher, &node);
-    rcl_subscription_fini(&move_motor_subscriber, &node);
+    rcl_subscription_fini(&nadeem_motor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rclc_executor_fini(&executor);
@@ -252,23 +230,10 @@ void Move()
 
     
 
-    float motor1Speed = move_msg.linear.x;
-    float motor2Speed = move_msg.linear.y;
-    motor1_controller.spin(motor1Speed);
-    motor2_controller.spin(motor2Speed);
-    // ESC1.writeMicroseconds(motor1_controller);
-    // ESC2.writeMicroseconds(motor2_controller);
-
-<<<<<<< HEAD
+    float motor1Speed = nadeem_msg.linear.x;
     
-=======
-    // ESC1.writeMicroseconds(motor1Speed);
-    // ESC2.writeMicroseconds(motor2Speed);
 
-    motor1.spin(motor1Speed);
-    motor2.spin(motor2Speed);
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
-
+    motornadeem.spin(motor1Speed);
 
 }
 
@@ -276,8 +241,8 @@ void Move()
 
 void publishData()
 {
-    debug_motor_msg.linear.x = move_msg.linear.x;
-    debug_motor_msg.linear.y = move_msg.linear.y;
+    debug_motor_msg.linear.x = nadeem_msg.linear.x;
+    // debug_motor_msg.angular.x = nadeem_msg.angular.x;
 
 
     struct timespec time_stamp = getTime();

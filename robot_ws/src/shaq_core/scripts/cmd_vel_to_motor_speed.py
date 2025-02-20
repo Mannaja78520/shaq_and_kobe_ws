@@ -18,8 +18,8 @@ class Cmd_vel_to_motor_speed(Node):
     slideSpeed: float = 0.0
     turnSpeed: float = 0.0
 
-    maxSpeed : int = 1023.0/2 # pwm
-    max_linear_speed = 2.0  # m/s max
+    # maxSpeed : int = 1023.0/2 # pwm
+    # max_linear_speed = 2.0  # m/s max
     motor1Speed : float = 0
     motor2Speed : float = 0
     motor3Speed : float = 0
@@ -115,8 +115,8 @@ class Cmd_vel_to_motor_speed(Node):
         if msg.linear.x == 1 :
             
             self.macro_active = True
-            self.motorshooter1Speed = 500.0     #Upper
-            self.motorshooter2Speed = 800.0     #Lower
+            self.motorshooter1Speed = -560.0     #Upper
+            self.motorshooter2Speed = 730.0     #Lower
          
         else:
             self.macro_active = False
