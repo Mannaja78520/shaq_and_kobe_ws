@@ -267,32 +267,32 @@ bool create_entities()
   rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
 
   // create node
-  RCCHECK(rclc_node_init_default(&node, "robot1_microros_node", "", &support));
+  RCCHECK(rclc_node_init_default(&node, "shaq_base_move_node", "", &support));
 
   // create publisher
   RCCHECK(rclc_publisher_init_best_effort(
       &rpm_publisher,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-      "robot1/rpm"));
+      "/shaq/debug/cmd_move/rpm"));
 
   RCCHECK(rclc_publisher_init_best_effort(
       &imu_data_publisher,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-      "robot1/imu/data"));
+      "/shaq/imu/data"));
 
   RCCHECK(rclc_publisher_init_best_effort(
       &imu_mag_publisher,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, MagneticField),
-      "robot1/imu/mag"));
+      "/shaq/imu/mag"));
 
   RCCHECK(rclc_publisher_init_best_effort(
       &imu_pos_angle_publisher,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-      "robot1/imu/pos_angle"));
+      "/shaq/imu/pos_angle"));
 
   // create timer,
   const unsigned int timer_timeout = 20; // in ms (50 Hz)
