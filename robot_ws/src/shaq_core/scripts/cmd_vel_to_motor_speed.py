@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-from pynput import keyboard
+# from pynput import keyboard
 import threading
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
+
 from rclpy import qos
 from src.utilize import * 
 from src.controller import *
@@ -61,32 +62,38 @@ class Cmd_vel_to_motor_speed(Node):
         
         self.macro_active = False
         self.previous_manual_turn = time.time()
+
+        self.controller = Controller()
         
  
         
         self.send_robot_speed = self.create_publisher(
-            Twist, "shaq/cmd_vel/rpm", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_move/rpm", qos_profile=qos.qos_profile_system_default
         )
 
         self.send_shoot_speed = self.create_publisher(
-            Twist, "shaq/shooter/rpm", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
         )
 
 
         self.create_subscription(
-            Twist, 'shaq/cmd_vel', self.cmd_vel, qos_profile=qos.qos_profile_system_default
+            Twist, '/shaq/cmd_move', self.cmd_vel, qos_profile=qos.qos_profile_system_default
         )
 
         self.create_subscription(
-            Twist, '/shaq/shooter_power', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
+            Twist, '/shaq/cmd_shoot', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
         )
         
         self.create_subscription(
-            Twist, '/shaq/cmd_vel/macro', self.cmd_macro, qos_profile=qos.qos_profile_sensor_data # 10
+            Twist, '/shaq/cmd_macro', self.cmd_macro, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
         self.create_subscription(
             Twist, '/shaq/imu/pos_angle', self.get_robot_angle, qos_profile=qos.qos_profile_sensor_data # 10
+        )
+
+        self.create_subscription(
+            Float32MultiArray, '/shaq/pid/rotate', self.get_pid, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
 
@@ -94,6 +101,10 @@ class Cmd_vel_to_motor_speed(Node):
         
     def get_robot_angle(self,msg):
         self.yaw = WrapRads(To_Radians(msg.angular.x))
+    
+    def get_pid(self,msg):
+        self.controller.ConfigPIDF(kp = msg.data[0], ki= msg.data[1], kd=msg.data[2], kf=msg.data[3]) 
+
 
     def cmd_vel(self, msg):
 
@@ -101,15 +112,14 @@ class Cmd_vel_to_motor_speed(Node):
         self.moveSpeed = msg.linear.y  
         self.slideSpeed = msg.linear.x  
         self.turnSpeed = msg.angular.z 
-        controller = Controller()
-    
+
 
         if self.turnSpeed != 0 or (CurrentTime - self.previous_manual_turn < 0.45):
             rotation = self.turnSpeed
             self.yaw_setpoint = self.yaw
 
-        rotation = controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw)) 
-       
+        rotation = self.controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw)) 
+
 
         if self.slideSpeed == 0 and self.moveSpeed  == 0 and self.turnSpeed == 0 and abs(rotation) < 0.2:
             rotation = 0

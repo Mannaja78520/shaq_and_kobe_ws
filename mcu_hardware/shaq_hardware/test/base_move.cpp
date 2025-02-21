@@ -307,7 +307,7 @@ bool create_entities()
       &motor_speed_subscriber,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-      "shaq/cmd_vel/rpm"));
+      "/shaq/cmd_move/rpm"));
 
   // create executor
   executor = rclc_executor_get_zero_initialized_executor();

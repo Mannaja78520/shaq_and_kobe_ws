@@ -24,3 +24,20 @@ pip install numpy==2.1.3
 pip install pynput==1.7.7
 pip install six==1.17.0
 
+
+source /opt/ros/jazzy/setup.bash
+source /home/shaqjoy/shaq_and_koby_ws/robot_ws/install/setup.bash
+source /home/shaqjoy/shaq_and_koby_ws/shaq_and_koby_venv/bin/activate
+
+
+
+shaqjoy systemd : sudo nano /etc/systemd/system/joystick_controller.service
+shaq systemd : sudo nano /etc/systemd/system/auto_bringup.service
+
+sudo systemctl daemon-reload
+sudo systemctl enable auto_bringup.service
+sudo systemctl start auto_bringup.service
+
+systemctl status auto_bringup.service
+
+

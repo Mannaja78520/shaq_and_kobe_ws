@@ -126,21 +126,15 @@ class Joystick(Node):
         cmd_vel_move = Twist()
         cmd_vel_shoot = Twist()
         cmd_vel_macro = Twist()
-<<<<<<< HEAD
         cmd_vel_slap = Int16MultiArray()
-=======
-        cmd_vel_nadeem = Twist()
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
 
-        cmd_vel_move.linear.y = float(self.gamepad.ly * self.maxspeed)
-        cmd_vel_move.linear.x = float(self.gamepad.rx * self.maxspeed)
+        cmd_vel_move.linear.x = float(self.gamepad.ly * self.maxspeed)
+        cmd_vel_move.angular.x = float(self.gamepad.rx * self.maxspeed)
         
         cmd_vel_shoot.linear.x = float(self.gamepad.r2 * self.maxspeed)
         cmd_vel_shoot.linear.y = float(self.gamepad.r2 * self.maxspeed)
         cmd_vel_shoot.linear.z = float(self.gamepad.l2 * self.maxspeed)
         cmd_vel_shoot.angular.x = float(self.gamepad.dpadUpDown * self.maxspeed)
-
-        cmd_vel_nadeem.linear.x = float(self.gamepad.r2 * self.maxspeed)
 
         
         
@@ -156,11 +150,7 @@ class Joystick(Node):
         self.pub_macro.publish(cmd_vel_macro)
         self.pub_move.publish(cmd_vel_move)
         self.pub_shoot.publish(cmd_vel_shoot)
-<<<<<<< HEAD
         self.pub_slap.publish(cmd_vel_slap)
-=======
-        self.pub_nadeem.publish(cmd_vel_nadeem)
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
 
 def main():
     rclpy.init()
