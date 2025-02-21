@@ -10,6 +10,8 @@ from rclpy import qos
 from src.utilize import * 
 from src.controller import *
 import time 
+import math
+
 
 class Cmd_vel_to_motor_speed(Node):
 
@@ -54,9 +56,11 @@ class Cmd_vel_to_motor_speed(Node):
         self.motorshooter1Speed : float = 0
         self.motorshooter2Speed : float = 0
         self.motorshooter3Speed : float = 0
-        
+        self.yaw : float = 0
+        self.yaw_setpoint = self.yaw
         
         self.macro_active = False
+        self.previous_manual_turn = time.time()
         
  
         
@@ -67,6 +71,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.send_shoot_speed = self.create_publisher(
             Twist, "shaq/shooter/rpm", qos_profile=qos.qos_profile_system_default
         )
+
 
         self.create_subscription(
             Twist, 'shaq/cmd_vel', self.cmd_vel, qos_profile=qos.qos_profile_system_default
@@ -80,35 +85,55 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, '/shaq/cmd_vel/macro', self.cmd_macro, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
+        self.create_subscription(
+            Twist, '/shaq/imu/pos_angle', self.get_robot_angle, qos_profile=qos.qos_profile_sensor_data # 10
+        )
+
 
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
         
+    def get_robot_angle(self,msg):
+        self.yaw = WrapRads(To_Radians(msg.angular.x))
+
     def cmd_vel(self, msg):
 
         CurrentTime = time.time()
         self.moveSpeed = msg.linear.y  
         self.slideSpeed = msg.linear.x  
-        r = self.turnSpeed = msg.angular.z 
-                
-        D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(r), 1.0)
-        self.motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + r) / D * self.maxSpeed))
-        self.motor2Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - r) / D * self.maxSpeed))
-        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + r) / D * self.maxSpeed))
-        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - r) / D * self.maxSpeed))
+        self.turnSpeed = msg.angular.z 
+        controller = Controller()
+    
+
+        if self.turnSpeed != 0 or (CurrentTime - self.previous_manual_turn < 0.45):
+            rotation = self.turnSpeed
+            self.yaw_setpoint = self.yaw
+
+        rotation = controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw)) 
+       
+
+        if self.slideSpeed == 0 and self.moveSpeed  == 0 and self.turnSpeed == 0 and abs(rotation) < 0.2:
+            rotation = 0
+
+        self.previous_manual_turn = CurrentTime if self.turnSpeed != 0 else self.previous_manual_turn
+
+
+        D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(rotation), 1.0)
+        self.motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + rotation) / D * self.maxSpeed))
+        self.motor2Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - rotation) / D * self.maxSpeed))
+        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + rotation) / D * self.maxSpeed))
+        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - rotation) / D * self.maxSpeed))
         
 
     def cmd_shoot(self, msg):
-        if not self.macro_active:  # Only update if macro is inactive
-            self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed
-            self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
-        
-        self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
-        self.motorshooter3Speed += msg.angular.x * self.maxSpeed
+            if not self.macro_active:  # Only update if macro is inactive
+                self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed
+                self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
+            
+            self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
+            self.motorshooter3Speed += msg.angular.x * self.maxSpeed
 
-        if self.motorshooter3Speed >= 1023.0:
-            self.motorshooter3Speed = 1023.0
-
-        
+            if self.motorshooter3Speed >= 1023.0:
+                self.motorshooter3Speed = 1023.0
 
 
     def cmd_macro(self, msg):
@@ -138,7 +163,6 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.send_shoot_speed.publish(motorshooter_msg)
         self.send_robot_speed.publish(motorspeed_msg)
-
 
 
 def main():

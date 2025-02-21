@@ -60,13 +60,9 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, "/kobe/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
         )
 
-<<<<<<< HEAD
-
-=======
         self.send_nadeem_speed = self.create_publisher(
             Twist, "/kobe/cmd_nadeem/rpm", qos_profile=qos.qos_profile_system_default
         )
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
 
         self.create_subscription(
             Twist, '/kobe/cmd_move', self.cmd_move, qos_profile=qos.qos_profile_system_default
@@ -97,8 +93,6 @@ class Cmd_vel_to_motor_speed(Node):
         self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed ) / D * self.maxSpeed))
         self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed ) / D * self.maxSpeed))
         
-<<<<<<< HEAD
-=======
         self.motor1Speed = self.motor1Speed * self.maxSpeed
         self.motor2Speed = self.motor2Speed * self.maxSpeed
 
@@ -114,7 +108,6 @@ class Cmd_vel_to_motor_speed(Node):
         
         # self.motor1Speed = self.map_speed_to_pwm(self.motor1Speed)
         # self.motor2Speed = self.map_speed_to_pwm(self.motor2Speed)
->>>>>>> af653efcd3dd90c737cfff6178660f582c3bff7c
         
     def map_speed_to_pwm(self, speed):
         # Map motor speed [-1.0, 1.0] to PWM range [1000, 2000]
@@ -154,10 +147,7 @@ class Cmd_vel_to_motor_speed(Node):
         motorshooter_msg = Twist()
         motornadeem_msg = Twist()
 
-<<<<<<< HEAD
-=======
        
->>>>>>> 93c8a71b1ca377b6a35c1a972f94377364f2de99
         motorspeed_msg.linear.x = float(self.motor1Speed)
         motorspeed_msg.linear.y = float(self.motor2Speed)
         motorspeed_msg.angular.x = float(self.motor3Speed)

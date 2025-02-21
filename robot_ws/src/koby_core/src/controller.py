@@ -44,7 +44,7 @@ class Controller:
     def CalculateWithSetpoint(self, setpoint: float, measurement: float) -> float:
         self.Setpoint = setpoint
         return self.Calculate(setpoint - measurement)
-    
+
     def Calculate(self, error : float) -> float:
         self.CurrentTime = time.time()
         self.Dt = self.CurrentTime - self.LastTime
@@ -52,8 +52,8 @@ class Controller:
         Is_Error_In_Tolerance = AtTargetRange(error, 0, self.ErrorTolerance)
         if Is_Error_In_Tolerance :
             return (self.Setpoint * self.kf)
-        if (self.Setpoint == 0 and self.kf > 0.0) :
-            return 0
+        # if (self.Setpoint == 0 and self.kf > 0.0) :
+        #     return 0 
         self.Error = error
         self.Integral += self.Error * self.Dt
         self.Integral = clip(self.Integral, self.i_min, self.i_max)
@@ -61,10 +61,10 @@ class Controller:
         self.LastError = self.Error
         BaseSpeed = self.baseSpeed * sig_num(self.Error)
         return (self.Error * self.kp) + (self.Integral * self.ki) + (Derivative * self.kd) + (self.Setpoint * self.kf) + BaseSpeed
-    
+
     def ResetVariable(self) -> None:
         self.LastError = 0
-        self.Integral = 0 
+        self.Integral = 0
         self.CurrentTime = time.time()
         self.LastTime = self.CurrentTime
         

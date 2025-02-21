@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String, Int16MultiArray
+from std_msgs.msg import String, Int16MultiArray , Float32MultiArray
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Joy
 from rclpy import qos
@@ -124,6 +124,7 @@ class Joystick(Node):
         cmd_vel_macro = Twist()
         cmd_koby = Int16MultiArray()
 
+
         cmd_vel_move.linear.x = float(self.gamepad.lx * self.maxspeed)
         cmd_vel_move.linear.y = float(self.gamepad.ly * self.maxspeed)
         cmd_vel_move.angular.z = float(self.gamepad.rx * self.maxspeed)
@@ -132,6 +133,8 @@ class Joystick(Node):
         cmd_vel_shoot.linear.y = float(self.gamepad.r2 * self.maxspeed)
         cmd_vel_shoot.linear.z = float(self.gamepad.l2 * self.maxspeed)
         cmd_vel_shoot.angular.x = float(self.gamepad.dpadUpDown * self.maxspeed)
+
+        
         
         if self.gamepad.dribble:
             cmd_vel_macro.linear.x = 1.0
@@ -145,6 +148,7 @@ class Joystick(Node):
         self.pub_move.publish(cmd_vel_move)
         self.pub_shoot.publish(cmd_vel_shoot)
         self.pub_cmd_koby.publish(cmd_koby)
+
 
 def main():
     rclpy.init()
