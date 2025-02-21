@@ -56,13 +56,9 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, "/kobe/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
         )
 
-<<<<<<< HEAD
-
-=======
         self.send_nadeem_speed = self.create_publisher(
             Twist, "/kobe/cmd_nadeem/rpm", qos_profile=qos.qos_profile_system_default
         )
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
 
         self.create_subscription(
             Twist, '/kobe/cmd_move', self.cmd_move, qos_profile=qos.qos_profile_system_default

@@ -29,5 +29,15 @@ source /opt/ros/jazzy/setup.bash
 source /home/shaqjoy/shaq_and_koby_ws/robot_ws/install/setup.bash
 source /home/shaqjoy/shaq_and_koby_ws/shaq_and_koby_venv/bin/activate
 
-sudo nano /etc/systemd/system/joystick_controller.service
+
+
+shaqjoy systemd : sudo nano /etc/systemd/system/joystick_controller.service
+shaq systemd : sudo nano /etc/systemd/system/auto_bringup.service
+
+sudo systemctl daemon-reload
+sudo systemctl enable auto_bringup.service
+sudo systemctl start auto_bringup.service
+
+systemctl status auto_bringup.service
+
 

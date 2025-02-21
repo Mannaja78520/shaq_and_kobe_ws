@@ -54,15 +54,15 @@ class Joystick(Node):
         super().__init__("joystick")
 
         self.pub_move = self.create_publisher(
-            Twist, "shaq/cmd_vel", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_move", qos_profile=qos.qos_profile_system_default
         )
         
         self.pub_macro = self.create_publisher(
-            Twist, "shaq/cmd_vel/macro", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_macro", qos_profile=qos.qos_profile_system_default
         )
 
         self.pub_shoot = self.create_publisher(
-            Twist, "shaq/shooter_power", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_shoot", qos_profile=qos.qos_profile_system_default
         )
         
         self.pub_cmd_koby = self.create_publisher(

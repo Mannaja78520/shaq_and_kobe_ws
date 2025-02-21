@@ -61,23 +61,23 @@ class Cmd_vel_to_motor_speed(Node):
  
         
         self.send_robot_speed = self.create_publisher(
-            Twist, "shaq/cmd_vel/rpm", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_move/rpm", qos_profile=qos.qos_profile_system_default
         )
 
         self.send_shoot_speed = self.create_publisher(
-            Twist, "shaq/shooter/rpm", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
         )
 
         self.create_subscription(
-            Twist, 'shaq/cmd_vel', self.cmd_vel, qos_profile=qos.qos_profile_system_default
+            Twist, '/shaq/cmd_move', self.cmd_vel, qos_profile=qos.qos_profile_system_default
         )
 
         self.create_subscription(
-            Twist, '/shaq/shooter_power', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
+            Twist, '/shaq/cmd_shoot', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
         )
         
         self.create_subscription(
-            Twist, '/shaq/cmd_vel/macro', self.cmd_macro, qos_profile=qos.qos_profile_sensor_data # 10
+            Twist, '/shaq/cmd_macro', self.cmd_macro, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
 
