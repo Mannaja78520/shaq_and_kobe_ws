@@ -40,4 +40,5 @@ sudo systemctl start auto_bringup.service
 
 systemctl status auto_bringup.service
 
+/bin/bash /home/shaq/shaq_and_koby_ws/autobringup/shaq_autobringup.sh 
 

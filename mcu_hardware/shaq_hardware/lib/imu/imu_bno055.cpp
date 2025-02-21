@@ -44,7 +44,7 @@ bool IMU_BNO055::getMagnetometer(float &mx, float &my, float &mz) {
   return true;
 }
 
-bool IMU_BNO055::getAngle(float &roll, float &pitch, float &yaw) {
+bool IMU_BNO055::getAngle(float &yaw, float &pitch, float &roll) {
   bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
   roll = orientationData.orientation.roll;
   pitch = orientationData.orientation.pitch;
@@ -127,7 +127,7 @@ void IMU_BNO055::getIMUData(sensor_msgs__msg__Imu &imu_msg, sensor_msgs__msg__Ma
   // orientation.x from event is yaw heading from BNO in degree 0-360 degrees
   // headingVel = time_diff * accel.x() / cos(DEG_2_RAD * event.orientation.x);
 
-  pos_angle_msg.linear.x = xPos;
-  pos_angle_msg.linear.y = yPos;
-  pos_angle_msg.linear.z = zPos;
+  // pos_angle_msg.linear.x = xPos;
+  // pos_angle_msg.linear.y = yPos;
+  // pos_angle_msg.linear.z = zPos;
 }
