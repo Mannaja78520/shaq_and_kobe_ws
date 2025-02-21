@@ -16,20 +16,24 @@
 #include <std_msgs/msg/int8.h>
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
+#include <sensor_msgs/msg/imu.h>
+#include <geometry_msgs/msg/twist.h>
+#include <sensor_msgs/msg/magnetic_field.h>
+#include <std_msgs/msg/int32.h>
 
 #include <motorprik.h>
 #include <config.h>
+#include <imu_bno055.h>
 
 // Servo ESC1;
 // Servo ESC2;
-<<<<<<< HEAD
-=======
 
 Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
 Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BRAKE, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
 
+IMU_BNO055 bno055;
 
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
+
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -72,6 +76,15 @@ geometry_msgs__msg__Twist move_msg;
 geometry_msgs__msg__Twist debug_motor_msg;
 geometry_msgs__msg__Twist debug_encoder_msg;
 
+rcl_publisher_t imu_pos_angle_publisher;
+geometry_msgs__msg__Twist imu_pos_angle_msg;
+
+rcl_publisher_t imu_data_publisher;
+sensor_msgs__msg__Imu imu_data_msg;
+
+rcl_publisher_t imu_mag_publisher;
+sensor_msgs__msg__MagneticField imu_mag_msg;
+
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -103,6 +116,7 @@ void syncTime();
 bool createEntities();
 bool destroyEntities();
 void publishData();
+void imu_pub();
 struct timespec getTime();
 
 void Move();
@@ -111,14 +125,10 @@ void Move();
 
 void setup()
 {
-<<<<<<< HEAD
-    // ESC1.attach(11,1000,2000);
-    // ESC2.attach(12,1000,2000);
-=======
     // ESC1.attach(8,1000,2000);
     // ESC2.attach(9,1000,2000);
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
     Serial.begin(115200);
+    bno055.init();
     set_microros_serial_transports(Serial);
 }
 
@@ -145,13 +155,8 @@ void loop()
         break;
     case AGENT_DISCONNECTED:
         //Dont Forget Here!!
-        // ESC1.writeMicroseconds(1500);
-        // ESC2.writeMicroseconds(1500);
-<<<<<<< HEAD
-=======
         motor1.spin(0);
         motor2.spin(0);
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -170,6 +175,7 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     {
         Move();
         publishData();
+        imu_pub();
     }
 }
 
@@ -208,6 +214,24 @@ bool createEntities()
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
         "/kobe/cmd_move/rpm"));
 
+    RCCHECK(rclc_publisher_init_best_effort(
+        &imu_data_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+        "/kobe/imu/data"));
+      
+    RCCHECK(rclc_publisher_init_best_effort(
+         &imu_mag_publisher,
+         &node,
+         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, MagneticField),
+         "/kobe/imu/mag"));
+      
+    RCCHECK(rclc_publisher_init_best_effort(
+        &imu_pos_angle_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/kobe/imu/pos_angle"));
+
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
     RCCHECK(rclc_timer_init_default(
@@ -241,6 +265,9 @@ bool destroyEntities()
     rcl_subscription_fini(&move_motor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
+    rcl_publisher_fini(&imu_data_publisher, &node);
+    rcl_publisher_fini(&imu_mag_publisher, &node);
+    rcl_publisher_fini(&imu_pos_angle_publisher, &node);
     rclc_executor_fini(&executor);
     rclc_support_fini(&support);
 
@@ -259,17 +286,43 @@ void Move()
     // ESC1.writeMicroseconds(motor1_controller);
     // ESC2.writeMicroseconds(motor2_controller);
 
-<<<<<<< HEAD
-    
-=======
+
+
     // ESC1.writeMicroseconds(motor1Speed);
     // ESC2.writeMicroseconds(motor2Speed);
 
     motor1.spin(motor1Speed);
     motor2.spin(motor2Speed);
->>>>>>> c102a1978019e93b869dfbb853293f413581165f
 
 
+}
+
+void imu_pub(){
+    bno055.getIMUData(imu_data_msg, imu_mag_msg, imu_pos_angle_msg);
+
+    struct timespec time_stamp = getTime();
+    imu_data_msg.header.stamp.sec = time_stamp.tv_sec;
+    imu_data_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+    imu_data_msg.header.frame_id.data = "imu_link";
+  
+    imu_data_msg.angular_velocity_covariance[0] = 0.0001;
+    imu_data_msg.angular_velocity_covariance[4] = 0.0001;
+    imu_data_msg.angular_velocity_covariance[8] = 0.0001;
+  
+    imu_data_msg.linear_acceleration_covariance[0] = 0.04;
+    imu_data_msg.linear_acceleration_covariance[4] = 0.04;
+    imu_data_msg.linear_acceleration_covariance[8] = 0.04;
+  
+    imu_data_msg.orientation_covariance[0] = 0.0025;
+    imu_data_msg.orientation_covariance[4] = 0.0025;
+    imu_data_msg.orientation_covariance[8] = 0.0025;
+  
+    imu_mag_msg.header.stamp.sec = time_stamp.tv_sec;
+    imu_mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+  
+    rcl_publish(&imu_data_publisher, &imu_data_msg, NULL);
+    rcl_publish(&imu_mag_publisher, &imu_mag_msg, NULL);
+    rcl_publish(&imu_pos_angle_publisher, &imu_pos_angle_msg, NULL);
 }
 
 

@@ -5,6 +5,7 @@ import threading
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String, Int16MultiArray
+from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
 from rclpy import qos
 from src.utilize import * 
@@ -35,6 +36,14 @@ class Cmd_vel_to_motor_speed(Node):
         self.motor2Speed : float = 0
         
         self.trackWidth : float = 2.0
+
+        self.yaw : float = 0
+        self.yaw_setpoint = self.yaw
+
+        self.previous_manual_turn = time.time()
+
+        self.controller = Controller()
+        
         
 
         self.motorshooter1Speed : float = 0
@@ -74,43 +83,59 @@ class Cmd_vel_to_motor_speed(Node):
         self.create_subscription(
             Twist, '/kobe/cmd_nadeem', self.cmd_nadeem, qos_profile=qos.qos_profile_sensor_data #10
         )
+        
+        self.create_subscription(
+              Float32MultiArray, '/kobe/pid/rotate', self.get_pid, qos_profile=qos.qos_profile_sensor_data # 10
+          )
+        
+        self.create_subscription(
+            Twist, '/kobe/imu/pos_angle', self.get_robot_angle, qos_profile=qos.qos_profile_sensor_data # 10
+        )
+
 
 
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
         
+
+    def get_robot_angle(self,msg):
+        self.yaw = WrapRads(To_Radians(msg.angular.x))
+
+    def get_pid(self,msg):
+        self.controller.ConfigPIDF(kp = msg.data[0], ki= msg.data[1], kd=msg.data[2], kf=msg.data[3]) 
+
+
     def cmd_move(self, msg):
 
-<<<<<<< HEAD
+        # Initialize CurrentTime at the start
         CurrentTime = time.time()
-        self.moveSpeed = msg.linear.y  
-        self.slideSpeed = msg.linear.x  
-                
-        D = max(abs(self.moveSpeed)+abs(self.slideSpeed), 1.0)
-        self.motor1Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed ) / D * self.maxSpeed))
-        self.motor2Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed ) / D * self.maxSpeed))
-        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed ) / D * self.maxSpeed))
-        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed ) / D * self.maxSpeed))
-        
-        self.motor1Speed = self.motor1Speed * self.maxSpeed
-        self.motor2Speed = self.motor2Speed * self.maxSpeed
-=======
+
+        # Handle turning behavior and set the yaw setpoint
+        if self.turnSpeed != 0 or (CurrentTime - self.previous_manual_turn < 0.45):
+            rotation = self.turnSpeed
+            self.yaw_setpoint = self.yaw
+        else:
+            # Apply PID controller based on yaw setpoint
+            rotation = self.controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw))
+
+        # If no movement or turn, stop rotation (ignoring slideSpeed logic)
+        if self.moveSpeed == 0 and self.turnSpeed == 0 and abs(rotation) < 0.2:
+            rotation = 0
+
+        # Update the previous manual turn time
+        self.previous_manual_turn = CurrentTime if self.turnSpeed != 0 else self.previous_manual_turn
+
+        # Set move and turn speeds from the message input
         self.moveSpeed = msg.linear.x
         self.turnSpeed = msg.angular.x * 0.35
->>>>>>> 30b688b919d044990ff40f81a5b2385d3012a8d5
 
-        self.motor1Speed = self.moveSpeed + self.turnSpeed
-        self.motor2Speed = self.moveSpeed - self.turnSpeed
-        
-        self.motor1Speed = self.motor1Speed * self.maxSpeed /3
-        self.motor2Speed = self.motor2Speed * self.maxSpeed /3
-        
+        # Calculate motor speeds based on move and turn speeds
+        self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed / 3
+        self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed / 3
 
-        if self.motor1Speed >= 1023.0/3:
-            self.motor1Speed = 1023.0/3
-        
-        if self.motor2Speed >= 1023.0/3:
-            self.motor2Speed = 1023.0/3
-
+        # Limit motor speeds to a maximum value
+        max_motor_speed = 1023.0 / 3
+        self.motor1Speed = min(self.motor1Speed, max_motor_speed)
+        self.motor2Speed = min(self.motor2Speed, max_motor_speed)
         
         # self.motor1Speed = max(min(self.motor1Speed, 1.0), -1.0)
         # self.motor2Speed = max(min(self.motor2Speed, 1.0), -1.0)
