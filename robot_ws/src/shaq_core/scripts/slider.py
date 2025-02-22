@@ -20,7 +20,7 @@ class cmd_rotate(Node):
         super().__init__("cmd_rotate")
 
         self.send_pid = self.create_publisher(
-            Float32MultiArray, "/kobe/pid/rotate", qos_profile=qos.qos_profile_system_default
+            Float32MultiArray, "/shaq/pid/rotate", qos_profile=qos.qos_profile_system_default
         )
 
         self.sent_data_timer = self.create_timer(0.05, self.sendData)
