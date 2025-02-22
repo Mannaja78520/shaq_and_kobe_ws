@@ -9,7 +9,7 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Define the path to the launch file directory
-    launch_file_dir = os.path.join(get_package_share_directory('koby_core'), 'launch')
+    launch_file_dir = os.path.join(get_package_share_directory('kobe_core'), 'launch')
     
     
     # Include microros.launch.py
@@ -18,10 +18,20 @@ def generate_launch_description():
             os.path.join(launch_file_dir, 'microros.launch.py')
         )
     )
+    
+    cmd_vel_to_motor_speed = Node(
+        package="kobe_core",
+        executable="cmd_vel_to_motor_speed.py",
+        name="Cmd_Vel_To_Rpm",
+        # output="screen",
+        namespace="",
+        # parameters=[motor_config],
+    )
 
 
     # Add actions to the launch description
     ld.add_action(microros_launch)
+    ld.add_action(cmd_vel_to_motor_speed)
 
     return ld
 

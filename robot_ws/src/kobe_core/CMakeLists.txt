@@ -2,7 +2,7 @@
 # Set minimum required version of cmake, project name and compile options
 ################################################################################
 cmake_minimum_required(VERSION 3.8)
-project(koby_core)
+project(kobe_core)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -63,8 +63,8 @@ install(PROGRAMS
 )
 
 install(PROGRAMS
-  src/controller.py
-  src/utilize.py
+  kobe_core/controller.py
+  kobe_core/utilize.py
   DESTINATION lib/${PROJECT_NAME}/src
 )
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from pynput import keyboard
+# from pynput import keyboard
 import threading
 import rclpy
 from rclpy.node import Node
@@ -8,8 +8,8 @@ from std_msgs.msg import String, Int16MultiArray
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
 from rclpy import qos
-from src.utilize import * 
-from src.controller import *
+from kobe_core.utilize import *
+from kobe_core.controller import *
 import time 
 
 class Cmd_vel_to_motor_speed(Node):
