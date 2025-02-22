@@ -11,7 +11,7 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     motor_config = os.path.join(
-        get_package_share_directory('koby_core'),
+        get_package_share_directory('kobe_core'),
         'config',
         'motor_config.yaml'
     )
@@ -26,24 +26,24 @@ def generate_launch_description():
     )
 
     joystick_control = Node(
-        package="koby_core",
+        package="kobe_core",
         executable="joystick_control.py",
         name="Joystick_Node",
         # output="screen",
         namespace="",
     )
     
-    cmd_vel_to_motor_speed = Node(
-        package="koby_core",
-        executable="cmd_vel_to_motor_speed.py",
-        name="Cmd_Vel_To_Rpm",
-        # output="screen",
-        namespace="",
-        # parameters=[motor_config],
-    )
+    # cmd_vel_to_motor_speed = Node(
+    #     package="kobe_core",
+    #     executable="cmd_vel_to_motor_speed.py",
+    #     name="Cmd_Vel_To_Rpm",
+    #     # output="screen",
+    #     namespace="",
+    #     # parameters=[motor_config],
+    # )
     
     ld.add_action(joy)
     ld.add_action(joystick_control)
-    ld.add_action(cmd_vel_to_motor_speed)
+    # ld.add_action(cmd_vel_to_motor_speed)
 
     return ld
