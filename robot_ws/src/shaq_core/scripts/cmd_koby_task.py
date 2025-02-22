@@ -9,43 +9,43 @@ from sensor_msgs.msg import TimeReference
 from rclpy import qos
 from builtin_interfaces.msg import Time
 
-class cmd_koby_task(Node):
+class cmd_kobe_task(Node):
 
     def __init__(self):
-        super().__init__("cmd_koby_task")
+        super().__init__("cmd_kobe_task")
 
-        self.shaq_cmd_koby_jump = False 
+        self.shaq_cmd_kobe_jump = False 
 
-        self.send_koby_task = self.create_publisher(
-            TimeReference, "shaq/cmd_koby/task", qos_profile=qos.qos_profile_system_default
+        self.send_kobe_task = self.create_publisher(
+            TimeReference, "shaq/cmd_kobe/task", qos_profile=qos.qos_profile_system_default
         )
 
         self.create_subscription(
-            Int16MultiArray, 'shaq/cmd_koby', self.cmd_koby, qos_profile=qos.qos_profile_system_default
+            Int16MultiArray, 'shaq/cmd_kobe', self.cmd_kobe, qos_profile=qos.qos_profile_system_default
         )
 
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
 
-    def cmd_koby(self, msg):
-        self.shaq_cmd_koby_jump = msg.data[0]
+    def cmd_kobe(self, msg):
+        self.shaq_cmd_kobe_jump = msg.data[0]
 
     def sendData(self):
-        if self.shaq_cmd_koby_jump:
-            koby_task_msg = TimeReference()
-            koby_task_msg.header = Header()
-            koby_task_msg.header.stamp = self.get_clock().now().to_msg()
-            koby_task_msg.header.frame_id = "koby_know"
+        if self.shaq_cmd_kobe_jump:
+            kobe_task_msg = TimeReference()
+            kobe_task_msg.header = Header()
+            kobe_task_msg.header.stamp = self.get_clock().now().to_msg()
+            kobe_task_msg.header.frame_id = "kobe_know"
             
-            koby_task_msg.time_ref = self.get_clock().now().to_msg()
+            kobe_task_msg.time_ref = self.get_clock().now().to_msg()
             
-            koby_task_msg.source = "jump"
+            kobe_task_msg.source = "jump"
             
-            self.send_koby_task.publish(koby_task_msg)
+            self.send_kobe_task.publish(kobe_task_msg)
 
 def main():
     rclpy.init()
     try:
-        sub = cmd_koby_task()
+        sub = cmd_kobe_task()
         rclpy.spin(sub)
     except KeyboardInterrupt:
         pass

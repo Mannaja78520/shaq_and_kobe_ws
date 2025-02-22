@@ -34,14 +34,14 @@ def generate_launch_description():
     )
     
     
-    cmd_vel_to_motor_speed = Node(
-        package="shaq_core",
-        executable="cmd_vel_to_motor_speed.py",
-        name="Cmd_Vel_To_Rpm",
-        # output="screen",
-        namespace="",
-        # parameters=[motor_config], #Testing
-    )
+    # cmd_vel_to_motor_speed = Node(
+    #     package="shaq_core",
+    #     executable="cmd_vel_to_motor_speed.py",
+    #     name="Cmd_Vel_To_Rpm",
+    #     # output="screen",
+    #     namespace="",
+    #     # parameters=[motor_config], #Testing
+    # )
     
     shaq_cmd_koby_node = Node(
         package="shaq_core",
@@ -53,7 +53,7 @@ def generate_launch_description():
     
     ld.add_action(joy)
     ld.add_action(joystick_control)
-    ld.add_action(cmd_vel_to_motor_speed)
+    # ld.add_action(cmd_vel_to_motor_speed)
     ld.add_action(shaq_cmd_koby_node)
 
     return ld
