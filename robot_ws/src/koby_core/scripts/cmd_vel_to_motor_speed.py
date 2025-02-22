@@ -42,7 +42,7 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.previous_manual_turn = time.time()
 
-        self.controller = Controller()
+        self.controller = Controller(kp = 2.5, ki = 0.05, kd = 0.001, errorTolerance= To_Radians(0.5), i_min= -1, i_max= 1)
         
         
 
@@ -118,19 +118,22 @@ class Cmd_vel_to_motor_speed(Node):
             rotation = self.controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw))
 
         # If no movement or turn, stop rotation (ignoring slideSpeed logic)
-        if self.moveSpeed == 0 and self.turnSpeed == 0 and abs(rotation) < 0.2:
+        if self.moveSpeed == 0 and self.turnSpeed == 0:
             rotation = 0
+            self.yaw_setpoint = self.yaw
 
         # Update the previous manual turn time
         self.previous_manual_turn = CurrentTime if self.turnSpeed != 0 else self.previous_manual_turn
 
         # Set move and turn speeds from the message input
         self.moveSpeed = msg.linear.x
-        self.turnSpeed = msg.angular.x * 0.35
+        self.turnSpeed = msg.angular.x 
 
         # Calculate motor speeds based on move and turn speeds
         self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed / 3
         self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed / 3
+
+        reverse = False  
 
         # Limit motor speeds to a maximum value
         max_motor_speed = 1023.0 / 3
@@ -191,6 +194,7 @@ class Cmd_vel_to_motor_speed(Node):
         motorshooter_msg.linear.z = float(self.motorshooter3Speed)
 
         motornadeem_msg.linear.x = float(self.motornadeem)
+        motornadeem_msg.angular.x = float(self.yaw)
 
 
         self.send_shoot_speed.publish(motorshooter_msg)
