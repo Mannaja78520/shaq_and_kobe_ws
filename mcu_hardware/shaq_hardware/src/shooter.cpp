@@ -177,7 +177,7 @@ bool createEntities()
     rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
 
     // create node
-    RCCHECK(rclc_node_init_default(&node, "int32_publisher_rclc", "", &support));
+    RCCHECK(rclc_node_init_default(&node, "shaq_shooter_node", "", &support));
 
     RCCHECK(rclc_publisher_init_best_effort(
         &debug_motor_publisher,
@@ -189,7 +189,7 @@ bool createEntities()
         &shooter_motor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "shaq/shooter/rpm"));
+        "/shaq/cmd_shoot/rpm"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;

@@ -19,6 +19,7 @@ public:
   bool getLinearAcc(float &ax, float &ay, float &az);
   bool getMagnetometer(float &mx, float &my, float &mz);
   bool getAngle(float &roll, float &pitch, float &yaw);
+  // void resetIMU();
   void getIMUData(sensor_msgs__msg__Imu &imu_msg, sensor_msgs__msg__MagneticField &mag_msg, geometry_msgs__msg__Twist &pos_angle_msg);
   // void getMagData(sen                                  sor_msgs__msg__MagneticField &mag_msg);
   // void getPositionAngle(geometry_msgs__msg__Twist &pos_angle_msg);

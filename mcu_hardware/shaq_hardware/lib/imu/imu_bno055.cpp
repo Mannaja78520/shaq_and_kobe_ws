@@ -131,3 +131,7 @@ void IMU_BNO055::getIMUData(sensor_msgs__msg__Imu &imu_msg, sensor_msgs__msg__Ma
   // pos_angle_msg.linear.y = yPos;
   // pos_angle_msg.linear.z = zPos;
 }
+
+// void IMU_BNO055::resetIMU(){
+  
+// }
