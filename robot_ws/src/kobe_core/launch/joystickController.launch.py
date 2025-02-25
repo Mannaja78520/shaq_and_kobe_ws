@@ -24,7 +24,7 @@ def generate_launch_description():
         namespace="",
         # arguments=["--dev", "/dev/input/js0"],  # replace with your joystick device path
         remappings = [
-            ('/joy', '/joy_node')
+            ('/joy', '/kobe/joy')
         ]
     )
 

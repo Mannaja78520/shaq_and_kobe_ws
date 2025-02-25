@@ -70,7 +70,7 @@ class Joystick(Node):
         )
 
         self.create_subscription(
-            Joy, '/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
+            Joy, '/kobe/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
         self.pub_nadeem = self.create_publisher(
