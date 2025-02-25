@@ -33,14 +33,14 @@ def generate_launch_description():
         namespace="",
     )
     
-    # cmd_vel_to_motor_speed = Node(
-    #     package="kobe_core",
-    #     executable="cmd_vel_to_motor_speed.py",
-    #     name="Cmd_Vel_To_Rpm",
-    #     # output="screen",
-    #     namespace="",
-    #     # parameters=[motor_config],
-    # )
+    cmd_vel_to_motor_speed = Node(
+        package="kobe_core",
+        executable="cmd_vel_to_motor_speed.py",
+        name="Cmd_Vel_To_Rpm",
+        # output="screen",
+        namespace="",
+        # parameters=[motor_config],
+    )
     
     ld.add_action(joy)
     ld.add_action(joystick_control)

@@ -98,7 +98,7 @@ class Cmd_vel_to_motor_speed(Node):
         
 
     def get_robot_angle(self,msg):
-        self.yaw = WrapRads(To_Radians(msg.angular.x))
+        self.yaw = WrapRads(To_Radians(msg.angular.x) * -1)
 
     def get_pid(self,msg):
         self.controller.ConfigPIDF(kp = msg.data[0], ki= msg.data[1], kd=msg.data[2], kf=msg.data[3]) 
@@ -106,6 +106,7 @@ class Cmd_vel_to_motor_speed(Node):
 
     def cmd_move(self, msg):
 
+        
         # Initialize CurrentTime at the start
         CurrentTime = time.time()
 
@@ -118,7 +119,7 @@ class Cmd_vel_to_motor_speed(Node):
             rotation = self.controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw))
 
         # If no movement or turn, stop rotation (ignoring slideSpeed logic)
-        if self.moveSpeed == 0 and self.turnSpeed == 0:
+        if self.moveSpeed == 0 and self.turnSpeed == 0 :
             rotation = 0
             self.yaw_setpoint = self.yaw
 
@@ -127,11 +128,13 @@ class Cmd_vel_to_motor_speed(Node):
 
         # Set move and turn speeds from the message input
         self.moveSpeed = msg.linear.x
+
         self.turnSpeed = msg.angular.x 
 
         # Calculate motor speeds based on move and turn speeds
         self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed / 3
         self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed / 3
+        self.rotation = rotation * self.maxSpeed / 3  # Apply track width to rotation speed
 
         reverse = False  
 
@@ -139,12 +142,12 @@ class Cmd_vel_to_motor_speed(Node):
         max_motor_speed = 1023.0 / 3
         self.motor1Speed = min(self.motor1Speed, max_motor_speed)
         self.motor2Speed = min(self.motor2Speed, max_motor_speed)
-        
+        self.rotation = min(self.rotation, max_motor_speed)
+            
         # self.motor1Speed = max(min(self.motor1Speed, 1.0), -1.0)
         # self.motor2Speed = max(min(self.motor2Speed, 1.0), -1.0)
         
         # self.motor1Speed = self.map_speed_to_pwm(self.motor1Speed)
-        # self.motor2Speed = self.map_speed_to_pwm(self.motor2Speed)
         
     def map_speed_to_pwm(self, speed):
         # Map motor speed [-1.0, 1.0] to PWM range [1000, 2000]

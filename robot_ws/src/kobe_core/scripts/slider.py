@@ -9,7 +9,7 @@ from std_msgs.msg import Header, Int16MultiArray, Float32MultiArray
 from sensor_msgs.msg import TimeReference
 from rclpy import qos
 from builtin_interfaces.msg import Time
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 import numpy as np
 
 from matplotlib.widgets import Button, Slider, TextBox
