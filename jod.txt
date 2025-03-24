@@ -34,11 +34,27 @@ source /home/shaqjoy/shaq_and_koby_ws/shaq_and_koby_venv/bin/activate
 shaqjoy systemd : sudo nano /etc/systemd/system/joystick_controller.service
 shaq systemd : sudo nano /etc/systemd/system/auto_bringup.service
 
+#Reload systemd (after creating or modifying the service file)
 sudo systemctl daemon-reload
+
+#Enable the service (start on boot)
 sudo systemctl enable auto_bringup.service
+
+#Start the service manually
 sudo systemctl start auto_bringup.service
 
+#Check service status
 systemctl status auto_bringup.service
+
+#View logs
+journalctl -u shaq_ros2.service -f
+
+#Stop the service
+sudo systemctl stop shaq_ros2.service
+
+#Disable the service (prevent auto-start on boot)
+sudo systemctl disable shaq_ros2.service
+
 
 /bin/bash /home/shaq/shaq_and_koby_ws/autobringup/shaq_autobringup.sh 
 
