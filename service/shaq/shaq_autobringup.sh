@@ -12,3 +12,4 @@ export ROS_DOMAIN_ID=10
 # Launch ROS2 bringup
 ros2 launch shaq_core bot_bringup.launch.py
 
+# /etc/systemd/system/auto_bringup.service
