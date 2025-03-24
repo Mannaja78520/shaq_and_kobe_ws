@@ -114,12 +114,11 @@ class Cmd_vel_to_motor_speed(Node):
         self.turnSpeed = msg.angular.z 
 
 
+        rotation = self.controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw)) 
+
         if self.turnSpeed != 0 or (CurrentTime - self.previous_manual_turn < 0.45):
             rotation = self.turnSpeed
             self.yaw_setpoint = self.yaw
-
-        rotation = self.controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw)) 
-
 
         if self.slideSpeed == 0 and self.moveSpeed  == 0 and self.turnSpeed == 0 and abs(rotation) < 0.2:
             rotation = 0
