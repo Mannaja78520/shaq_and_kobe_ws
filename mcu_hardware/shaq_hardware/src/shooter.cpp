@@ -18,6 +18,8 @@
 
 #include <motorevo.h>
 #include <motorprik.h>
+#include <encoder.h>
+#include <PIDF.h>
 #include "../config/shooter_output.h"
 // #include "../config/drive_output_teensy.h"
 
@@ -54,13 +56,13 @@
 //------------------------------ < Define > -------------------------------------//
 
 rcl_publisher_t debug_motor_publisher;
-rcl_publisher_t debug_encoder_publisher;
+geometry_msgs__msg__Twist debug_motor_msg;
+
+rcl_publisher_t encoder_publisher;
+geometry_msgs__msg__Twist encoder_msg;
 
 rcl_subscription_t shooter_motor_subscriber;
 geometry_msgs__msg__Twist shooter_msg;
-
-geometry_msgs__msg__Twist debug_motor_msg;
-geometry_msgs__msg__Twist debug_encoder_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -82,15 +84,19 @@ enum states
     AGENT_DISCONNECTED
 } state;
 
-// Move motor
+
 EVODrive motorshooter1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTORSHOOTER1_PWM, MOTORSHOOTER1_IN_A, MOTORSHOOTER1_IN_B);
 EVODrive motorshooter2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTORSHOOTER2_PWM, MOTORSHOOTER2_IN_A, MOTORSHOOTER2_IN_B);
+Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
 // EVODrive motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
 
-Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
+Encoder motor1_encoder(MOTOR1_ENCODER_PIN_A, MOTOR1_ENCODER_PIN_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV, ENCODER_GEAR_RATIO);
+Encoder motor2_encoder(MOTOR2_ENCODER_PIN_A, MOTOR2_ENCODER_PIN_B, COUNTS_PER_REV2, MOTOR2_ENCODER_INV, ENCODER_GEAR_RATIO);
 
-float motorshoot = 0;
-float lift = 0;
+PIDF motor1_pid(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
+PIDF motor2_pid(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
+
+
 
 //------------------------------ < Fuction Prototype > ------------------------------//
 
@@ -185,7 +191,7 @@ bool createEntities()
         &debug_motor_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "debug/motor/shooter"));
+        "/shaq/debug/cmd_shoot/rpm"));
 
     RCCHECK(rclc_subscription_init_default(
         &shooter_motor_subscriber,
@@ -222,7 +228,7 @@ bool destroyEntities()
     rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
-    // rcl_publisher_fini(&debug_motor_publisher, &node);
+    rcl_publisher_fini(&debug_motor_publisher, &node);
     rcl_subscription_fini(&shooter_motor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
@@ -232,10 +238,24 @@ bool destroyEntities()
     return true;
 }
 
+void fullStop()
+{
+  shooter_msg.linear.x = 0.0;
+  shooter_msg.linear.y = 0.0;
+  shooter_msg.linear.z = 0.0;
+  shooter_msg.angular.x = 0.0;
+  shooter_msg.angular.y = 0.0;
+  shooter_msg.angular.z = 0.0;
+
+  motorshooter1.brake();
+  motorshooter2.brake();
+  motorlift.brake();
+
+}
+
+
 void Move()
 {
-
-    
 
     float motor1Speed = shooter_msg.linear.x;
     float motor2Speed = shooter_msg.linear.y;
@@ -243,8 +263,17 @@ void Move()
     
     motorshooter1.spin(motor1Speed);
     motorshooter2.spin(motor2Speed);
-    motorlift.spin(motor3Speed);
 
+    
+    float current_rpm_motor1 = motor1_encoder.getRPM();
+    float current_rpm_motor2 = motor2_encoder.getRPM();
+
+    debug_motor_msg.angular.x = current_rpm_motor1;
+    debug_motor_msg.angular.y = current_rpm_motor2;
+    
+    // motor1_controller.spin(motor1_pid.compute(motor1Speed, current_rpm_motor1));
+    // motor2_controller.spin(motor2_pid.compute(motor2Speed, current_rpm_motor2));
+    motorlift.spin(motor3Speed);
 
 }
 
@@ -252,11 +281,12 @@ void Move()
 
 void publishData()
 {
+
     debug_motor_msg.linear.x = shooter_msg.linear.x;
     debug_motor_msg.linear.y = shooter_msg.linear.y;
     debug_motor_msg.linear.z = shooter_msg.linear.z;
-    // debug_motor_msg.angular.x = shooter_msg.angular.x;
 
+    
 
     struct timespec time_stamp = getTime();
     rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);

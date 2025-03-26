@@ -76,7 +76,7 @@ typedef struct {
 class Encoder
 {
 public:
-	Encoder(uint8_t pin1, uint8_t pin2, int counts_per_rev, bool invert=false) {
+	Encoder(uint8_t pin1, uint8_t pin2, int counts_per_rev, bool invert=false, float gear_ratio = 1) {
 		uint8_t temp_pin = pin1;
 		if(invert)
 		{
@@ -174,7 +174,7 @@ public:
 		prev_update_time_ = current_time;
 		prev_encoder_ticks_ = encoder_ticks;
 
-		return ((delta_ticks / counts_per_rev_) / dtm);
+		return ((delta_ticks / counts_per_rev_) / dtm) * this->gear_ratio;
 	}
 
 private:
@@ -182,6 +182,7 @@ private:
 	unsigned long long prev_update_time_;
     long prev_encoder_ticks_;
 	Encoder_internal_state_t encoder;
+	float gear_ratio;
 #ifdef ENCODER_USE_INTERRUPTS
 	uint8_t interrupts_in_use;
 #endif
