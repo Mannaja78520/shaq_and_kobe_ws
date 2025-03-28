@@ -25,7 +25,7 @@ void PIDF::reset(){
 
 float PIDF::compute(float setpoint, float measure){
   Setpoint = setpoint;
-  unsigned long long CurrentTime = millis();
+  unsigned long CurrentTime = millis();
   Dt = (CurrentTime - LastTime) / 1000.0;
   if (Dt <  1E-6) return;
   // Serial.println(Dt);
