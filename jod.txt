@@ -34,6 +34,8 @@ source /home/shaqjoy/shaq_and_koby_ws/shaq_and_koby_venv/bin/activate
 shaqjoy systemd : sudo nano /etc/systemd/system/joystick_controller.service
 shaq systemd : sudo nano /etc/systemd/system/auto_bringup.service
 
+kobe systemd : sudo nano /etc/systemd/system/auto_bringup.service
+
 #Reload systemd (after creating or modifying the service file)
 sudo systemctl daemon-reload
 
@@ -59,7 +61,10 @@ sudo systemctl stop shaq_ros2.service
 sudo systemctl disable shaq_ros2.service
 
 
+vcgencmd measure_temp
+
 /bin/bash /home/shaq/shaq_and_koby_ws/autobringup/shaq_autobringup.sh 
 
+#hard Pull
 git fetch --all
 git reset --hard origin/main

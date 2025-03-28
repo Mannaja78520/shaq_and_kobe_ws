@@ -81,48 +81,48 @@ void IMU_BNO055::getIMUData(sensor_msgs__msg__Imu &imu_msg, sensor_msgs__msg__Ma
   pos_angle_msg.angular.x = roll;
   pos_angle_msg.angular.y = pitch;
   pos_angle_msg.angular.z = yaw;
-  roll *= DEG_2_RAD;
-  pitch *= DEG_2_RAD;
-  yaw *= DEG_2_RAD;
+  // roll *= DEG_2_RAD;
+  // pitch *= DEG_2_RAD;
+  // yaw *= DEG_2_RAD;
   
-  // Compute the rotation matrix
-  double R[3][3] = {
-      {
-          cos(yaw) * cos(pitch),
-          cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll),
-          cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll)
-      },
-      {
-          sin(yaw) * cos(pitch),
-          sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll),
-          sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll)
-      },
-      {
-          -sin(pitch),
-          cos(pitch) * sin(roll),
-          cos(pitch) * cos(roll)
-      }
-  };
+  // // Compute the rotation matrix
+  // double R[3][3] = {
+  //     {
+  //         cos(yaw) * cos(pitch),
+  //         cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll),
+  //         cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll)
+  //     },
+  //     {
+  //         sin(yaw) * cos(pitch),
+  //         sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll),
+  //         sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll)
+  //     },
+  //     {
+  //         -sin(pitch),
+  //         cos(pitch) * sin(roll),
+  //         cos(pitch) * cos(roll)
+  //     }
+  // };
 
-  // Transform local acceleration to world frame
-  double accel_world_x = R[0][0] * ax + R[0][1] * ay + R[0][2] * az;
-  double accel_world_y = R[1][0] * ax + R[1][1] * ay + R[1][2] * az;
-  double accel_world_z = R[2][0] * ax + R[2][1] * ay + R[2][2] * az;
+  // // Transform local acceleration to world frame
+  // double accel_world_x = R[0][0] * ax + R[0][1] * ay + R[0][2] * az;
+  // double accel_world_y = R[1][0] * ax + R[1][1] * ay + R[1][2] * az;
+  // double accel_world_z = R[2][0] * ax + R[2][1] * ay + R[2][2] * az;
 
-  accel_world_z -= 9.81;
+  // accel_world_z -= 9.81;
   
 
-  //velocity = accel*dt (dt in seconds)
-  //position = 0.5*accel*dt^2
-  double ACCEL_POS_TRANSITION = 0.5 * time_diff * time_diff;
-  // Update position using velocity and acceleration
-  xPos += (vX * time_diff) + (accel_world_x * ACCEL_POS_TRANSITION);
-  yPos += (vY * time_diff) + (accel_world_y * ACCEL_POS_TRANSITION);
-  zPos += (vZ * time_diff) + (accel_world_z * ACCEL_POS_TRANSITION);
+  // //velocity = accel*dt (dt in seconds)
+  // //position = 0.5*accel*dt^2
+  // double ACCEL_POS_TRANSITION = 0.5 * time_diff * time_diff;
+  // // Update position using velocity and acceleration
+  // xPos += (vX * time_diff) + (accel_world_x * ACCEL_POS_TRANSITION);
+  // yPos += (vY * time_diff) + (accel_world_y * ACCEL_POS_TRANSITION);
+  // zPos += (vZ * time_diff) + (accel_world_z * ACCEL_POS_TRANSITION);
 
-  vX += accel_world_x * time_diff;
-  vY += accel_world_y * time_diff;
-  vZ += accel_world_z * time_diff;
+  // vX += accel_world_x * time_diff;
+  // vY += accel_world_y * time_diff;
+  // vZ += accel_world_z * time_diff;
   // velocity of sensor in the direction it's facing
   // orientation.x from event is yaw heading from BNO in degree 0-360 degrees
   // headingVel = time_diff * accel.x() / cos(DEG_2_RAD * event.orientation.x);
