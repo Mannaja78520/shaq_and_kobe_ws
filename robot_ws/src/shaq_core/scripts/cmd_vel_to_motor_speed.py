@@ -100,7 +100,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
         
     def get_robot_angle(self,msg):
-        self.yaw = WrapRads(To_Radians(msg.angular.x))
+        self.yaw = WrapRads(To_Radians(msg.angular.z))
     
     def get_pid(self,msg):
         self.controller.ConfigPIDF(kp = msg.data[0], ki= msg.data[1], kd=msg.data[2], kf=msg.data[3]) 
@@ -151,6 +151,9 @@ class Cmd_vel_to_motor_speed(Node):
             self.macro_active = True
             self.motorshooter1Speed = -560.0     #Upper
             self.motorshooter2Speed = 730.0     #Lower
+            
+            # self.motorshooter1Speed = 800.0     #Upper
+            # self.motorshooter2Speed = 800.0     #Lower
          
         else:
             self.macro_active = False
