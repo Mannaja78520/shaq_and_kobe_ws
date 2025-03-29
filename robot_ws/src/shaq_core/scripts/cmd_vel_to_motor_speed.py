@@ -156,14 +156,11 @@ class Cmd_vel_to_motor_speed(Node):
             self.macro_active = True
             self.motorshooter1Speed = -560.0    #Upper
             self.motorshooter2Speed = 730.0     #Lower
-<<<<<<< HEAD
         #  -1500 4000
-=======
             
             # self.motorshooter1Speed = 800.0     #Upper
             # self.motorshooter2Speed = 800.0     #Lower
          
->>>>>>> b0dac6bf65bbc7101d86c1c1380810e4af316c4e
         else:
             self.macro_active = False
          
