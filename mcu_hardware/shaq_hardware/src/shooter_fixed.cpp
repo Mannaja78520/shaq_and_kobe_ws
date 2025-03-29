@@ -301,8 +301,8 @@ void Move()
     debug_motor_msg.angular.x = current_rpm_motor1;
     debug_motor_msg.angular.y = current_rpm_motor2;
     
-    // motor1_controller.spin(motor1_pid.compute(motor1Speed, current_rpm_motor1));
-    // motor2_controller.spin(motor2_pid.compute(motor2Speed, current_rpm_motor2));
+    motor1_controller.spin(motor1_pid.compute(motor1Speed, current_rpm_motor1));
+    motor2_controller.spin(motor2_pid.compute(motor2Speed, current_rpm_motor2));
     motorlift.spin(motor3Speed);
 
 }
