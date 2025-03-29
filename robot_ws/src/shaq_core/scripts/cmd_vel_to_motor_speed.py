@@ -135,13 +135,11 @@ class Cmd_vel_to_motor_speed(Node):
         
 
     def cmd_shoot(self, msg):
-            # if not self.macro_active:  
-            #     self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxRPM 
-            #     self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxRPM
-
+           
             if not self.macro_active:  
-                self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed
-                self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
+                self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxRPM 
+                self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxRPM
+
             
             self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
             self.motorshooter3Speed += msg.angular.x * self.maxSpeed
