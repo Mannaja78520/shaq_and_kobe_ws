@@ -48,6 +48,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.turnSpeed: float = 0.0
 
         self.maxSpeed : int = 1023.0 # pwm
+        self.maxRPM : int = 6000
         self.max_linear_speed = 3.0  # m/s max
         self.motor1Speed : float = 0
         self.motor2Speed : float = 0
@@ -134,7 +135,11 @@ class Cmd_vel_to_motor_speed(Node):
         
 
     def cmd_shoot(self, msg):
-            if not self.macro_active:  # Only update if macro is inactive
+            # if not self.macro_active:  
+            #     self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxRPM 
+            #     self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxRPM
+
+            if not self.macro_active:  
                 self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed
                 self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
             
@@ -149,9 +154,9 @@ class Cmd_vel_to_motor_speed(Node):
         if msg.linear.x == 1 :
             
             self.macro_active = True
-            self.motorshooter1Speed = -560.0     #Upper
+            self.motorshooter1Speed = -560.0    #Upper
             self.motorshooter2Speed = 730.0     #Lower
-         
+        #  -1500 4000
         else:
             self.macro_active = False
          
