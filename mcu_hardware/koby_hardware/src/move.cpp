@@ -97,8 +97,8 @@ unsigned long prev_cmd_time = 0;
 unsigned long prev_odom_update = 0;
 unsigned long current_time = 0;
 
-Motor motor1_controller(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
-Motor motor2_controller(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BRAKE, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+Motor motorcontroller1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
+Motor motorcontroller2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BRAKE, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
 
 enum states
 {
@@ -281,18 +281,8 @@ void Move()
 
     float motor1Speed = move_msg.linear.x;
     float motor2Speed = move_msg.linear.y;
-    motor1_controller.spin(motor1Speed);
-    motor2_controller.spin(motor2Speed);
-    // ESC1.writeMicroseconds(motor1_controller);
-    // ESC2.writeMicroseconds(motor2_controller);
-
-
-
-    // ESC1.writeMicroseconds(motor1Speed);
-    // ESC2.writeMicroseconds(motor2Speed);
-
-    motor1.spin(motor1Speed);
-    motor2.spin(motor2Speed);
+    motorcontroller1.spin(motor1Speed);
+    motorcontroller2.spin(motor2Speed);
 
 
 }
