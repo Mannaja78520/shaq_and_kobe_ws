@@ -95,8 +95,8 @@ Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM
 Encoder motor1_encoder(MOTOR1_ENCODER_PIN_A, MOTOR1_ENCODER_PIN_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV, ENCODER_GEAR_RATIO);
 Encoder motor2_encoder(MOTOR2_ENCODER_PIN_A, MOTOR2_ENCODER_PIN_B, COUNTS_PER_REV2, MOTOR2_ENCODER_INV, ENCODER_GEAR_RATIO);
 
-PIDF motor1_pid(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
-PIDF motor2_pid(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
+PIDF motor1_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
+PIDF motor2_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
 
 
 
@@ -301,8 +301,8 @@ void Move()
     debug_motor_msg.angular.x = current_rpm_motor1;
     debug_motor_msg.angular.y = current_rpm_motor2;
     
-    motor1_controller.spin(motor1_pid.compute(motor1Speed, current_rpm_motor1));
-    motor2_controller.spin(motor2_pid.compute(motor2Speed, current_rpm_motor2));
+    motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
+    motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
     motorlift.spin(motor3Speed);
 
 }
