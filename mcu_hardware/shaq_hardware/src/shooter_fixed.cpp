@@ -2,6 +2,8 @@
 #include <Wire.h>
 #include <SPI.h>
 
+#define LED_PIN 13
+
 #include <micro_ros_platformio.h>
 #include <stdio.h>
 
@@ -106,10 +108,30 @@ bool createEntities();
 bool destroyEntities();
 void publishData();
 struct timespec getTime();
+void fullStop();
 
 void Move();
 
 //------------------------------ < Main > -------------------------------------//
+
+void flashLED(int n_times)
+{
+  for (int i = 0; i < n_times; i++)
+  {
+    digitalWrite(LED_PIN, HIGH);
+    delay(150);
+    digitalWrite(LED_PIN, LOW);
+    delay(150);
+  }
+  delay(1000);
+}
+
+// Reboot the board (Teensy Only)
+void doReboot()
+{
+  SCB_AIRCR = 0x05FA0004;
+}
+
 
 void setup()
 {
@@ -143,6 +165,9 @@ void loop()
         motorshooter1.spin(0);
         motorshooter2.spin(0);
         motorlift.spin(0);
+
+        fullStop();
+
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -176,6 +201,9 @@ void twist2Callback(const void *msgin)
 
 bool createEntities()
 {
+
+    flashLED(3);
+
     allocator = rcl_get_default_allocator();
 
     init_options = rcl_get_zero_initialized_init_options();
@@ -235,6 +263,8 @@ bool destroyEntities()
     rclc_executor_fini(&executor);
     rclc_support_fini(&support);
 
+    flashLED(5);
+
     return true;
 }
 
@@ -271,9 +301,8 @@ void Move()
     debug_motor_msg.angular.x = current_rpm_motor1;
     debug_motor_msg.angular.y = current_rpm_motor2;
     
-    motor1_controller.spin(motor1_pid.compute(motor1Speed, current_rpm_motor1));
-    motor2_controller.spin(motor2_pid.compute(motor2Speed, current_rpm_motor2));
-    
+    // motor1_controller.spin(motor1_pid.compute(motor1Speed, current_rpm_motor1));
+    // motor2_controller.spin(motor2_pid.compute(motor2Speed, current_rpm_motor2));
     motorlift.spin(motor3Speed);
 
 }
@@ -317,16 +346,7 @@ struct timespec getTime()
 
 void rclErrorLoop()
 {
-    while (true)
-    {
-    }
+    flashLED(2);
+    doReboot();
 }
 
-void flashLED(int n_times)
-{
-    for (int i = 0; i < n_times; i++)
-    {
-
-    }
-    delay(1000);
-}

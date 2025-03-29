@@ -78,6 +78,7 @@ class Encoder
 public:
 	Encoder(uint8_t pin1, uint8_t pin2, int counts_per_rev, bool invert=false, float gear_ratio = 1) {
 		uint8_t temp_pin = pin1;
+		this-> gear_ratio =gear_ratio;
 		if(invert)
 		{
 			pin1 = pin2;

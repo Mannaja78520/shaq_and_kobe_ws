@@ -1,0 +1,15 @@
+[Unit]
+Description=Auto Bringup ROS2 on Startup
+After=network.target
+
+[Service]
+User=shaq
+WorkingDirectory=/home/shaq/shaq_and_koby_ws/service/shaq
+ExecStart=/bin/bash -c "source /home/shaq/shaq_and_koby_ws/service/shaq/shaq_autobringup.sh"
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
