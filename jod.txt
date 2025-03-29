@@ -41,15 +41,19 @@ sudo systemctl daemon-reload
 
 #Enable the service (start on boot)
 sudo systemctl enable auto_bringup.service
+sudo systemctl enable joystick_controller.service
 
 #Start the service manually
 sudo systemctl start auto_bringup.service
+sudo systemctl start joystick_controller.service
 
 #Restart
 sudo systemctl restart auto_bringup.service
+sudo systemctl restart joystick_controller.service
 
 #Check service status
 systemctl status auto_bringup.service
+systemctl status joystick_controller.service
 
 #View logs
 journalctl -u auto_bringup.service -f
@@ -62,6 +66,8 @@ sudo systemctl disable shaq_ros2.service
 
 
 vcgencmd measure_temp
+vcgencmd get_throttled
+
 
 /bin/bash /home/shaq/shaq_and_koby_ws/autobringup/shaq_autobringup.sh 
 
