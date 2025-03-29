@@ -21,13 +21,13 @@
 #define PWM_Min -PWM_Max
 
 #define K_P 0.6
-#define K_I 0.8
+#define K_I 0.4
 #define K_D 0.5
-#define K_F 0.2
+#define K_F 0.3
 #define I_Max -1
 #define I_Min -1 
 
-#define MOTOR1_ENCODER_INV true
+#define MOTOR1_ENCODER_INV false
 #define MOTOR2_ENCODER_INV false
 
 #define MOTOR1_INV false
