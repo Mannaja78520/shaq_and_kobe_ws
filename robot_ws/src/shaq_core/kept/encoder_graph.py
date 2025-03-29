@@ -13,7 +13,7 @@ class TwistSubscriber(Node):
         super().__init__('encoder_sub')
         self.subscription = self.create_subscription(
             Twist,  
-            '/shaq/cmd_shoot/rpm',  # Update to appropriate topic
+            '/shaq/debug/cmd_shoot/rpm',  # Update to appropriate topic
             self.listener_callback,
             10)
         self.subscription  
