@@ -49,20 +49,20 @@ while True:
         print(f"distance: {distance}")
 
         # Draw bounding box
-    #     for i in range(4):
-    #         pt1 = tuple(corners[i])
-    #         pt2 = tuple(corners[(i + 1) % 4])
-    #         cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
+        for i in range(4):
+            pt1 = tuple(corners[i])
+            pt2 = tuple(corners[(i + 1) % 4])
+            cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
 
-    #     # Display Tag ID and Distance
-    #     cX, cY = int(detection.center[0]), int(detection.center[1])
-    #     cv2.putText(frame, f"ID: {tag_id}", (cX - 20, cY - 20),
-    #                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-    #     cv2.putText(frame, f"Dist: {distance:.2f}m", (cX - 20, cY + 20),
-    #                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+        # Display Tag ID and Distance
+        cX, cY = int(detection.center[0]), int(detection.center[1])
+        cv2.putText(frame, f"ID: {tag_id}", (cX - 20, cY - 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        cv2.putText(frame, f"Dist: {distance:.2f}m", (cX - 20, cY + 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
     # # Show the video feed
-    # cv2.imshow("AprilTag Distance Estimation", frame)
+    cv2.imshow("AprilTag Distance Estimation", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
