@@ -2,7 +2,7 @@
 #define DRIVE_OUTPUT_H
 
 
-#define ENCODER_GEAR_RATIO 43.0/20.0
+#define ENCODER_GEAR_RATIO 3
 #define MOTOR_MAX_RPM 750                                               // motor's max RPM          
 #define MAX_RPM_RATIO -1                                                // max RPM allowed for each MAX_RPM_ALLOWED = MOTOR_MAX_RPM * MAX_RPM_RATIO          
 #define MOTOR_OPERATING_VOLTAGE 24                                      // motor's operating voltage (used to calculate max RPM)
@@ -21,9 +21,9 @@
 #define PWM_Min -PWM_Max
 
 #define K_P 0.6
-#define K_I 0.8
+#define K_I 0.4
 #define K_D 0.5
-#define K_F 0.2
+#define K_F 0.3
 #define I_Max -1
 #define I_Min -1 
 

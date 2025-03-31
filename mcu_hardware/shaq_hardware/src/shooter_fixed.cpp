@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
+#include <cmath>
 
 #define LED_PIN 13
 
@@ -298,11 +299,12 @@ void Move()
     float current_rpm_motor1 = motor1_encoder.getRPM();
     float current_rpm_motor2 = motor2_encoder.getRPM();
 
-    debug_motor_msg.angular.x = current_rpm_motor1;
-    debug_motor_msg.angular.y = current_rpm_motor2;
+    debug_motor_msg.angular.x = std::round(current_rpm_motor1 * 100.0) / 100.0;
+    debug_motor_msg.angular.y = std::round(current_rpm_motor2 * 100.0) / 100.0;
+
     
-    motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
-    motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
+    // motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
+    // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
     motorlift.spin(motor3Speed);
 
 }

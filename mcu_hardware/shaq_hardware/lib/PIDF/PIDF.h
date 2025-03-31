@@ -5,7 +5,7 @@
 
 class PIDF {
   private:
-    unsigned long long LastTime;
+    // unsigned long long LastTime;
   public:
     float Kp, Ki, Kd, Kf, Setpoint, Error, LastError;
     float Dt, Integral, i_min, i_max, min_val, max_val;
