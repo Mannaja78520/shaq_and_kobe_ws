@@ -27,7 +27,7 @@
 #define I_Max -1
 #define I_Min -1 
 
-#define MOTOR1_ENCODER_INV true
+#define MOTOR1_ENCODER_INV false
 #define MOTOR2_ENCODER_INV false
 
 #define MOTOR1_INV false

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# from pynput import keyboard
+
 import threading
 import rclpy
 from rclpy.node import Node
@@ -47,8 +47,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.slideSpeed: float = 0.0
         self.turnSpeed: float = 0.0
 
-        self.maxSpeed : int = 1023.0 # pwm
-        self.maxRPM : int = 6000
+        self.maxSpeed : float = 1023.0 # pwm
+        self.maxRPM : int = 3000
         self.max_linear_speed = 3.0  # m/s max
         self.motor1Speed : float = 0
         self.motor2Speed : float = 0
@@ -137,8 +137,11 @@ class Cmd_vel_to_motor_speed(Node):
     def cmd_shoot(self, msg):
            
             if not self.macro_active:  
-                self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxRPM 
-                self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxRPM
+                # self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxRPM 
+                # self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxRPM
+                
+                self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed 
+                self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
 
             
             self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
@@ -152,9 +155,10 @@ class Cmd_vel_to_motor_speed(Node):
         if msg.linear.x == 1 :
             
             self.macro_active = True
-            self.motorshooter1Speed = -560.0    #Upper
-            self.motorshooter2Speed = 730.0     #Lower
-        #  -1500 4000
+            self.motorshooter1Speed = -580.0    #Upper
+            self.motorshooter2Speed = 740.0     #Lower
+        #  -580 740 --> -1200 4400
+        #  -580 740
             
             # self.motorshooter1Speed = 800.0     #Upper
             # self.motorshooter2Speed = 800.0     #Lower
