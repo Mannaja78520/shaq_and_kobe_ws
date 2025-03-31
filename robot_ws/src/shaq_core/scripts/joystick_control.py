@@ -135,6 +135,12 @@ class Joystick(Node):
         cmd_vel_shoot.angular.x = float(self.gamepad.dpadUpDown * self.maxspeed)
 
         
+        if self.gamepad.button_cross:
+            cmd_vel_macro.linear.y = 1.0
+            
+        else:
+            cmd_vel_macro.linear.y = 0.0
+        
         
         if self.gamepad.dribble:
             cmd_vel_macro.linear.x = 1.0

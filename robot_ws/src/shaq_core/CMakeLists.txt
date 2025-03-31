@@ -60,6 +60,7 @@ install(PROGRAMS
   scripts/cmd_vel_to_motor_speed.py
   scripts/cmd_koby_task.py
   scripts/apriltag_distance.py
+  scripts/cmd_vel_auto_aim.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -27,6 +27,24 @@ def generate_launch_description():
         namespace="",
         # parameters=[motor_config], #Testing
     )
+    
+    cmd_vel_to_motor_speed = Node(
+        package="shaq_core",
+        executable="cmd_vel_to_motor_speed.py",
+        name="Cmd_Vel_To_Rpm",
+        # output="screen",
+        namespace="",
+        # parameters=[motor_config], #Testing
+    )
+    
+    cmd_vel_auto_aim = Node(
+        package="shaq_core",
+        executable="cmd_vel_auto_aim.py",
+        name="Cmd_Vel_Auto_Aim",
+        # output="screen",
+        namespace="",
+        # parameters=[], #Testing
+    )
 
 
     # Add actions to the launch description
