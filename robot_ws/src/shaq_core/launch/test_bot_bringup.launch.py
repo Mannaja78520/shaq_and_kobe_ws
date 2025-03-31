@@ -5,6 +5,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 
+
 def generate_launch_description():
     ld = LaunchDescription()
 
@@ -19,23 +20,6 @@ def generate_launch_description():
         )
     )
     
-    cmd_vel_to_motor_speed = Node(
-        package="shaq_core",
-        executable="cmd_vel_to_motor_speed.py",
-        name="Cmd_Vel_To_Rpm",
-        # output="screen",
-        namespace="",
-        # parameters=[motor_config], #Testing
-    )
-    
-    cmd_vel_to_motor_speed = Node(
-        package="shaq_core",
-        executable="cmd_vel_to_motor_speed.py",
-        name="Cmd_Vel_To_Rpm",
-        # output="screen",
-        namespace="",
-        # parameters=[motor_config], #Testing
-    )
     
     cmd_vel_auto_aim = Node(
         package="shaq_core",
@@ -46,11 +30,31 @@ def generate_launch_description():
         # parameters=[], #Testing
     )
 
+    apriltag_distance = Node(
+        package="shaq_core",
+        executable="apriltag_distance.py",
+        name="Apriltag_Distance",
+        # output="screen",
+        namespace="",
+        # parameters=[], #Testing
+    )
+
+    hoop_detection = Node(
+        package="shaq_core",
+        executable="hoop_detection.py",
+        name="Hoop_Detection",
+        # output="screen",
+        namespace="",
+        # parameters=[], #Testing
+    )
+
+
 
     # Add actions to the launch description
-    # ld.add_action(microros_launch)
-    # ld.add_action(cmd_vel_to_motor_speed)
+    ld.add_action(microros_launch)
     ld.add_action(cmd_vel_auto_aim)
+    # ld.add_action(apriltag_distance)
+    ld.add_action(hoop_detection)
 
     return ld
 

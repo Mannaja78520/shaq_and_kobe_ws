@@ -28,19 +28,11 @@ def generate_launch_description():
         # parameters=[motor_config], #Testing
     )
     
-    cmd_vel_to_motor_speed = Node(
+
+    apriltag_distance = Node(
         package="shaq_core",
-        executable="cmd_vel_to_motor_speed.py",
-        name="Cmd_Vel_To_Rpm",
-        # output="screen",
-        namespace="",
-        # parameters=[motor_config], #Testing
-    )
-    
-    cmd_vel_auto_aim = Node(
-        package="shaq_core",
-        executable="cmd_vel_auto_aim.py",
-        name="Cmd_Vel_Auto_Aim",
+        executable="apriltag_distance.py",
+        name="Apriltag_Distance",
         # output="screen",
         namespace="",
         # parameters=[], #Testing
@@ -50,7 +42,7 @@ def generate_launch_description():
     # Add actions to the launch description
     ld.add_action(microros_launch)
     ld.add_action(cmd_vel_to_motor_speed)
-    # ld.add_action(cmd_vel_auto_aim)
+    ld.add_action(apriltag_distance)
 
     return ld
 

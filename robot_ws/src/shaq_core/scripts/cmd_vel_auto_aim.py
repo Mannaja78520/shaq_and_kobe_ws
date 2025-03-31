@@ -10,7 +10,7 @@ from geometry_msgs.msg import Twist
 from rclpy import qos
 from src.utilize import * 
 from src.controller import *
-# from src.main_run import mainRun
+# from hoop_detection import mainRun
 import time 
 import math
 
@@ -33,8 +33,6 @@ class Cmd_vel_to_motor_speed(Node):
     def __init__(self):
         super().__init__("Cmd_vel_to_motor_speed")
 
-        # self.declare_parameter("mode", 1)  # ค่าเริ่มต้นคือ 1
-        # self.mode = self.get_parameter("mode").get_parameter_value().integer_value
         self.mode = 1
         
         self.moveSpeed: float = 0.0
@@ -55,8 +53,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.yaw : float = 0
         self.yaw_setpoint = self.yaw
         
-        # self.main_run_instance = mainRun()
-        # self.middlecam = self.main_run_instance.center_x
+        # self.main_run_instance = mainRun
+
         self.middlecam : float = 0.0
         
         self.macro_active = False

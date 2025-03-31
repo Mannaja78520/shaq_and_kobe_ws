@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 import rclpy
 from rclpy import qos
 from rclpy.node import Node
@@ -5,14 +8,14 @@ from geometry_msgs.msg import Twist
 import cv2 as cv
 import os
 from ultralytics import YOLO
-from cameracapture import CameraCapture  # ใช้ CameraCapture แทน WindowCapture
+from cameracapture import CameraCapture  
 import math
 
 
 # โหลดโมเดล YOLO
 username = os.getenv("USER")
 model_path = f"/home/{username}/shaq_and_koby_ws/image_test/trainvschair.pt"
-# model = YOLO('/home/shaq/shaq_and_koby_ws/image_test/trainvschair.pt')
+# model = YOLO('/home/ppha/shaq_and_koby_ws/image_test/trainvschair.pt')
 model = YOLO(model_path)
 
 
