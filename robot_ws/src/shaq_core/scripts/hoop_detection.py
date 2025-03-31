@@ -20,7 +20,7 @@ model = YOLO(model_path)
 
 
 # ใช้งานกล้องแทนการจับภาพหน้าจอ
-camcap = CameraCapture(camera_index=0)  # ใช้กล้องหลัก (0)
+camcap = CameraCapture(camera_index=0,width = 320, height = 240)  # ใช้กล้องหลัก (0)
 
 # เปลี่ยนไปที่ไดเร็กทอรีของไฟล์นี้
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -40,7 +40,7 @@ class mainRun(Node):
             Twist, "/shaq/send_where_hoop", qos_profile=qos.qos_profile_system_default
         )
         
-        self.sent_data_timer = self.create_timer(0.05, self.sendData)
+        self.sent_data_timer = self.create_timer(0.1, self.sendData)
     
     def detectHoop(self):
         screenshot = camcap.get_screenshot()  # ได้ภาพจากกล้อง (RGB อยู่แล้ว)
@@ -90,6 +90,7 @@ class mainRun(Node):
         hoopdata_msg.linear.x = self.x
         hoopdata_msg.linear.y = self.y
         hoopdata_msg.angular.x = float(self.center_x)
+        hoopdata_msg.angular.x = float(133.0)
         hoopdata_msg.angular.y = float(self.center_y)
         self.sent_where_hoop.publish(hoopdata_msg)
         

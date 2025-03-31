@@ -98,7 +98,7 @@ class Cmd_vel_to_motor_speed(Node):
         )
 
 
-        self.sent_data_timer = self.create_timer(0.01, self.sendData)
+        self.sent_data_timer = self.create_timer(0.03, self.sendData)
         
     def get_robot_angle(self,msg):
         self.yaw = WrapRads(To_Radians(msg.angular.z))
