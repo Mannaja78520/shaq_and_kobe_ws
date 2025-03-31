@@ -60,8 +60,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.macro_active = False
         self.previous_manual_turn = time.time()
 
-        self.controller = Controller()
-        self.hooprotage = Controller()
+        self.controller = Controller(kp = 1.27, ki = 0.2, kd = 0.1, errorTolerance=(To_Radians(0.5)), i_min= -1, i_max= 1)
+        self.hooprotage = Controller(kp = 0.002, ki = 0.000002, kd = 0.000001, errorTolerance=(10))
 
         self.hoop_distance_x : float = 0.0
         self.hoop_distance_y : float = 0.0
@@ -129,6 +129,8 @@ class Cmd_vel_to_motor_speed(Node):
 
         if self.mode == 1:
             rotation = self.controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw)) 
+            if self.slideSpeed == 0 and self.moveSpeed  == 0 and self.turnSpeed == 0 and abs(rotation) < 0.2:
+                rotation = 0
         elif self.mode == 2:
             rotation = self.hooprotage.Calculate(self.hoop_distance_x - self.middlecam)
             # rotation = 33333.0
@@ -137,8 +139,6 @@ class Cmd_vel_to_motor_speed(Node):
             rotation = self.turnSpeed
             self.yaw_setpoint = self.yaw
 
-        if self.slideSpeed == 0 and self.moveSpeed  == 0 and self.turnSpeed == 0 and abs(rotation) < 0.2:
-            rotation = 0
 
         self.previous_manual_turn = CurrentTime if self.turnSpeed != 0 else self.previous_manual_turn
 
