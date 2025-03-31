@@ -48,9 +48,9 @@ def generate_launch_description():
 
 
     # Add actions to the launch description
-    ld.add_action(microros_launch)
-    ld.add_action(cmd_vel_to_motor_speed)
-    # ld.add_action(cmd_vel_auto_aim)
+    # ld.add_action(microros_launch)
+    # ld.add_action(cmd_vel_to_motor_speed)
+    ld.add_action(cmd_vel_auto_aim)
 
     return ld
 
