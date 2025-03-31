@@ -168,6 +168,9 @@ class Cmd_vel_to_motor_speed(Node):
 
         if msg.linear.y == 1 :
             self.mode = 2
+
+        else:
+            self.mode = 1
             
 
         if msg.linear.x == 1 :
