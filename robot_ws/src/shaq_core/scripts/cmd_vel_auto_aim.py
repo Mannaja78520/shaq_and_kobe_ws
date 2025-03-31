@@ -33,8 +33,8 @@ class Cmd_vel_to_motor_speed(Node):
     def __init__(self):
         super().__init__("Cmd_vel_to_motor_speed")
 
-        self.declare_parameter("mode", 1)  # ค่าเริ่มต้นคือ 1
-        self.mode = self.get_parameter("mode").get_parameter_value().integer_value
+        # self.declare_parameter("mode", 1)  # ค่าเริ่มต้นคือ 1
+        # self.mode = self.get_parameter("mode").get_parameter_value().integer_value
         self.mode = 1
         
         self.moveSpeed: float = 0.0
@@ -64,6 +64,9 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.controller = Controller()
         self.hooprotage = Controller()
+
+        self.hoop_distance_x : float = 0.0
+        self.hoop_distance_y : float = 0.0
         
         
         self.send_robot_speed = self.create_publisher(
@@ -123,7 +126,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.slideSpeed = msg.linear.x  
         self.turnSpeed = msg.angular.z 
 
-        self.mode = self.get_parameter("mode").get_parameter_value().integer_value
+        # self.mode = self.get_parameter("mode").get_parameter_value().integer_value
 
 
         if self.mode == 1:
@@ -162,6 +165,11 @@ class Cmd_vel_to_motor_speed(Node):
 
 
     def cmd_macro(self, msg):
+
+        if msg.linear.y == 1 :
+            self.mode = 2
+            
+
         if msg.linear.x == 1 :
             
             self.macro_active = True
@@ -184,6 +192,8 @@ class Cmd_vel_to_motor_speed(Node):
         motorshooter_msg.linear.x = float(self.motorshooter1Speed)
         motorshooter_msg.linear.y = float(self.motorshooter2Speed)
         motorshooter_msg.linear.z = float(self.motorshooter3Speed)
+
+        motorshooter_msg.angular.x = float(self.mode)
 
 
         self.send_shoot_speed.publish(motorshooter_msg)

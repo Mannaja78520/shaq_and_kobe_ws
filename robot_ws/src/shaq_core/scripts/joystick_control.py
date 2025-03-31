@@ -38,8 +38,9 @@ class Gamepad:
 
         #----------------------------------------------------------------
         
+        self.auto_aim_bool: bool =False
         self.dribble: bool = False  
-        self.previous_state = False  # Track previous button state
+        
         
     def update_dribble(self):
 
@@ -48,6 +49,14 @@ class Gamepad:
             self.dribble = not self.dribble  # Toggle state
             
         self.previous_triangle_state = self.button_triangle  # Update button state
+
+    def update_auto_aim(self):
+
+        if self.button_circle and not self.previous_circle_state:
+    
+            self.auto_aim_bool = not self.auto_aim_bool  # Toggle state
+            
+        self.previous_circle_state = self.button_circle  # Update button state
 
 class Joystick(Node):
     def __init__(self):
@@ -113,6 +122,7 @@ class Joystick(Node):
         #Macro-----------------------------------------------------------
         
         self.gamepad.update_dribble()
+        self.gamepad.update_auto_aim()
 
         
         
@@ -135,7 +145,7 @@ class Joystick(Node):
         cmd_vel_shoot.angular.x = float(self.gamepad.dpadUpDown * self.maxspeed)
 
         
-        if self.gamepad.button_cross:
+        if self.gamepad.auto_aim_bool:
             cmd_vel_macro.linear.y = 1.0
             
         else:
