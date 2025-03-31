@@ -20,7 +20,7 @@ class AprilTagDetector(Node):
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         
-        self.TAG_SIZE = 0.087  # Tag size in meters
+        self.TAG_SIZE = 0.115  # Tag size in meters
         self.FOCAL_LENGTH = 653  # Change this after calibration
         
         options = apriltag.DetectorOptions(families="tag36h11")

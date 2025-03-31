@@ -9,7 +9,7 @@ from cameracapture import CameraCapture  # ใช้ CameraCapture แทน Win
 import math
 
 # โหลดโมเดล YOLO
-model = YOLO('/home/aing/abudetecttest/onlyhoop.pt')
+model = YOLO('/home/shaq/shaq_and_koby_ws/image_test/trainvschair.pt')
 
 # ใช้งานกล้องแทนการจับภาพหน้าจอ
 camcap = CameraCapture(camera_index=0)  # ใช้กล้องหลัก (0)
@@ -73,8 +73,8 @@ class mainRun(Node):
         
         # 2f ทศนิยม 2 ตน (50,50) ตน ข้อความ 0.7 ขนาด 2 ความหนา
 
-        cv.imshow('Detection Results', plot_img)
-        cv.waitKey(1)
+        # cv.imshow('Detection Results', plot_img)
+        # cv.waitKey(1)
         
     def sendData(self):
         hoopdata_msg = Twist()
@@ -91,7 +91,7 @@ def main():
     rclpy.spin(sub)
     camcap.release()  # ปิดกล้องเมื่อจบการทำงาน
     rclpy.shutdown()
-    cv.destroyAllWindows()
+    # cv.destroyAllWindows()
     
 if __name__ == "__main__":
     main()
