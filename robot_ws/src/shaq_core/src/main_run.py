@@ -8,8 +8,13 @@ from ultralytics import YOLO
 from cameracapture import CameraCapture  # ใช้ CameraCapture แทน WindowCapture
 import math
 
+
 # โหลดโมเดล YOLO
-model = YOLO('/home/shaq/shaq_and_koby_ws/image_test/trainvschair.pt')
+username = os.getenv("USER")
+model_path = f"/home/{username}/shaq_and_koby_ws/image_test/trainvschair.pt"
+# model = YOLO('/home/shaq/shaq_and_koby_ws/image_test/trainvschair.pt')
+model = YOLO(model_path)
+
 
 # ใช้งานกล้องแทนการจับภาพหน้าจอ
 camcap = CameraCapture(camera_index=0)  # ใช้กล้องหลัก (0)

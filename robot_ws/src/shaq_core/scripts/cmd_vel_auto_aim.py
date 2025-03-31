@@ -132,8 +132,8 @@ class Cmd_vel_to_motor_speed(Node):
         if self.mode == 1:
             rotation = self.controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw)) 
         elif self.mode == 2:
-            # rotation = self.controller.Calculate(self.hooprotage - self.main_run_instance.center_x)
             rotation = self.hooprotage.Calculate(self.hoop_distance_x - self.middlecam)
+            # rotation = 33333.0
 
         if self.turnSpeed != 0 or (CurrentTime - self.previous_manual_turn < 0.45):
             rotation = self.turnSpeed
