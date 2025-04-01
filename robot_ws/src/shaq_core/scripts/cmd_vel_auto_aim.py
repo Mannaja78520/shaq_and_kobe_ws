@@ -61,7 +61,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.previous_manual_turn = time.time()
 
         self.controller = Controller(kp = 1.27, ki = 0.2, kd = 0.1, errorTolerance=(To_Radians(0.5)), i_min= -1, i_max= 1)
-        self.hooprotage = Controller(kp = 0.002, ki = 0.001, kd = 0.0, errorTolerance=(5))
+        self.hooprotage = Controller(kp = 0.002, ki = 0.001, kd = 0.0, baseSpeed=(60), errorTolerance=(5))
 
         self.hoop_distance_x : float = 0.0
         self.hoop_distance_y : float = 0.0
@@ -182,8 +182,8 @@ class Cmd_vel_to_motor_speed(Node):
         if msg.linear.x == 1 :
             
             self.macro_active = True
-            self.motorshooter1Speed = -1500.0    #Upper
-            self.motorshooter2Speed = 4000.0     #Lower
+            self.motorshooter1Speed = -580.0    #Upper
+            self.motorshooter2Speed = 740.0     #Lower
          
         else:
             self.macro_active = False
