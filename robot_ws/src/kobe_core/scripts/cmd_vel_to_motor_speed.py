@@ -31,8 +31,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.moveSpeed: float = 0.0
         self.turnSpeed: float = 0.0
 
-        self.maxSpeed : float = 1023.0
-        self.shootmaxSpeed : float = 500.0
+        self.maxSpeed : float = 1023.0 / 2
+        self.shootmaxSpeed : float = 800.0
         self.motor1Speed : float = 0
         self.motor2Speed : float = 0
         
@@ -129,31 +129,25 @@ class Cmd_vel_to_motor_speed(Node):
 
         # Set move and turn speeds from the message input
         self.moveSpeed = msg.linear.x
-
         self.turnSpeed = msg.angular.x 
+
+        self.turnSpeed = self.turnSpeed / 3
 
         # Calculate motor speeds based on move and turn speeds
         self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed 
         self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed 
-        self.rotation = rotation * self.maxSpeed  # Apply track width to rotation speed
 
-        reverse = False  
+        if self.motor1Speed >= self.maxSpeed:
+            self.motor1Speed = self.maxSpeed
 
-        # Limit motor speeds to a maximum value
-        max_motor_speed = 1023.0 * 0.5 
-        self.motor1Speed = min(self.motor1Speed, max_motor_speed)
-        self.motor2Speed = min(self.motor2Speed, max_motor_speed)
-        self.rotation = min(self.rotation, max_motor_speed)
+        if self.motor2Speed >= self.maxSpeed:
+            self.motor2Speed = self.maxSpeed    
+        # self.rotation = rotation * self.maxSpeed  # Apply track width to rotation speed
+
+
             
-        # self.motor1Speed = max(min(self.motor1Speed, 1.0), -1.0)
-        # self.motor2Speed = max(min(self.motor2Speed, 1.0), -1.0)
         
-        # self.motor1Speed = self.map_speed_to_pwm(self.motor1Speed)
-        
-    def map_speed_to_pwm(self, speed):
-        # Map motor speed [-1.0, 1.0] to PWM range [1000, 2000]
-        pwm = int(speed * self.maxSpeed)  # Center at 1500ms, range from 1000ms to 2000ms
-        return pwm    
+
 
 
     def cmd_shoot(self, msg):
@@ -165,7 +159,7 @@ class Cmd_vel_to_motor_speed(Node):
             self.motorshooter3Speed += msg.angular.x * self.maxSpeed
 
         if self.motorshooter3Speed >= 1023.0:
-            self.motorshooter3Speed = 600.0 
+            self.motorshooter3Speed = 1023.0 
 
     def cmd_nadeem(self, msg):
         if not self.macro_active:  # Only update if macro is inactive
