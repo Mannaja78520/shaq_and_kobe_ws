@@ -52,14 +52,14 @@ ROBOT ORIENTATION
 #define MOTOR4_BRAKE true
 
 // Motor 1 Parameters
-#define MOTOR1_PWM  0
-#define MOTOR1_IN_A 1
-#define MOTOR1_IN_B 2
+#define MOTOR1_PWM  3
+#define MOTOR1_IN_A 4
+#define MOTOR1_IN_B 5
 
 // Motor 2 Parameters
-#define MOTOR2_PWM  3
-#define MOTOR2_IN_A 4
-#define MOTOR2_IN_B 5
+#define MOTOR2_PWM  6
+#define MOTOR2_IN_A 7
+#define MOTOR2_IN_B 8
 
 // Motor 3 Parameters
 #define MOTOR3_PWM  6
