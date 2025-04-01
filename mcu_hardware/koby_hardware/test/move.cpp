@@ -196,7 +196,7 @@ bool createEntities()
     rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
 
     // create node
-    RCCHECK(rclc_node_init_default(&node, "int32_publisher_rclc", "", &support));
+    RCCHECK(rclc_node_init_default(&node, "kobe_mcu", "", &support));
 
     RCCHECK(rclc_publisher_init_best_effort(
         &debug_motor_publisher,

@@ -132,14 +132,14 @@ class Cmd_vel_to_motor_speed(Node):
         self.turnSpeed = msg.angular.x 
 
         # Calculate motor speeds based on move and turn speeds
-        self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed / 3
-        self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed / 3
+        self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed 
+        self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed 
         self.rotation = rotation * self.maxSpeed / 3  # Apply track width to rotation speed
 
         reverse = False  
 
         # Limit motor speeds to a maximum value
-        max_motor_speed = 1023.0 / 3
+        max_motor_speed = 1023.0 / 1.5 
         self.motor1Speed = min(self.motor1Speed, max_motor_speed)
         self.motor2Speed = min(self.motor2Speed, max_motor_speed)
         self.rotation = min(self.rotation, max_motor_speed)
