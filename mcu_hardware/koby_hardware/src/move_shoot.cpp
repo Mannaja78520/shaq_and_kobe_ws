@@ -97,7 +97,6 @@ rcl_publisher_t imu_mag_publisher;
 sensor_msgs__msg__MagneticField imu_mag_msg;
 
 rcl_publisher_t debug_motor_publisher;
-geometry_msgs__msg__Twist debug_motor_msg;
 
 rcl_publisher_t encoder_publisher;
 geometry_msgs__msg__Twist encoder_msg;
@@ -229,16 +228,80 @@ bool createEntities()
     flashLED(5);
 
     allocator = rcl_get_default_allocator();
-    rclc_support_init(&support, 0, NULL, &allocator);
+
+    init_options = rcl_get_zero_initialized_init_options();
+    rcl_init_options_init(&init_options, allocator);
+    rcl_init_options_set_domain_id(&init_options, 10);
+
+    rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
+
+    // create node
     RCCHECK(rclc_node_init_default(&node, "kobe_mcu", "", &support));
-    RCCHECK(rclc_publisher_init_best_effort(&debug_motor_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist), "/kobe/debug/cmd_move/rpm"));
-    RCCHECK(rclc_subscription_init_default(&move_motor_subscriber, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist), "/kobe/cmd_move/rpm"));
-    RCCHECK(rclc_subscription_init_default(&shooter_motor_subscriber, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist), "/kobe/cmd_shoot/rpm"));
-    RCCHECK(rclc_publisher_init_best_effort(&imu_data_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu), "/kobe/imu/data"));
-    rclc_executor_init(&executor, &support.context, 3, &allocator);
-    rclc_executor_add_subscription(&executor, &move_motor_subscriber, &move_msg, NULL, ON_NEW_DATA);
-    rclc_executor_add_subscription(&executor, &shooter_motor_subscriber, &shooter_msg, NULL, ON_NEW_DATA);
+
+    RCCHECK(rclc_publisher_init_best_effort(
+        &debug_motor_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/kobe/debug/motor/move"));
+
+    RCCHECK(rclc_subscription_init_default(
+        &move_motor_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/kobe/cmd_move/rpm"));
+
+    RCCHECK(rclc_subscription_init_default(
+        &shooter_motor_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/kobe/cmd_shoot/rpm"));    
+
+    RCCHECK(rclc_publisher_init_best_effort(
+        &imu_data_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+        "/kobe/imu/data"));
+      
+    RCCHECK(rclc_publisher_init_best_effort(
+         &imu_mag_publisher,
+         &node,
+         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, MagneticField),
+         "/kobe/imu/mag"));
+      
+    RCCHECK(rclc_publisher_init_best_effort(
+        &imu_pos_angle_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/kobe/imu/pos_angle"));
+
+    // create timer for actuating the motors at 50 Hz (1000/20)
+    const unsigned int control_timeout = 20;
+    RCCHECK(rclc_timer_init_default(
+        &control_timer,
+        &support,
+        RCL_MS_TO_NS(control_timeout),
+        controlCallback));
+    executor = rclc_executor_get_zero_initialized_executor();
+    RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
+
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &move_motor_subscriber,
+        &move_msg,
+        &twistCallback,
+        ON_NEW_DATA));
+
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &shooter_motor_subscriber,
+        &shooter_msg,
+        &twistCallback,
+        ON_NEW_DATA));        
+    RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
+
+    // synchronize time with the agent
     syncTime();
+
     return true;
 
 }
@@ -297,10 +360,10 @@ void Move()
 
 
 //------------------------SHOOTER--------------------
-    float motor1Speed = move_msg.linear.x;
-    float motor2Speed = move_msg.linear.y;
-    motor1.spin(motor1Speed);
-    motor2.spin(motor2Speed);
+    float motor1ShooterSpeed = move_msg.linear.x;
+    float motor2ShooterSpeed = move_msg.linear.y;
+    motor1.spin(motor1ShooterSpeed);
+    motor2.spin(motor2ShooterSpeed);
 
 
 }

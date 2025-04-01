@@ -40,19 +40,19 @@
 #define MOTOR3_BREAK true
 
 
-#define MOTORSHOOTER1_PWM 0
-#define MOTORSHOOTER1_IN_A 1
-#define MOTORSHOOTER1_IN_B 2
+#define MOTORSHOOTER1_PWM 9
+#define MOTORSHOOTER1_IN_A 10
+#define MOTORSHOOTER1_IN_B 11
 
 
-#define MOTORSHOOTER2_PWM 3
-#define MOTORSHOOTER2_IN_A 4 
-#define MOTORSHOOTER2_IN_B 5
+#define MOTORSHOOTER2_PWM 0
+#define MOTORSHOOTER2_IN_A 1 
+#define MOTORSHOOTER2_IN_B 2
 
 
-#define MOTORLIFT_PWM 6
-#define MOTORLIFT_IN_A 7
-#define MOTORLIFT_IN_B 8
+#define MOTORLIFT_PWM 13
+#define MOTORLIFT_IN_A 14
+#define MOTORLIFT_IN_B 15
 
 //------------------------MOVE MOTOR-------------------------
 
