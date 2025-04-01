@@ -1,106 +1,96 @@
 #!/usr/bin/env python3
 
-
 import rclpy
 from rclpy import qos
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 import cv2 as cv
 import os
+import time
+import threading
+import torch
 from ultralytics import YOLO
 from cameracapture import CameraCapture  
-import math
+import numpy as np
 
-
-# โหลดโมเดล YOLO
+# Load YOLO model
 username = os.getenv("USER")
 model_path = f"/home/{username}/shaq_and_koby_ws/image_test/trainvschair.pt"
-# model = YOLO('/home/ppha/shaq_and_koby_ws/image_test/trainvschair.pt')
 model = YOLO(model_path)
 
+# Use CUDA if available
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
-# ใช้งานกล้องแทนการจับภาพหน้าจอ
-camcap = CameraCapture(camera_index=0,width = 320, height = 240)  # ใช้กล้องหลัก (0)
-
-# เปลี่ยนไปที่ไดเร็กทอรีของไฟล์นี้
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+# Initialize Camera
+camcap = CameraCapture(camera_index=0, width=320, height=240)  # Lower resolution for speed
 
 class mainRun(Node):
-    x: float = 0.0
-    y: float = 0.0
-
     def __init__(self):
+        super().__init__("Hoop_Detection")
 
-        super().__init__("Laptop_Node")
-
+        self.x = 0.0
+        self.y = 0.0
         self.center_x = 0.0
         self.center_y = 0.0
 
+        # Publisher for detected hoop data
         self.sent_where_hoop = self.create_publisher(
-            Twist, "/shaq/send_where_hoop", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/send_where_hoop", qos_profile=qos.qos_profile_sensor_data
         )
         
-        self.sent_data_timer = self.create_timer(0.1, self.sendData)
-    
-    def detectHoop(self):
-        screenshot = camcap.get_screenshot()  # ได้ภาพจากกล้อง (RGB อยู่แล้ว)
-        results = model.predict(screenshot)
-        
-        # ตรวจสอบว่ามีวัตถุถูกตรวจจับหรือไม่
-        if len(results[0].boxes) > 0: 
-            # len คือจำนวนสมาชิก
-            self.x = results[0].boxes.xywh[0][0].item()
-            self.y = results[0].boxes.xywh[0][1].item()
-        else:
-            print("No detections")
+        # Timer for sending data
+        self.sent_data_timer = self.create_timer(0.05, self.sendData)
 
-        # แสดงภาพที่มีการตรวจจับ
-        plot_img = results[0].plot()
-        height, width = plot_img.shape[:2]
+        # Thread for object detection
+        self.detection_thread = threading.Thread(target=self.detectHoopLoop, daemon=True)
+        self.detection_thread.start()
 
-        # วาดเส้นแบ่งหน้าจอออกเป็น 4 ส่วน
-        self.center_x = width // 2
-        self.center_y = height // 2
+    def detectHoopLoop(self):
+        """ Runs YOLO detection in a separate thread to improve performance """
+        while rclpy.ok():
+            start_time = time.time()
+            screenshot = camcap.get_screenshot()  # Get frame from camera
 
-        distancex = self.x - self.center_x
-        distancey = self.center_y - self.y
-        # พีทากอรัส
+            # Run YOLO with optimizations
+            results = model.predict(
+                screenshot,
+                imgsz=320,  # Reduce input size
+                conf=0.4,  # Lower confidence threshold
+                half=False,  # Use half precision (if supported)
+                device=device,
+                stream=True  # Stream mode for faster processing
+            )
 
-        cv.circle(plot_img, (self.center_x, self.center_y), 5, (255, 0, 0), -1)
-        # -1 คือเติมสี
-        cv.circle(plot_img, (int(self.x), int(self.y)), 5, (0, 255, 0), -1)
+            for result in results:  # ✅ Iterate over the generator
+                if len(result.boxes) > 0:
+                    self.x = float(result.boxes.xywh[0][0].item())
+                    self.y = float(result.boxes.xywh[0][1].item())
+                else:
+                    self.x, self.y = 0.0, 0.0
 
-        # cv.line(plot_img, (part_width, 0), (part_width, height), (0, 255, 0), 2)
-        # cv.line(plot_img, (2 * part_width, 0), (2 * part_width, height), (0, 255, 0), 2)
-        # cv.line(plot_img, (3 * part_width, 0), (3 * part_width, height), (0, 255, 0), 2)
+            # Compute center of image
+            height, width = screenshot.shape[:2]
+            self.center_x = float(width // 2)
+            self.center_y = float(height // 2)
 
-        cv.putText(plot_img, f"Distancex: {distancex:.2f}", (50, 50), cv.FONT_HERSHEY_SIMPLEX, 
-               0.7, (0, 255, 0), 2)
-        cv.putText(plot_img, f"Distancey: {distancey:.2f}", (50, 25), cv.FONT_HERSHEY_SIMPLEX, 
-               0.7, (0, 255, 0), 2)
-        
-        # 2f ทศนิยม 2 ตน (50,50) ตน ข้อความ 0.7 ขนาด 2 ความหนา
+            process_time = time.time() - start_time
+            self.get_logger().info(f"Detection time: {process_time:.3f}s")
 
-        # cv.imshow('Detection Results', plot_img)
-        # cv.waitKey(1)
-        
     def sendData(self):
         hoopdata_msg = Twist()
-        self.detectHoop()
-        hoopdata_msg.linear.x = self.x
-        hoopdata_msg.linear.y = self.y
-        hoopdata_msg.angular.x = float(self.center_x)
-        hoopdata_msg.angular.x = float(133.0)
+        hoopdata_msg.linear.x = float(self.x)
+        hoopdata_msg.linear.y = float(self.y)
+        hoopdata_msg.angular.x = float(139.0)
         hoopdata_msg.angular.y = float(self.center_y)
+
         self.sent_where_hoop.publish(hoopdata_msg)
         
 def main():
     rclpy.init()
     sub = mainRun()
     rclpy.spin(sub)
-    camcap.release()  # ปิดกล้องเมื่อจบการทำงาน
+    camcap.release()  # Close camera
     rclpy.shutdown()
-    # cv.destroyAllWindows()
     
 if __name__ == "__main__":
     main()

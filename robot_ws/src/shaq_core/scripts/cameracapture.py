@@ -6,43 +6,24 @@ import numpy as np
 class CameraCapture:
     def __init__(self, camera_index=0, width=640, height=480):
         """
-        camera_index: ค่า index ของกล้อง (0 คือกล้องหลัก, 1 คือกล้องเสริม)
+        camera_index: 0 = main camera
+        width, height: Set lower resolution for better performance
         """
-
-        
-
-
         self.cap = cv2.VideoCapture(camera_index)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Reduce frame buffering
+
         if not self.cap.isOpened():
             raise Exception("Cannot open camera")
 
-
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,width)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)    
-
     def get_screenshot(self):
-        """
-        ถ่ายภาพจากกล้องและคืนค่าเป็น NumPy array (RGB format)
-        """
-        ret, frame = self.cap.read() 
-        # retake
+        """ Capture image from camera """
+        ret, frame = self.cap.read()
         if not ret:
             raise Exception("Failed to capture image from camera")
-
-        # แปลงจาก BGR (ค่าเริ่มต้นของ OpenCV) เป็น RGB
-        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         return np.ascontiguousarray(frame)
 
-
-        if frame.shape[1] != self.target_width or frame.shape[0] != self.target_height:
-            frame = cv2.resize(frame, (self.target_width, self.target_height), interpolation=cv2.INTER_AREA)
-
-        return frame
-
-
     def release(self):
-        """
-        ปิดการเชื่อมต่อกับกล้อง
-        """
+        """ Close camera connection """
         self.cap.release()
-
