@@ -13,6 +13,9 @@ class CameraCapture:
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Reduce frame buffering
+        self.cap.set(cv2.CAP_PROP_FPS, 20)  # Lower FPS to reduce CPU usage
+        
+
 
         if not self.cap.isOpened():
             raise Exception("Cannot open camera")
