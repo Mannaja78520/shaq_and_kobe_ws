@@ -61,7 +61,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.previous_manual_turn = time.time()
 
         self.controller = Controller(kp = 1.27, ki = 0.2, kd = 0.1, errorTolerance=(To_Radians(0.5)), i_min= -1, i_max= 1)
-        self.hooprotage = Controller(kp = 0.002, ki = 0.001, kd = 0.0, baseSpeed=(60), errorTolerance=(5))
+        self.hooprotage = Controller(kp = 0.002, ki = 0.001, kd = 0.0,  errorTolerance=(5))
 
         self.hoop_distance_x : float = 0.0
         self.hoop_distance_y : float = 0.0
@@ -134,13 +134,24 @@ class Cmd_vel_to_motor_speed(Node):
 
         if self.mode == 2:
             # rotation = self.hooprotage.Calculate(self.hoop_distance_x - self.middlecam)
+            
             rotation = self.hooprotage.Calculate(self.hoop_distance_x - self.middlecam)
+
+            if self.hoop_distance_x == 0:
+                rotation = 0.0
 
             error = (self.hoop_distance_x - self.middlecam)
 
-            if abs(error) < 25:  # Error threshold for small adjustments
-                boost_factor = 6.0 # Increase power by 20%
+            if abs(error) < 10:  # Error threshold for small adjustments
+                boost_factor = 5.0  # Increase power by 500%
                 rotation *= boost_factor
+            elif abs(error) < 25:  # Error threshold for small adjustments
+                boost_factor = 2.0  # Increase power by 200%
+                rotation *= boost_factor
+            elif abs(error) < 40:  # Error threshold for small adjustments
+                boost_factor = 3.0  # Increase power by 20%
+                rotation *= boost_factor
+   
     
 
         if self.turnSpeed != 0 or (CurrentTime - self.previous_manual_turn < 0.45):
@@ -182,8 +193,11 @@ class Cmd_vel_to_motor_speed(Node):
         if msg.linear.x == 1 :
             
             self.macro_active = True
-            self.motorshooter1Speed = -580.0    #Upper
-            self.motorshooter2Speed = 740.0     #Lower
+            self.motorshooter1Speed = 705.0    #Upper
+            self.motorshooter2Speed = 745.0     #Lower
+
+            # self.motorshooter1Speed = -580.0    #Upper
+            # self.motorshooter2Speed = 740.0     #Lower
          
         else:
             self.macro_active = False
