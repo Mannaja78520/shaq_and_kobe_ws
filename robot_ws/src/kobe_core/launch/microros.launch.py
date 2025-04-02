@@ -20,6 +20,6 @@ def generate_launch_description():
     )
     
     ld.add_action(node_microros_1)
-    ld.add_action(node_microros_2)
+    # ld.add_action(node_microros_2)
 
     return ld
