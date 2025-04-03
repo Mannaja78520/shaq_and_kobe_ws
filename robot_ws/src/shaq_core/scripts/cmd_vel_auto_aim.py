@@ -183,10 +183,17 @@ class Cmd_vel_to_motor_speed(Node):
 
     def cmd_macro(self, msg):
 
-        if msg.linear.z == 1 :
-            
-            self.motorshooter1Speed = 705.0    #Upper
-            self.motorshooter2Speed = 745.0     #Lower
+        if msg.linear.z == 1:
+            self.macro_active = True
+            self.motorshooter1Speed = 730.0  # Upper
+            self.motorshooter2Speed = 770.0  # Lower
+        elif msg.linear.x == 1:
+            self.macro_active = True
+            self.motorshooter1Speed = -580.0  # Upper
+            self.motorshooter2Speed = 760.0   # Lower
+        else:
+            self.macro_active = False 
+
 
         if msg.linear.y == 1 :
             self.mode = 2
@@ -194,18 +201,6 @@ class Cmd_vel_to_motor_speed(Node):
         else:
             self.mode = 1
             
-
-        if msg.linear.x == 1 :
-            
-            self.macro_active = True
-            self.motorshooter1Speed = 705.0    #Upper
-            self.motorshooter2Speed = 745.0     #Lower
-
-            # self.motorshooter1Speed = -580.0    #Upper
-            # self.motorshooter2Speed = 740.0     #Lower
-         
-        else:
-            self.macro_active = False
          
             
     def sendData(self):
