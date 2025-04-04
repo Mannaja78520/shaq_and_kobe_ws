@@ -30,8 +30,8 @@
 #define MOTOR1_ENCODER_INV false
 #define MOTOR2_ENCODER_INV false
 
-#define MOTOR1_INV false
-#define MOTOR2_INV false
+#define MOTOR1_INV true
+#define MOTOR2_INV true
 #define MOTOR3_INV true
 
 
@@ -82,5 +82,8 @@
 #define MOTOR2_ENCODER_PIN_A 17
 #define MOTOR2_ENCODER_PIN_B 16
 
+// I2C communication
+#define SCL_PIN 19
+#define SDA_PIN 18
 
 #endif

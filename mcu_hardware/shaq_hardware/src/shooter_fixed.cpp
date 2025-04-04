@@ -292,8 +292,8 @@ void Move()
     float motor2Speed = shooter_msg.linear.y;
     float motor3Speed = shooter_msg.linear.z;
     
-    motorshooter1.spin(motor1Speed);
-    motorshooter2.spin(motor2Speed);
+    // motorshooter1.spin(motor1Speed);
+    // motorshooter2.spin(motor2Speed);
 
     
     float current_rpm_motor1 = motor1_encoder.getRPM();
@@ -303,8 +303,8 @@ void Move()
     debug_motor_msg.angular.y = std::round(current_rpm_motor2 * 100.0) / 100.0;
 
     
-    // motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
-    // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
+    motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
+    motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
     motorlift.spin(motor3Speed);
 
 }
