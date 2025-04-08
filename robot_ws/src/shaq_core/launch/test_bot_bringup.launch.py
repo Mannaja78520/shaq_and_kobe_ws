@@ -48,13 +48,23 @@ def generate_launch_description():
         # parameters=[], #Testing
     )
 
+    both_detect = Node(
+        package="shaq_core",
+        executable="both_detect.py",
+        name="Shaq_Detection",
+        # output="screen",
+        namespace="",
+        # parameters=[], #Testing
+    )
+
 
 
     # Add actions to the launch description
     ld.add_action(microros_launch)
     ld.add_action(cmd_vel_auto_aim)
     # ld.add_action(apriltag_distance)
-    ld.add_action(hoop_detection)
+    # ld.add_action(hoop_detection)
+    ld.add_action(both_detect)
 
     return ld
 

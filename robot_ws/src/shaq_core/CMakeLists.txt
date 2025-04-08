@@ -64,6 +64,7 @@ install(PROGRAMS
   scripts/cmd_vel_auto_aim.py
   scripts/cameracapture.py
   scripts/hoop_detection.py
+  scripts/both_detect.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
