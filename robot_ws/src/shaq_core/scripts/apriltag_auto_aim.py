@@ -40,11 +40,24 @@ class AprilTagDetector(Node):
         detections = self.detector.detect(gray)
 
         frame_h, frame_w = gray.shape
-        screen_center = (frame_w // 2, frame_h // 2)
+        # Map: tag_id -> (screen_center_x, screen_center_y)
+        SCREEN_CENTERS = {
+            0: (320, 240),    # Tag ID 0 uses center (320, 240)
+            1: (300, 240),    # Tag ID 1 uses center (300, 240)
+            2: (340, 240),    # Tag ID 2 uses center (340, 240)
+            3: (350 ,250)
+        }
+
+        default_center = (frame_w // 2, frame_h // 2)
+
 
         for detection in detections:
+            tag_id = detection.tag_id
             corners = detection.corners.astype(int)
-            center = detection.center  # (x, y)
+            # center = detection.center  # (x, y)
+            center = tuple(map(int, detection.center))
+
+            screen_center = SCREEN_CENTERS.get(tag_id, default_center)
 
             perceived_width = np.linalg.norm(corners[0] - corners[1])
             perceived_height = np.linalg.norm(corners[1] - corners[2])
@@ -63,7 +76,7 @@ class AprilTagDetector(Node):
 
             msg.angular.x = float(screen_center[0])  # Screen center x
             msg.angular.y = float(screen_center[1])  # Screen center y
-            msg.angular.z = 0.0                      # Optional: could use diff or angle
+            msg.angular.z = float(tag_id)
 
             self.publisher_.publish(msg)
 
