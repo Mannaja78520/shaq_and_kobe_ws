@@ -136,12 +136,6 @@ class Cmd_vel_to_motor_speed(Node):
         # Calculate motor speeds based on move and turn speeds
         self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed #Left Start Slower
         self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed #Right
-
-        # if self.motor1Speed <= 250.0:
-        
-        #     if self.motor1Speed != 0.0:
-        #         self.motor1Speed += 150.0
-
         
 
         if self.motor1Speed >= self.maxSpeed:
