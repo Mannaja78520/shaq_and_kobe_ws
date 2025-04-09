@@ -119,7 +119,7 @@ class Cmd_vel_to_motor_speed(Node):
 
     def cmd_vel(self, msg):
 
-        CurrentTime = time.time()
+        CurrentTime = time.time()   
         self.moveSpeed = msg.linear.y  
         self.slideSpeed = msg.linear.x  
         self.turnSpeed = msg.angular.z 

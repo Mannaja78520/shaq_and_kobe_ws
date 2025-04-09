@@ -83,10 +83,6 @@ class Joystick(Node):
             Twist, "/shaq/cmd_shoot", qos_profile=qos.qos_profile_system_default
         )
         
-        self.pub_cmd_koby = self.create_publisher(
-            Int16MultiArray, "shaq/cmd_koby", qos_profile=qos.qos_profile_system_default
-        )
-
         self.create_subscription(
             Joy, '/shaq/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
         )
@@ -142,7 +138,6 @@ class Joystick(Node):
         cmd_vel_move = Twist()
         cmd_vel_shoot = Twist()
         cmd_vel_macro = Twist()
-        cmd_koby = Int16MultiArray()
 
 
         cmd_vel_move.linear.x = float(self.gamepad.lx * self.maxspeed)
@@ -174,12 +169,11 @@ class Joystick(Node):
         else:
             cmd_vel_macro.linear.x = 0.0  
         
-        cmd_koby.data = [int(self.gamepad.button_logo)]
-        
+    
         self.pub_macro.publish(cmd_vel_macro)
         self.pub_move.publish(cmd_vel_move)
         self.pub_shoot.publish(cmd_vel_shoot)
-        self.pub_cmd_koby.publish(cmd_koby)
+
 
 
 def main():
