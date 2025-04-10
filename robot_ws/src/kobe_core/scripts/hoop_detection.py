@@ -54,7 +54,7 @@ class mainRun(Node):
             # Run YOLO with optimizations
             results = model.predict(
                 screenshot,
-                imgsz=224,  # Reduce input size
+                imgsz=300,  # Reduce input size
                 conf=0.4,  # Lower confidence threshold
                 half=False,  # Use half precision (if supported)
                 device=device,

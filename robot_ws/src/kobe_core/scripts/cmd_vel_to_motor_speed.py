@@ -43,7 +43,7 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.previous_manual_turn = time.time()
 
-        self.controller = Controller(kp = 1.5, ki = 0.05, kd = 0.001, errorTolerance= To_Radians(0.5), i_min= -1, i_max= 1)
+        self.controller = Controller(kp = 1.0, ki = 0.05, kd = 0.001, errorTolerance= To_Radians(0.5), i_min= -1, i_max= 1)
         
         
 
