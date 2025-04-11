@@ -41,6 +41,8 @@ class Gamepad:
         self.auto_aim_bool: bool =False
         self.dribble: bool = False 
         self.toggle_shoot_bool : bool = False 
+        self.toggle_pass_bool : bool = False
+
         
         
     def update_dribble(self):
@@ -66,6 +68,14 @@ class Gamepad:
             self.toggle_shoot_bool = not self.toggle_shoot_bool  # Toggle state
 
         self.previous_cross_state = self.button_cross  # Update button state
+
+    def update_toggle_pass(self):
+
+        if self.button_square and not self.previous_square_state:
+
+            self.toggle_pass_bool = not self.toggle_pass_bool  # Toggle state
+
+        self.previous_square_state = self.button_square  # Update button state
 
 class Joystick(Node):
     def __init__(self):
@@ -129,6 +139,8 @@ class Joystick(Node):
         self.gamepad.update_dribble()
         self.gamepad.update_auto_aim()
         self.gamepad.update_toggle_shoot()
+        self.gamepad.update_toggle_pass()
+
 
         
         
@@ -168,6 +180,12 @@ class Joystick(Node):
               
         else:
             cmd_vel_macro.linear.x = 0.0  
+
+        if self.gamepad.toggle_pass_bool:
+            cmd_vel_macro.angular.x = 1.0
+
+        else:
+            cmd_vel_macro.angular.x = 0.0    
         
     
         self.pub_macro.publish(cmd_vel_macro)
