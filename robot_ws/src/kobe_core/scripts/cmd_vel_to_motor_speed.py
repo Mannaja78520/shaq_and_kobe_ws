@@ -31,8 +31,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.moveSpeed: float = 0.0
         self.turnSpeed: float = 0.0
 
-        self.maxSpeed : float = 1023.0 / 2
-        self.shootmaxSpeed : float = 800.0
+        self.maxSpeed : float = 1023.0
+        self.shootmaxSpeed : float = 1023.0
         self.motor1Speed : float = 0
         self.motor2Speed : float = 0
         
@@ -43,7 +43,7 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.previous_manual_turn = time.time()
 
-        self.controller = Controller(kp = 2.5, ki = 0.05, kd = 0.001, errorTolerance= To_Radians(0.5), i_min= -1, i_max= 1)
+        self.controller = Controller(kp = 1.0, ki = 0.05, kd = 0.001, errorTolerance= To_Radians(0.5), i_min= -1, i_max= 1)
         
         
 
@@ -134,8 +134,9 @@ class Cmd_vel_to_motor_speed(Node):
         self.turnSpeed = self.turnSpeed / 3
 
         # Calculate motor speeds based on move and turn speeds
-        self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed 
-        self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed 
+        self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed #Left Start Slower
+        self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed #Right
+        
 
         if self.motor1Speed >= self.maxSpeed:
             self.motor1Speed = self.maxSpeed
@@ -155,8 +156,9 @@ class Cmd_vel_to_motor_speed(Node):
             self.motorshooter1Speed = abs(msg.linear.x - 1) * self.shootmaxSpeed
             self.motorshooter2Speed = abs(msg.linear.x - 1) * self.shootmaxSpeed
         
-            self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
-            self.motorshooter3Speed += msg.angular.x * self.maxSpeed
+
+        self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
+        self.motorshooter3Speed += msg.angular.x * self.maxSpeed
 
         if self.motorshooter3Speed >= 1023.0:
             self.motorshooter3Speed = 1023.0 
@@ -170,8 +172,8 @@ class Cmd_vel_to_motor_speed(Node):
         if msg.linear.x == 1 :
             
             self.macro_active = True
-            self.motorshooter1Speed = 500.0     #Upper
-            self.motorshooter2Speed = 800.0     #Lower
+            self.motorshooter1Speed = 810.0     #Upper
+            self.motorshooter2Speed = 810.0     #Lower
          
         else:
             self.macro_active = False
@@ -183,8 +185,8 @@ class Cmd_vel_to_motor_speed(Node):
         motornadeem_msg = Twist()
 
        
-        motorspeed_msg.linear.x = float(self.motor1Speed)
-        motorspeed_msg.linear.y = float(self.motor2Speed)
+        motorspeed_msg.linear.x = float(self.motor1Speed) #Left
+        motorspeed_msg.linear.y = float(self.motor2Speed) #Right
 
 
         motorshooter_msg.linear.x = float(self.motorshooter1Speed)

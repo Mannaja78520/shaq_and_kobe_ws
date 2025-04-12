@@ -2,8 +2,8 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String,Int16MultiArray
-from geometry_msgs.msg import Twist
+from std_msgs.msg import String, Int16MultiArray , Float32MultiArray
+from geometry_msgs.msg import Twist 
 from sensor_msgs.msg import Joy
 from rclpy import qos
 
@@ -38,8 +38,11 @@ class Gamepad:
 
         #----------------------------------------------------------------
         
-        self.dribble: bool = False  
-        self.previous_state = False  # Track previous button state
+        self.auto_aim_bool: bool =False
+        self.dribble: bool = False 
+        self.toggle_shoot_bool : bool = False 
+        self.toggle_pass_bool : bool = False
+        
         
     def update_dribble(self):
 
@@ -49,6 +52,30 @@ class Gamepad:
             
         self.previous_triangle_state = self.button_triangle  # Update button state
 
+    def update_auto_aim(self):
+
+        if self.button_circle and not self.previous_circle_state:
+    
+            self.auto_aim_bool = not self.auto_aim_bool  # Toggle state
+            
+        self.previous_circle_state = self.button_circle  # Update button state
+
+    def update_toggle_shoot(self):
+
+        if self.button_cross and not self.previous_cross_state:
+
+            self.toggle_shoot_bool = not self.toggle_shoot_bool  # Toggle state
+
+        self.previous_cross_state = self.button_cross  # Update button state
+
+    def update_toggle_pass(self):
+
+        if self.button_square and not self.previous_square_state:
+
+            self.toggle_pass_bool = not self.toggle_pass_bool  # Toggle state
+
+        self.previous_square_state = self.button_square  # Update button state
+
 class Joystick(Node):
     def __init__(self):
         super().__init__("joystick")
@@ -57,24 +84,16 @@ class Joystick(Node):
             Twist, "/kobe/cmd_move", qos_profile=qos.qos_profile_system_default
         )
         
-        self.pub_shoot = self.create_publisher(
-            Twist, "/kobe/cmd_shoot", qos_profile=qos.qos_profile_system_default
-        )
-
         self.pub_macro = self.create_publisher(
             Twist, "/kobe/cmd_macro", qos_profile=qos.qos_profile_system_default
         )
 
-        self.pub_slap = self.create_publisher(
-            Int16MultiArray, "/kobe/cmd_slap" , qos_profile=qos.qos_profile_default
+        self.pub_shoot = self.create_publisher(
+            Twist, "/kobe/cmd_shoot", qos_profile=qos.qos_profile_system_default
         )
-
+        
         self.create_subscription(
             Joy, '/kobe/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
-        )
-
-        self.pub_nadeem = self.create_publisher(
-            Twist, "/kobe/cmd_nadeem", qos_profile=qos.qos_profile_system_default
         )
 
         self.gamepad = Gamepad()
@@ -99,24 +118,27 @@ class Joystick(Node):
         
         #Buttons:-------------------------------------------------------
 
-        self.gamepad.button_cross    = int(msg.buttons[0])        # 0: 
-        self.gamepad.button_circle   = int(msg.buttons[1])        # 1:
-        self.gamepad.button_triangle = int(msg.buttons[2])        # 2:
-        self.gamepad.button_square   = int(msg.buttons[3])        # 3:
-        self.gamepad.l1              = int(msg.buttons[4])        # 4:
-        self.gamepad.r1              = int(msg.buttons[5])        # 5:
-        #self.gamepad.l2              = int(msg.buttons[6])        # 6:
-        #self.gamepad.r2              = int(msg.buttons[7])        # 7:
-        self.gamepad.button_share    = int(msg.buttons[8])        # 8:
-        self.gamepad.button_option   = int(msg.buttons[9])        # 9:
-        self.gamepad.button_logo     = int(msg.buttons[10])       # 10:
-        self.gamepad.PressedLeftAnalog  = int(msg.buttons[11])    # 11:
-        self.gamepad.PressedRightAnalog = int(msg.buttons[12])    # 12:
+        self.gamepad.button_cross    = float(msg.buttons[0])        # 0: 
+        self.gamepad.button_circle   = float(msg.buttons[1])        # 1:
+        self.gamepad.button_triangle = float(msg.buttons[2])        # 2:
+        self.gamepad.button_square   = float(msg.buttons[3])        # 3:
+        self.gamepad.l1              = float(msg.buttons[4])        # 4:
+        self.gamepad.r1              = float(msg.buttons[5])        # 5:
+        #self.gamepad.l2              = float(msg.buttons[6])        # 6:
+        #self.gamepad.r2              = float(msg.buttons[7])        # 7:
+        self.gamepad.button_share    = float(msg.buttons[8])        # 8:
+        self.gamepad.button_option   = float(msg.buttons[9])        # 9:
+        self.gamepad.button_logo     = float(msg.buttons[10])       # 10:
+        self.gamepad.PressedLeftAnalog  = float(msg.buttons[11])    # 11:
+        self.gamepad.PressedRightAnalog = float(msg.buttons[12])    # 12:
         
         
         #Macro-----------------------------------------------------------
         
         self.gamepad.update_dribble()
+        self.gamepad.update_auto_aim()
+        self.gamepad.update_toggle_shoot()
+        self.gamepad.update_toggle_pass()
 
         
         
@@ -126,7 +148,7 @@ class Joystick(Node):
         cmd_vel_move = Twist()
         cmd_vel_shoot = Twist()
         cmd_vel_macro = Twist()
-        cmd_vel_slap = Int16MultiArray()
+
 
         cmd_vel_move.linear.x = float(self.gamepad.ly * self.maxspeed)
         cmd_vel_move.angular.x = float(self.gamepad.rx * self.maxspeed)
@@ -136,21 +158,39 @@ class Joystick(Node):
         cmd_vel_shoot.linear.z = float(self.gamepad.l2 * self.maxspeed)
         cmd_vel_shoot.angular.x = float(self.gamepad.dpadUpDown * self.maxspeed)
 
-        
-        
-        cmd_vel_slap.data = [int(self.gamepad.button_square * self.maxspeed), int(self.gamepad.dpadUpDown * self.maxspeed)]
-        
-        
         if self.gamepad.dribble:
             cmd_vel_macro.linear.x = 1.0
               
         else:
             cmd_vel_macro.linear.x = 0.0  
+
         
+        if self.gamepad.auto_aim_bool:
+            cmd_vel_macro.linear.y = 1.0
+            
+        else:
+            cmd_vel_macro.linear.y = 0.0
+
+
+        if self.gamepad.toggle_shoot_bool:
+            cmd_vel_macro.linear.z = 1.0
+
+        else:
+            cmd_vel_macro.linear.z = 0.0
+
+
+        if self.gamepad.toggle_pass_bool:
+            cmd_vel_macro.angular.x = 1.0
+
+        else:
+            cmd_vel_macro.angular.x = 0.0
+        
+    
         self.pub_macro.publish(cmd_vel_macro)
         self.pub_move.publish(cmd_vel_move)
         self.pub_shoot.publish(cmd_vel_shoot)
-        self.pub_slap.publish(cmd_vel_slap)
+
+
 
 def main():
     rclpy.init()

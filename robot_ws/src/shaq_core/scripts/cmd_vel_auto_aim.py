@@ -62,9 +62,18 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.controller = Controller(kp = 1.27, ki = 0.2, kd = 0.1, errorTolerance=(To_Radians(0.5)), i_min= -1, i_max= 1)
         self.hooprotage = Controller(kp = 0.002, ki = 0.001, kd = 0.0,  errorTolerance=(5))
+        self.april_controller = Controller(kp = 0.002, ki = 0.001, kd = 0.0, errorTolerance  = (5))
 
         self.hoop_distance_x : float = 0.0
         self.hoop_distance_y : float = 0.0
+
+        self.middlecam_apriltag : float = 0.0
+        self.distance_to_kobe : float = 0.0
+        self.apriltag_distance : float = 0.0
+        self.tag_id : float = 0.0
+
+
+
         
         
         self.send_robot_speed = self.create_publisher(
@@ -101,14 +110,25 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, '/shaq/send_where_hoop', self.wherehoop, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
+        self.create_subscription(
+            Twist, '/shaq/distance/kobe', self.distance, qos_profile=qos.qos_profile_sensor_data # 10
+        )
+
 
         self.sent_data_timer = self.create_timer(0.03, self.sendData)
         
+    def distance(self,msg):
+        self.apriltag_distance = msg.linear.x
+        self.distance_to_kobe = msg.linear.z
+        self.middlecam_apriltag = msg.angular.x
+        self.tag_id = msg.angular.z
+        
+
+
     def wherehoop(self, msg):
         self.hoop_distance_x = msg.linear.x
-        self.hoop_distance_y = msg.linear.y
         self.middlecam = msg.angular.x
-        # self.middlecam = msg.angular.y
+
 
     def get_robot_angle(self,msg):
         self.yaw = WrapRads(To_Radians(msg.angular.x))
@@ -119,12 +139,11 @@ class Cmd_vel_to_motor_speed(Node):
 
     def cmd_vel(self, msg):
 
-        CurrentTime = time.time()
+        CurrentTime = time.time()   
         self.moveSpeed = msg.linear.y  
         self.slideSpeed = msg.linear.x  
         self.turnSpeed = msg.angular.z 
 
-        # self.mode = self.get_parameter("mode").get_parameter_value().integer_value
 
 
         if self.mode == 1:
@@ -133,7 +152,6 @@ class Cmd_vel_to_motor_speed(Node):
                 rotation = 0
 
         if self.mode == 2:
-            # rotation = self.hooprotage.Calculate(self.hoop_distance_x - self.middlecam)
             
             rotation = self.hooprotage.Calculate(self.hoop_distance_x - self.middlecam)
 
@@ -141,6 +159,24 @@ class Cmd_vel_to_motor_speed(Node):
                 rotation = 0.0
 
             error = (self.hoop_distance_x - self.middlecam)
+
+            if abs(error) < 10:  # Error threshold for small adjustments
+                boost_factor = 5.0  # Increase power by 500%
+                rotation *= boost_factor
+            elif abs(error) < 25:  # Error threshold for small adjustments
+                boost_factor = 2.0  # Increase power by 200%
+                rotation *= boost_factor
+            elif abs(error) < 40:  # Error threshold for small adjustments
+                boost_factor = 3.0  # Increase power by 20%
+                rotation *= boost_factor
+
+        if self.mode == 3:
+            rotation = self.april_controller.Calculate(self.apriltag_distance - self.middlecam_apriltag)
+
+            if self.apriltag_distance == 0:
+                rotation = 0.0
+
+            error = (self.apriltag_distance - self.middlecam_apriltag)
 
             if abs(error) < 10:  # Error threshold for small adjustments
                 boost_factor = 5.0  # Increase power by 500%
@@ -185,16 +221,19 @@ class Cmd_vel_to_motor_speed(Node):
 
         if msg.linear.z == 1:
             self.macro_active = True
-            self.motorshooter1Speed = 760.0  # Upper
-            self.motorshooter2Speed = 780.0 # Lower
+            self.motorshooter1Speed = 4300.0  # Upper
+            self.motorshooter2Speed = 4800.0  # Lower
 
             # 715 --> 4300
             # 755 --> 4800
 
         elif msg.linear.x == 1:
             self.macro_active = True
-            self.motorshooter1Speed = -560.0  # Upper
-            self.motorshooter2Speed = 790.0   # Lower
+            self.motorshooter1Speed = -1000.0  # Upper
+            self.motorshooter2Speed = 4800.0   # Lower
+
+            # -580 --> -1000
+            # 760 --> 4800
 
         else:
             self.macro_active = False 
@@ -203,6 +242,9 @@ class Cmd_vel_to_motor_speed(Node):
         if msg.linear.y == 1 :
             self.mode = 2
 
+        elif msg.angular.x == 1:
+            self.mode = 3
+            
         else:
             self.mode = 1
             

@@ -78,3 +78,9 @@ git reset --hard origin/main
 
 r = 36.63 mm
 outer r = 49.25 mm
+
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml 
+
+sudo ifconfig wlan0 down
+sudo ifconfig wlan0 up
+nmcli device status

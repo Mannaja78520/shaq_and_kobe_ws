@@ -16,7 +16,7 @@ class AprilTagDetector(Node):
         
         self.publisher_ = self.create_publisher(Float32, '/shaq/distance/kobe', 10)
         self.bridge = CvBridge()
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(2)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         
