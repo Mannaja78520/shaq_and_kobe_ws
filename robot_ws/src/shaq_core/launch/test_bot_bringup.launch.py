@@ -62,9 +62,9 @@ def generate_launch_description():
     # Add actions to the launch description
     ld.add_action(microros_launch)
     ld.add_action(cmd_vel_auto_aim)
-    # ld.add_action(apriltag_distance)
+    ld.add_action(apriltag_distance)
     # ld.add_action(hoop_detection)
-    ld.add_action(both_detect)
+    # ld.add_action(both_detect)
 
     return ld
 
