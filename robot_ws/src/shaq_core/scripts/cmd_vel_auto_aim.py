@@ -185,19 +185,16 @@ class Cmd_vel_to_motor_speed(Node):
 
         if msg.linear.z == 1:
             self.macro_active = True
-            self.motorshooter1Speed = 4300.0  # Upper
-            self.motorshooter2Speed = 4800.0  # Lower
+            self.motorshooter1Speed = 760.0  # Upper
+            self.motorshooter2Speed = 780.0 # Lower
 
             # 715 --> 4300
             # 755 --> 4800
 
         elif msg.linear.x == 1:
             self.macro_active = True
-            self.motorshooter1Speed = -1000.0  # Upper
-            self.motorshooter2Speed = 4800.0   # Lower
-
-            # -580 --> -1000
-            # 760 --> 4800
+            self.motorshooter1Speed = -560.0  # Upper
+            self.motorshooter2Speed = 790.0   # Lower
 
         else:
             self.macro_active = False 
