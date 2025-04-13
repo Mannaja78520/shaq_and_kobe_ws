@@ -16,11 +16,11 @@ class AprilTagDetector(Node):
         
         self.publisher_ = self.create_publisher(Float32, '/shaq/distance/kobe', 10)
         self.bridge = CvBridge()
-        self.cap = cv2.VideoCapture(2)
+        self.cap = cv2.VideoCapture(0)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         
-        self.TAG_SIZE = 0.115  # Tag size in meters
+        self.TAG_SIZE = 0.1  # Tag size in meters
         self.FOCAL_LENGTH = 653  # Change this after calibration
         
         options = apriltag.DetectorOptions(families="tag36h11")

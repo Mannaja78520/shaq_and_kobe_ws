@@ -61,8 +61,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.previous_manual_turn = time.time()
 
         self.controller = Controller(kp = 1.27, ki = 0.2, kd = 0.1, errorTolerance=(To_Radians(0.5)), i_min= -1, i_max= 1)
-        self.hooprotage = Controller(kp = 0.002, ki = 0.001, kd = 0.0,  errorTolerance=(5))
-        self.april_controller = Controller(kp = 0.002, ki = 0.001, kd = 0.0, errorTolerance  = (5))
+        self.hooprotage = Controller(kp = 0.001, ki = 0.001, kd = 0.0,  errorTolerance=(5))
+        self.april_controller = Controller(kp = 0.002, ki = 0.001, kd = 0.0, errorTolerance  = (10))
 
         self.hoop_distance_x : float = 0.0
         self.hoop_distance_y : float = 0.0
@@ -166,8 +166,8 @@ class Cmd_vel_to_motor_speed(Node):
             elif abs(error) < 25:  # Error threshold for small adjustments
                 boost_factor = 2.0  # Increase power by 200%
                 rotation *= boost_factor
-            elif abs(error) < 40:  # Error threshold for small adjustments
-                boost_factor = 3.0  # Increase power by 20%
+            elif abs(error) < 70:  # Error threshold for small adjustments
+                boost_factor = 2.0  # Increase power by 20%
                 rotation *= boost_factor
 
         if self.mode == 3:
@@ -221,8 +221,8 @@ class Cmd_vel_to_motor_speed(Node):
 
         if msg.linear.z == 1:
             self.macro_active = True
-            self.motorshooter1Speed = 760.0  # Upper
-            self.motorshooter2Speed = 780.0  # Lower
+            self.motorshooter1Speed = 780.0  # Upper
+            self.motorshooter2Speed = 800.0  # Lower
 
             # 715 --> 4300
             # 755 --> 4800
