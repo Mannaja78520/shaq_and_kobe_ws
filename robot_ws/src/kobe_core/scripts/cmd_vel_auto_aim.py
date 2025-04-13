@@ -35,7 +35,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.previous_manual_turn = time.time()
 
         self.controller = Controller(kp = 1.0, ki = 0.05, kd = 0.001, errorTolerance= To_Radians(0.5), i_min= -1, i_max= 1)
-        
+        self.hooprotage = Controller(kp = 0.001, ki = 0.001, kd = 0.0,  errorTolerance=(5))
+        self.april_controller = Controller(kp = 0.002, ki = 0.001, kd = 0.0, errorTolerance  = (10))
         
 
         self.motorshooter1Speed : float = 0
@@ -44,6 +45,17 @@ class Cmd_vel_to_motor_speed(Node):
 
             
         self.macro_active = False
+
+        self.middlecam : float = 0.0
+
+        self.hoop_distance_x : float = 0.0
+        self.hoop_distance_y : float = 0.0
+
+        self.middlecam_apriltag : float = 0.0
+        self.distance_to_kobe : float = 0.0
+        self.apriltag_distance : float = 0.0
+        self.tag_id : float = 0.0
+
         
  
         
@@ -79,10 +91,20 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, '/kobe/send_where_hoop', self.wherehoop, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
+        self.create_subscription(
+            Twist, '/kobe/distance/shaq', self.distance, qos_profile=qos.qos_profile_sensor_data # 10
+        )
+
 
 
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
         
+    def distance(self,msg):
+        self.apriltag_distance = msg.linear.x
+        self.distance_to_kobe = msg.linear.z
+        self.middlecam_apriltag = msg.angular.x
+        self.tag_id = msg.angular.z
+
     def wherehoop(self, msg):
         self.hoop_distance_x = msg.linear.x
         self.hoop_distance_y = msg.linear.y
@@ -129,6 +151,23 @@ class Cmd_vel_to_motor_speed(Node):
                 boost_factor = 3.0  # Increase power by 20%
                 rotation *= boost_factor
 
+        if self.mode == 3:
+            rotation = self.april_controller.Calculate(self.apriltag_distance - self.middlecam_apriltag)
+
+            if self.apriltag_distance == 0:
+                rotation = 0.0
+
+            error = (self.apriltag_distance - self.middlecam_apriltag)
+
+            if abs(error) < 10:  # Error threshold for small adjustments
+                boost_factor = 5.0  # Increase power by 500%
+                rotation *= boost_factor
+            elif abs(error) < 25:  # Error threshold for small adjustments
+                boost_factor = 2.0  # Increase power by 200%
+                rotation *= boost_factor
+            elif abs(error) < 40:  # Error threshold for small adjustments
+                boost_factor = 3.0  # Increase power by 20%
+                rotation *= boost_factor
 
         if self.turnSpeed != 0 or (CurrentTime - self.previous_manual_turn < 0.45):
             rotation = self.turnSpeed
@@ -137,12 +176,7 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.previous_manual_turn = CurrentTime if self.turnSpeed != 0 else self.previous_manual_turn
 
-        
-        self.moveSpeed = msg.linear.x
-        self.turnSpeed = msg.angular.x 
-
-        self.turnSpeed = self.turnSpeed / 3
-
+    
         
         self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed #Left Start Slower
         self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed #Right
@@ -153,7 +187,6 @@ class Cmd_vel_to_motor_speed(Node):
 
         if self.motor2Speed >= self.maxSpeed:
             self.motor2Speed = self.maxSpeed    
-        # self.rotation = rotation * self.maxSpeed  # Apply track width to rotation speed
 
 
             
@@ -198,6 +231,9 @@ class Cmd_vel_to_motor_speed(Node):
         if msg.linear.y == 1 :
             self.mode = 2
 
+        elif msg.angular.x == 1:
+            self.mode = 3
+            
         else:
             self.mode = 1
          
