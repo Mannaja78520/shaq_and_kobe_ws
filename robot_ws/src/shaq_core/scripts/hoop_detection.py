@@ -43,7 +43,7 @@ class mainRun(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            "/image_raw",  # Topic name from v4l2_camera
+            "/shaq/image_raw",  # Topic name from v4l2_camera
             self.image_callback,
             qos.qos_profile_sensor_data
         )

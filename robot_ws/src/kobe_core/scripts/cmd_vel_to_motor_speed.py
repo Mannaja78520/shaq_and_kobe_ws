@@ -99,7 +99,7 @@ class Cmd_vel_to_motor_speed(Node):
         
 
     def get_robot_angle(self,msg):
-        self.yaw = WrapRads(To_Radians(msg.angular.x) * -1)
+        self.yaw = WrapRads(To_Radians(msg.linear.x))
 
     def get_pid(self,msg):
         self.controller.ConfigPIDF(kp = msg.data[0], ki= msg.data[1], kd=msg.data[2], kf=msg.data[3]) 

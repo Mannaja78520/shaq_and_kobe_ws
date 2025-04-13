@@ -57,11 +57,12 @@ install(PROGRAMS
   # scripts/test_sub_cmd_vel.py
   scripts/joystick_control.py
   scripts/cmd_vel_to_motor_speed.py
-  scripts/servo.py 
+  # scripts/servo.py 
   scripts/slider.py
   scripts/hoop_detection.py
   scripts/cmd_vel_auto_aim.py
   scripts/cameracapture.py
+  scripts/apriltag_auto_aim.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -14,11 +14,11 @@ class AprilTagDetector(Node):
     def __init__(self):
         super().__init__('apriltag_detector')
         
-        self.publisher_ = self.create_publisher(Twist, '/shaq/distance/kobe', 10)
+        self.publisher_ = self.create_publisher(Twist, '/kobe/distance/shaq', 10)
         self.bridge = CvBridge()
         self.subscription = self.create_subscription(
             Image,
-            '/shaq/image_raw',
+            '/kobe/image_raw',
             self.image_callback,
             10)
 
@@ -45,10 +45,8 @@ class AprilTagDetector(Node):
 
         frame_h, frame_w = gray.shape
         SCREEN_CENTERS = {
-            0: (320, 0),
-            1: (148, 0),
-            2: (340, 0),
-            3: (350, 0)
+            26: (148, 0),
+            27: (148, 0)
         }
         default_center = (frame_w // 2, frame_h // 2)
 

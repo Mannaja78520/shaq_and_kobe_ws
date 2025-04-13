@@ -43,6 +43,11 @@ class Gamepad:
         self.toggle_shoot_bool : bool = False 
         self.toggle_pass_bool : bool = False
 
+        self.previous_triangle_state = False
+        self.previous_circle_state = False
+        self.previous_cross_state = False
+        self.previous_square_state = False
+
         
         
     def update_dribble(self):
@@ -76,6 +81,16 @@ class Gamepad:
             self.toggle_pass_bool = not self.toggle_pass_bool  # Toggle state
 
         self.previous_square_state = self.button_square  # Update button state
+
+    def reset_toggles(self):
+        self.auto_aim_bool = False
+        self.dribble = False 
+        self.toggle_shoot_bool = False 
+        self.toggle_pass_bool = False
+        # add any others here
+
+        
+
 
 class Joystick(Node):
     def __init__(self):
@@ -140,6 +155,10 @@ class Joystick(Node):
         self.gamepad.update_auto_aim()
         self.gamepad.update_toggle_shoot()
         self.gamepad.update_toggle_pass()
+    
+        
+        if self.gamepad.button_logo:
+            self.gamepad.reset_toggles()
 
 
         

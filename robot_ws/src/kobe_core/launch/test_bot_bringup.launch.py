@@ -30,9 +30,9 @@ def generate_launch_description():
         # parameters=[], #Testing
     )
 
-    apriltag_distance = Node(
+    apriltag_auto_aim = Node(
         package="kobe_core",
-        executable="apriltag_distance.py",
+        executable="apriltag_auto_aim.py",
         name="Apriltag_Distance",
         # output="screen",
         namespace="",
@@ -48,23 +48,31 @@ def generate_launch_description():
         # parameters=[], #Testing
     )
 
-    both_detect = Node(
-        package="kobe_core",
-        executable="both_detect.py",
-        name="kobe_Detection",
-        # output="screen",
-        namespace="",
-        # parameters=[], #Testing
+    camera_driver = Node(
+        package='v4l2_camera',
+        executable='v4l2_camera_node',
+        name='camera',
+        parameters=[{
+            'video_device': '/dev/video0',
+            'image_size': [640, 480],
+            'time_per_frame': [1, 30]  # 30 FPS
+        }],
+        remappings=[
+            ('/image_raw', '/kobe/image_raw')
+        ],
+        output='screen'
     )
+
+
 
 
 
     # Add actions to the launch description
     ld.add_action(microros_launch)
     ld.add_action(cmd_vel_auto_aim)
-    # ld.add_action(apriltag_distance)
+    ld.add_action(apriltag_auto_aim)
     ld.add_action(hoop_detection)
-    # ld.add_action(both_detect)
+    ld.add_action(camera_driver)
 
     return ld
 
