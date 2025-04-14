@@ -34,7 +34,7 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.previous_manual_turn = time.time()
 
-        self.controller = Controller(kp = 1.0, ki = 0.05, kd = 0.001, errorTolerance= To_Radians(0.5), i_min= -1, i_max= 1)
+        self.controller = Controller(kp = 1.0, ki = 0.05, kd = 0.001, baseSpeed = 0.3  ,errorTolerance= To_Radians(0.5), i_min= -1, i_max= 1)
         self.hooprotage = Controller(kp = 0.001, ki = 0.001, kd = 0.0,  errorTolerance=(5))
         self.april_controller = Controller(kp = 0.002, ki = 0.001, kd = 0.0, errorTolerance  = (10))
         
@@ -55,6 +55,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.distance_to_kobe : float = 0.0
         self.apriltag_distance : float = 0.0
         self.tag_id : float = 0.0
+
+
 
         
  
@@ -129,6 +131,7 @@ class Cmd_vel_to_motor_speed(Node):
 
         if self.mode == 1:
             rotation = self.controller.Calculate(WrapRads(self.yaw_setpoint - self.yaw))
+            rotation = clip(rotation, -1.0, 1.0)
             if self.moveSpeed  == 0 and self.turnSpeed == 0 and abs(rotation) < 0.2:
                 rotation = 0
         
