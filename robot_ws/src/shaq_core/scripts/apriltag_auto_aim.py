@@ -18,7 +18,7 @@ class AprilTagDetector(Node):
         self.bridge = CvBridge()
         self.subscription = self.create_subscription(
             Image,
-            '/image_raw',
+            '/shaq/image_raw',
             self.image_callback,
             10)
 
@@ -80,7 +80,7 @@ class AprilTagDetector(Node):
                 msg.linear.y = float(center[1])
                 msg.linear.z = distance
                 msg.angular.x = float(screen_center[0])
-                msg.angular.y = float(screen_center[1])
+                msg.angular.y = float(55555555555555)
                 msg.angular.z = float(tag_id)
                 self.publisher_.publish(msg)
 

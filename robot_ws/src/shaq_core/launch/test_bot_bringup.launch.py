@@ -66,6 +66,9 @@ def generate_launch_description():
             'image_size': [640, 480],
             'time_per_frame': [1, 30]  # 30 FPS
         }],
+        remappings=[
+            ('/image_raw', '/shaq/image_raw')
+        ],
         output='screen'
     )
 
