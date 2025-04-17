@@ -30,7 +30,7 @@ def generate_launch_description():
         # parameters=[], #Testing
     )
 
-    apriltag_distance = Node(
+    apriltag_auto_aim = Node(
         package="shaq_core",
         executable="apriltag_auto_aim.py",
         name="Apriltag_Distance",
@@ -43,15 +43,6 @@ def generate_launch_description():
         package="shaq_core",
         executable="hoop_detection.py",
         name="Hoop_Detection",
-        # output="screen",
-        namespace="",
-        # parameters=[], #Testing
-    )
-
-    both_detect = Node(
-        package="shaq_core",
-        executable="both_detect.py",
-        name="Shaq_Detection",
         # output="screen",
         namespace="",
         # parameters=[], #Testing
@@ -78,9 +69,9 @@ def generate_launch_description():
     ld.add_action(microros_launch)
     ld.add_action(cmd_vel_auto_aim)
     ld.add_action(camera_driver)
-    ld.add_action(apriltag_distance)
+    ld.add_action(apriltag_auto_aim)
     ld.add_action(hoop_detection)
-    # ld.add_action(both_detect)
+
 
     return ld
 

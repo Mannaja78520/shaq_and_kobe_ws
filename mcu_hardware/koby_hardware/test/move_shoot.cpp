@@ -208,7 +208,7 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     {
         Move();
         publishData();
-        imu_pub();
+        // imu_pub();
     }
 }
 

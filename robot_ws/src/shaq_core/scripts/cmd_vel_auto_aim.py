@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-# from pynput import keyboard
+
 import threading
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
-
 from rclpy import qos
+
 from src.utilize import * 
 from src.controller import *
-# from hoop_detection import mainRun
+
 import time 
 import math
 
@@ -22,8 +22,6 @@ class Cmd_vel_to_motor_speed(Node):
     slideSpeed: float = 0.0
     turnSpeed: float = 0.0
 
-    # maxSpeed : int = 1023.0/2 # pwm
-    # max_linear_speed = 2.0  # m/s max
     motor1Speed : float = 0
     motor2Speed : float = 0
     motor3Speed : float = 0
@@ -223,7 +221,7 @@ class Cmd_vel_to_motor_speed(Node):
 
     def cmd_macro(self, msg):
 
-        if msg.linear.z == 1:
+        if msg.linear.z == 1:   #Shoot
             self.macro_active = True
             self.motorshooter1Speed = 780.0  # Upper
             self.motorshooter2Speed = 800.0  # Lower
@@ -231,14 +229,18 @@ class Cmd_vel_to_motor_speed(Node):
             # 780 --> 6000
             # 800 --> 6000
 
-        elif msg.linear.x == 1:
+        elif msg.linear.x == 1: #Dribble
             self.macro_active = True
             self.motorshooter1Speed = -560.0  # Upper
             self.motorshooter2Speed = 790.0   # Lower
 
-            # -560 --> -1000
-            # 790 --> 4800
-
+            # -580 --> -1000
+            # 760 --> 4800
+        elif msg.angular.y == 1: #Pass
+            self.macro_active = True
+            self.motorshooter1Speed = 550.0  # Upper
+            self.motorshooter2Speed = 550.0   # Lower
+    
         else:
             self.macro_active = False 
 

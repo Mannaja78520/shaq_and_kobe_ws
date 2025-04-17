@@ -56,15 +56,16 @@ install(PROGRAMS
   # scripts/keyboard_control.py
   # scripts/test_sub_cmd_vel.py
   # scripts/encoder_graph.py
-  scripts/joystick_control.py
-  scripts/cmd_vel_to_motor_speed.py
-  scripts/cmd_koby_task.py
-  scripts/apriltag_distance.py
+  # scripts/cmd_koby_task.py
+  # scripts/apriltag_distance.py
+  # scripts/both_detect.py
   scripts/apriltag_auto_aim.py
-  scripts/cmd_vel_auto_aim.py
   scripts/cameracapture.py
+  scripts/cmd_vel_auto_aim.py
+  scripts/cmd_vel_to_motor_speed.py
+  scripts/joystick_control.py
   scripts/hoop_detection.py
-  scripts/both_detect.py
+  scripts/slider.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

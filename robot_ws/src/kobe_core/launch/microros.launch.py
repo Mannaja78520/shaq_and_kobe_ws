@@ -22,7 +22,7 @@ def generate_launch_description():
         respawn_delay=3.0  # Delay in seconds before restarting the node
     )
     
-    # ld.add_action(node_microros_1)
-    ld.add_action(node_microros_2)
+    ld.add_action(node_microros_1)
+    # ld.add_action(node_microros_2)
 
     return ld
