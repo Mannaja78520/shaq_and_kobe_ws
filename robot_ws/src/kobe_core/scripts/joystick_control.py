@@ -244,9 +244,8 @@ class Joystick(Node):
         cmd_vel_macro = Twist()
 
 
-        cmd_vel_move.linear.x = float(self.gamepad.lx * self.maxspeed)
-        cmd_vel_move.linear.y = float(self.gamepad.ly * self.maxspeed)
-        cmd_vel_move.angular.z = float(self.gamepad.rx * self.maxspeed)
+        cmd_vel_move.linear.x = float(self.gamepad.ly * self.maxspeed)
+        cmd_vel_move.angular.x = float(self.gamepad.rx * self.maxspeed)
         
         cmd_vel_shoot.linear.x = float(self.gamepad.r2 * self.maxspeed)
         cmd_vel_shoot.linear.y = float(self.gamepad.r2 * self.maxspeed)
