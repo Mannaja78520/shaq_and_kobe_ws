@@ -96,7 +96,7 @@ Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM
 Encoder motor1_encoder(MOTOR1_ENCODER_PIN_A, MOTOR1_ENCODER_PIN_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV, ENCODER_GEAR_RATIO);
 Encoder motor2_encoder(MOTOR2_ENCODER_PIN_A, MOTOR2_ENCODER_PIN_B, COUNTS_PER_REV2, MOTOR2_ENCODER_INV, ENCODER_GEAR_RATIO);
 
-PIDF motor1_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
+PIDF motor1_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P_Motor_2, K_I, K_D, K_F);
 PIDF motor2_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
 
 
