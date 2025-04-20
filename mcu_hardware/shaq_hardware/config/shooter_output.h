@@ -64,5 +64,7 @@
 #define MOTOR2_ENCODER_PIN_A 17
 #define MOTOR2_ENCODER_PIN_B 16
 
+#define SERVO_PIN 37
+
 
 #endif

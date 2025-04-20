@@ -50,7 +50,8 @@ class Gamepad:
         self.previous_square_state = False
         self.previous_l1_state = False
 
-        self.last_macro_button = None  # Stores 'shoot', 'pass', 'dribble', 'auto_aim' , 'pass_motor'
+        self.last_macro_button = None  # Stores 'shoot', 'pass', 'dribble', 'auto_aim', 'pass_motor',
+
 
         
         
@@ -179,6 +180,10 @@ class Joystick(Node):
         self.pub_shoot = self.create_publisher(
             Twist, "/shaq/cmd_shoot", qos_profile=qos.qos_profile_system_default
         )
+
+        self.pub_servo = self.create_publisher(
+            Twist, "/shaq/cmd_servo", qos_profile=qos.qos_profile_system_default
+        )
         
         self.create_subscription(
             Joy, '/shaq/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
@@ -242,6 +247,7 @@ class Joystick(Node):
         cmd_vel_move = Twist()
         cmd_vel_shoot = Twist()
         cmd_vel_macro = Twist()
+        cmd_servo = Twist()
 
 
         cmd_vel_move.linear.x = float(self.gamepad.lx * self.maxspeed)
@@ -252,6 +258,13 @@ class Joystick(Node):
         cmd_vel_shoot.linear.y = float(self.gamepad.r2 * self.maxspeed)
         cmd_vel_shoot.linear.z = float(self.gamepad.l2 * self.maxspeed)
         cmd_vel_shoot.angular.x = float(self.gamepad.dpadUpDown * self.maxspeed)
+
+        if self.gamepad.button_share:
+            cmd_servo.linear.x = 1  #Closed Servo
+        
+        if self.gamepad.button_option:
+            cmd_servo.linear.x = 2  #Opened Servo
+
 
         # if self.gamepad.toggle_shoot_bool:
         #     cmd_vel_macro.linear.z = 1.0
@@ -297,7 +310,8 @@ class Joystick(Node):
         elif self.gamepad.last_macro_button == 'pass_motor' and self.gamepad.toggle_pass_motor_bool:
             cmd_vel_macro.angular.y = 1.0
         
-    
+        
+        self.pub_servo.publish(cmd_servo)
         self.pub_macro.publish(cmd_vel_macro)
         self.pub_move.publish(cmd_vel_move)
         self.pub_shoot.publish(cmd_vel_shoot)

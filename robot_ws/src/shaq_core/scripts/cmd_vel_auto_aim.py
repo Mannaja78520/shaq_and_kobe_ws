@@ -70,6 +70,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.apriltag_distance : float = 0.0
         self.tag_id : float = 0.0
 
+        self.servo_angle : float = 0.0
+
 
 
         
@@ -82,6 +84,10 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, "/shaq/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
         )
 
+        self.send_servo_angle = self.create_publisher(
+            Twist, "/shaq/cmd_servo/angle", qos_profile=qos.qos_profile_system_default
+        )
+
 
         self.create_subscription(
             Twist, '/shaq/cmd_move', self.cmd_vel, qos_profile=qos.qos_profile_system_default
@@ -89,6 +95,10 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.create_subscription(
             Twist, '/shaq/cmd_shoot', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
+        )
+
+        self.create_subscription(
+            Twist, '/shaq/cmd_servo', self.cmd_servo, qos_profile=qos.qos_profile_system_default
         )
         
         self.create_subscription(
@@ -254,11 +264,19 @@ class Cmd_vel_to_motor_speed(Node):
         else:
             self.mode = 1
             
-         
+    
+    def cmd_servo(self, msg):
+        
+        if msg.linear.x == 1:               # Closed Servo
+            self.servo_angle = float(0.0)
+
+        if msg.linear.x == 2:               # Opened Servo
+            self.servo_angle = float(60.0)
             
     def sendData(self):
         motorspeed_msg = Twist()
         motorshooter_msg = Twist()
+        servo_msg = Twist()
        
         motorspeed_msg.linear.x = float(self.motor1Speed)
         motorspeed_msg.linear.y = float(self.motor2Speed)
@@ -271,7 +289,9 @@ class Cmd_vel_to_motor_speed(Node):
 
         motorshooter_msg.angular.x = float(self.mode)
 
+        servo_msg.linear.x = float(self.servo_angle)
 
+        self.send_servo_angle.publish(servo_msg)
         self.send_shoot_speed.publish(motorshooter_msg)
         self.send_robot_speed.publish(motorspeed_msg)
 

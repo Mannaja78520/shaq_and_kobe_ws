@@ -23,8 +23,9 @@
 #include <motorprik.h>
 #include <encoder.h>
 #include <PIDF.h>
+#include <Servo.h>
 #include "../config/shooter_output.h"
-// #include "../config/drive_output_teensy.h"
+
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -67,6 +68,9 @@ geometry_msgs__msg__Twist encoder_msg;
 rcl_subscription_t shooter_motor_subscriber;
 geometry_msgs__msg__Twist shooter_msg;
 
+rcl_subscription_t servo_subscriber;
+geometry_msgs__msg__Twist servo_msg;
+
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -98,6 +102,8 @@ Encoder motor2_encoder(MOTOR2_ENCODER_PIN_A, MOTOR2_ENCODER_PIN_B, COUNTS_PER_RE
 
 PIDF motor1_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P_Motor_2, K_I, K_D, K_F);
 PIDF motor2_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
+
+Servo servo;
 
 
 
@@ -136,7 +142,7 @@ void doReboot()
 
 void setup()
 {
-
+    servo.attach(SERVO_PIN);
     Serial.begin(115200);
     set_microros_serial_transports(Serial);
 }
@@ -228,6 +234,14 @@ bool createEntities()
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
         "/shaq/cmd_shoot/rpm"));
 
+    RCCHECK(rclc_subscription_init_default(
+        &servo_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/shaq/cmd_servo/angle"));
+
+        
+
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
     RCCHECK(rclc_timer_init_default(
@@ -242,6 +256,14 @@ bool createEntities()
         &executor,
         &shooter_motor_subscriber,
         &shooter_msg,
+        &twistCallback,
+        ON_NEW_DATA));
+    RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
+
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &servo_subscriber,
+        &servo_msg,
         &twistCallback,
         ON_NEW_DATA));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
@@ -291,6 +313,10 @@ void Move()
     float motor1Speed = shooter_msg.linear.x;
     float motor2Speed = shooter_msg.linear.y;
     float motor3Speed = shooter_msg.linear.z;
+
+    float servo_angle = servo_msg.linear.x;
+
+    servo.write(servo_angle);
     
     motorshooter1.spin(motor1Speed);
     motorshooter2.spin(motor2Speed);
@@ -302,6 +328,7 @@ void Move()
     debug_motor_msg.angular.x = std::round(current_rpm_motor1 * 100.0) / 100.0;
     debug_motor_msg.angular.y = std::round(current_rpm_motor2 * 100.0) / 100.0;
 
+    debug_motor_msg.angular.z = servo_angle;
     
     // motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
     // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));

@@ -17,12 +17,10 @@ def generate_launch_description():
         package="micro_ros_agent",
         executable="micro_ros_agent",
         output="screen",
-        arguments=["serial", "--dev", "/dev/ttyUSB0"],
-        respawn=True,  # This will automatically restart the node if it fails
-        respawn_delay=3.0  # Delay in seconds before restarting the node
+        arguments=["serial", "--dev", "/dev/ttyACM1"],
     )
     
     ld.add_action(node_microros_1)
-    # ld.add_action(node_microros_2)
+    ld.add_action(node_microros_2)
 
     return ld
