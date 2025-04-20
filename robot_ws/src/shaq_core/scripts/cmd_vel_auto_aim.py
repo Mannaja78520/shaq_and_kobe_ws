@@ -231,7 +231,7 @@ class Cmd_vel_to_motor_speed(Node):
 
     def cmd_macro(self, msg):
 
-        if msg.linear.z == 1:   #Shoot
+        if msg.linear.z == 1: #Shoot
             self.macro_active = True
             self.motorshooter1Speed = 780.0  # Upper
             self.motorshooter2Speed = 800.0  # Lower
@@ -250,6 +250,11 @@ class Cmd_vel_to_motor_speed(Node):
             self.macro_active = True
             self.motorshooter1Speed = 550.0  # Upper
             self.motorshooter2Speed = 550.0   # Lower
+        
+        elif msg.angular.z == 1: #Shoot2
+            self.macro_active = True
+            self.motorshooter1Speed = 750.0  # Upper
+            self.motorshooter2Speed = 750.0   # Lower
     
         else:
             self.macro_active = False 
