@@ -221,20 +221,20 @@ class Cmd_vel_to_motor_speed(Node):
 
         if msg.linear.z == 1:
             self.macro_active = True
-            self.motorshooter1Speed = 810.0  # Upper
-            self.motorshooter2Speed = 810.0  # Lower
+            self.motorshooter1Speed = 760.0  # Upper
+            self.motorshooter2Speed = 920.0  # Lower
 
 
         elif msg.linear.x == 1:
             self.macro_active = True
-            self.motorshooter1Speed = 660.0  # Upper
-            self.motorshooter2Speed = 660.0   # Lower
+            self.motorshooter1Speed = 720.0  # Upper
+            self.motorshooter2Speed = 720.0   # Lower
 
         
         elif msg.angular.y == 1: #Pass
             self.macro_active = True
-            self.motorshooter1Speed = 710.0  # Upper
-            self.motorshooter2Speed = 710.0   # Lower
+            self.motorshooter1Speed = 720.0  # Upper
+            self.motorshooter2Speed = 800.0   # Lower
 
         else:
             self.macro_active = False 
@@ -255,7 +255,7 @@ class Cmd_vel_to_motor_speed(Node):
             self.servo_angle = float(0.0)
 
         if msg.linear.x == 2:               # Opened Servo
-            self.servo_angle = float(130.0)
+            self.servo_angle = float(150.0)
          
             
     def sendData(self):
