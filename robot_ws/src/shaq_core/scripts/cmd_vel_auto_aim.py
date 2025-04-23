@@ -50,8 +50,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.motorshooter3Speed : float = 0
         self.yaw : float = 0
         self.yaw_setpoint = self.yaw
-        
-        # self.main_run_instance = mainRun
+
 
         self.middlecam : float = 0.0
         
@@ -71,6 +70,8 @@ class Cmd_vel_to_motor_speed(Node):
         self.tag_id : float = 0.0
 
         self.servo_angle : float = 0.0
+
+        self.encoder_mode : float = 0.0
 
 
 
@@ -105,13 +106,13 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, '/shaq/cmd_macro', self.cmd_macro, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
-        self.create_subscription(
-            Twist, '/shaq/imu/pos_angle', self.get_robot_angle, qos_profile=qos.qos_profile_sensor_data # 10
-        )
+        # self.create_subscription(
+        #     Twist, '/shaq/imu/pos_angle', self.get_robot_angle, qos_profile=qos.qos_profile_sensor_data # 10
+        # )
 
-        self.create_subscription(
-            Float32MultiArray, '/shaq/pid/rotate', self.get_pid, qos_profile=qos.qos_profile_sensor_data # 10
-        )
+        # self.create_subscription(
+        #     Float32MultiArray, '/shaq/pid/rotate', self.get_pid, qos_profile=qos.qos_profile_sensor_data # 10
+        # )
 
 
         self.create_subscription(
@@ -122,8 +123,15 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, '/shaq/distance/kobe', self.distance, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
+        self.create_subscription(
+            Twist, "/shaq/cmd_encoder", self.encoder, qos_profile=qos.qos_profile_sensor_data
+        )
+
 
         self.sent_data_timer = self.create_timer(0.03, self.sendData)
+
+    def encoder(self,msg):
+        self.encoder_mode = msg.linear.x    # 1 Bit, 2 RPM
         
     def distance(self,msg):
         self.apriltag_distance = msg.linear.x
@@ -231,43 +239,69 @@ class Cmd_vel_to_motor_speed(Node):
 
     def cmd_macro(self, msg):
 
-        if msg.linear.z == 1: #Shoot
-            self.macro_active = True
-            self.motorshooter1Speed = 780.0  # Upper
-            self.motorshooter2Speed = 800.0  # Lower
+        if self.encoder_mode == 1:      #1 Bit
 
-            # 780 --> 6000
-            # 800 --> 6000
+            if msg.linear.z == 1: #Shoot    #Cross
+                self.macro_active = True
+                self.motorshooter1Speed = 750.0  # Upper
+                self.motorshooter2Speed = 770.0  # Lower
 
-        elif msg.linear.x == 1: #Dribble
-            self.macro_active = True
-            self.motorshooter1Speed = -560.0  # Upper
-            self.motorshooter2Speed = 790.0   # Lower
 
-            # -580 --> -1000
-            # 760 --> 4800
-        elif msg.angular.y == 1: #Pass
-            self.macro_active = True
-            self.motorshooter1Speed = 550.0  # Upper
-            self.motorshooter2Speed = 550.0   # Lower
+            elif msg.linear.x == 1: #Dribble    #Triangle
+                self.macro_active = True
+                self.motorshooter1Speed = -610.0  # Upper
+                self.motorshooter2Speed = 720.0   # Lower
+
+
+            elif msg.angular.y == 1: #Pass      #L1
+                self.macro_active = True
+                self.motorshooter1Speed = 635.0  # Upper
+                self.motorshooter2Speed = 635.0   # Lower
+            
+            elif msg.angular.z == 1: #Shoot2    #R1
+                self.macro_active = True
+                self.motorshooter1Speed = 730.0  # Upper
+                self.motorshooter2Speed = 730.0   # Lower
         
-        elif msg.angular.z == 1: #Shoot2
-            self.macro_active = True
-            self.motorshooter1Speed = 750.0  # Upper
-            self.motorshooter2Speed = 750.0   # Lower
-    
-        else:
-            self.macro_active = False 
+            else:
+                self.macro_active = False 
+
+        else:   #RPM
+
+            if msg.linear.z == 1: #Shoot    #Cross
+                self.macro_active = True
+                self.motorshooter1Speed = 4700.0  # Upper
+                self.motorshooter2Speed = 5400.0  # Lower
 
 
-        if msg.linear.y == 1 :
+            elif msg.linear.x == 1: #Dribble    #Triangle
+                self.macro_active = True
+                self.motorshooter1Speed = -2100.0  # Upper
+                self.motorshooter2Speed = 5300.0   # Lower
+
+
+            elif msg.angular.y == 1: #Pass      #L1
+                self.macro_active = True
+                self.motorshooter1Speed = 550.0  # Upper
+                self.motorshooter2Speed = 550.0   # Lower
+            
+            elif msg.angular.z == 1: #Shoot2    #R1
+                self.macro_active = True
+                self.motorshooter1Speed = 4300.0  # Upper
+                self.motorshooter2Speed = 4700.0   # Lower
+        
+            else:
+                self.macro_active = False 
+
+
+        if msg.linear.y == 1 :      # Circle
             self.mode = 2
 
-        elif msg.angular.x == 1:
+        elif msg.angular.x == 1:    # Square
             self.mode = 3
             
         else:
-            self.mode = 1
+            self.mode = 1           # Default
             
     
     def cmd_servo(self, msg):
@@ -293,6 +327,7 @@ class Cmd_vel_to_motor_speed(Node):
         motorshooter_msg.linear.z = float(self.motorshooter3Speed)
 
         motorshooter_msg.angular.x = float(self.mode)
+        motorshooter_msg._angular.y = float(self.encoder_mode)
 
         servo_msg.linear.x = float(self.servo_angle)
 

@@ -50,47 +50,14 @@ class Gamepad:
         self.previous_square_state = False
         self.previous_l1_state = False
 
-        self.last_macro_button = None  # Stores 'shoot', 'pass', 'dribble', 'auto_aim' , 'pass_motor'
+        self.last_macro_button = None  # Stores 'shoot', 'pass', 'dribble', 'auto_aim' , 'pass_motor' 
 
         
-        
-    # def update_dribble(self):
-
-    #     if self.button_triangle and not self.previous_triangle_state:
-    
-    #         self.dribble = not self.dribble  # Toggle state
-            
-    #     self.previous_triangle_state = self.button_triangle  # Update button state
-
-    # def update_auto_aim(self):
-
-    #     if self.button_circle and not self.previous_circle_state:
-    
-    #         self.auto_aim_bool = not self.auto_aim_bool  # Toggle state
-            
-    #     self.previous_circle_state = self.button_circle  # Update button state
-
-    # def update_toggle_shoot(self):
-
-    #     if self.button_cross and not self.previous_cross_state:
-
-    #         self.toggle_shoot_bool = not self.toggle_shoot_bool  # Toggle state
-
-    #     self.previous_cross_state = self.button_cross  # Update button state
-
-    # def update_toggle_pass(self):
-
-    #     if self.button_square and not self.previous_square_state:
-
-    #         self.toggle_pass_bool = not self.toggle_pass_bool  # Toggle state
-
-    #     self.previous_square_state = self.button_square  # Update button state
 
     def update_dribble(self):
         if self.button_triangle and not self.previous_triangle_state:
             self.dribble = not self.dribble
             if self.dribble:
-                # Disable others
                 self.auto_aim_bool = False
                 self.toggle_shoot_bool = False
                 self.toggle_pass_bool = False
@@ -159,7 +126,6 @@ class Gamepad:
         self.toggle_pass_bool = False
         self.toggle_pass_motor_bool = False
         self.last_macro_button = None
-        # add any others here
 
         
 
@@ -183,17 +149,14 @@ class Joystick(Node):
         self.pub_servo = self.create_publisher(
             Twist, "/kobe/cmd_servo", qos_profile=qos.qos_profile_system_default
         )
-        
-        
+    
         self.create_subscription(
-            Joy, '/kobe/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
+            Joy, '/kobe/joy', self.joy, qos_profile=qos.qos_profile_sensor_data 
         )
 
         self.gamepad = Gamepad()
         self.maxspeed : float = 1.0
-        
-
-
+     
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
 
     def joy(self, msg):
@@ -264,35 +227,7 @@ class Joystick(Node):
         
         if self.gamepad.button_option:
             cmd_servo.linear.x = float(2.0)  #Opened Servo
-
-        # if self.gamepad.toggle_shoot_bool:
-        #     cmd_vel_macro.linear.z = 1.0
-
-        # else:
-        #     cmd_vel_macro.linear.z = 0.0
-
         
-        # if self.gamepad.auto_aim_bool:
-        #     cmd_vel_macro.linear.y = 1.0
-            
-        # else:
-        #     cmd_vel_macro.linear.y = 0.0
-        
-        
-        # if self.gamepad.dribble:
-        #     cmd_vel_macro.linear.x = 1.0
-              
-        # else:
-        #     cmd_vel_macro.linear.x = 0.0  
-
-        # if self.gamepad.toggle_pass_bool:
-        #     cmd_vel_macro.angular.x = 1.0
-
-        # else:
-        #     cmd_vel_macro.angular.x = 0.0    
-
-
-            
 
         if self.gamepad.last_macro_button == 'dribble' and self.gamepad.dribble:
             cmd_vel_macro.linear.x = 1.0
@@ -308,6 +243,7 @@ class Joystick(Node):
 
         elif self.gamepad.last_macro_button == 'pass_motor' and self.gamepad.toggle_pass_motor_bool:
             cmd_vel_macro.angular.y = 1.0
+
         
         self.pub_servo.publish(cmd_servo)
         self.pub_macro.publish(cmd_vel_macro)
