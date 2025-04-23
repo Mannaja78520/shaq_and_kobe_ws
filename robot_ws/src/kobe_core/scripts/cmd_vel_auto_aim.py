@@ -255,7 +255,7 @@ class Cmd_vel_to_motor_speed(Node):
             self.servo_angle = float(0.0)
 
         if msg.linear.x == 2:               # Opened Servo
-            self.servo_angle = float(60.0)
+            self.servo_angle = float(130.0)
          
             
     def sendData(self):
