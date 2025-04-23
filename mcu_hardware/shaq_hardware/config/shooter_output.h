@@ -21,11 +21,11 @@
 #define PWM_Max pow(2, PWM_BITS) - 1
 #define PWM_Min -PWM_Max
 
-#define K_P 0.6
-#define K_P_Motor_2 0.1
-#define K_I 0.1
-#define K_D 0.1
-#define K_F 0.3
+#define K_P 3.0
+#define K_P_Motor_2 3.0
+#define K_I 0.2
+#define K_D 0.8
+#define K_F 1
 #define I_Max -1
 #define I_Min -1 
 
