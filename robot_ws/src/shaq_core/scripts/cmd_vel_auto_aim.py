@@ -250,7 +250,7 @@ class Cmd_vel_to_motor_speed(Node):
             elif msg.linear.x == 1: #Dribble    #Triangle
                 self.macro_active = True
                 self.motorshooter1Speed = -610.0  # Upper
-                self.motorshooter2Speed = 720.0   # Lower
+                self.motorshooter2Speed = 700.0   # Lower
 
 
             elif msg.angular.y == 1: #Pass      #L1
@@ -260,8 +260,8 @@ class Cmd_vel_to_motor_speed(Node):
             
             elif msg.angular.z == 1: #Shoot2    #R1
                 self.macro_active = True
-                self.motorshooter1Speed = 730.0  # Upper
-                self.motorshooter2Speed = 730.0   # Lower
+                self.motorshooter1Speed = 710.0  # Upper
+                self.motorshooter2Speed = 710.0   # Lower
         
             else:
                 self.macro_active = False 
