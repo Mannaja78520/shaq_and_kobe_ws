@@ -87,3 +87,10 @@ nmcli device status
 
 ros2 run rqt_image_view rqt_image_view
 
+
+sudo nano /boot/firmware/cmdline.txt
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash usbcore.autosuspend=-1"
+cat /sys/module/usbcore/parameters/autosuspend
+
+

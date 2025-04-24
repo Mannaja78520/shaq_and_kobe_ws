@@ -136,7 +136,7 @@ void flashLED(int n_times)
 // Reboot the board (Teensy Only)
 void doReboot()
 {
-//   SCB_AIRCR = 0x05FA0004;
+  SCB_AIRCR = 0x05FA0004;
 }
 
 
@@ -206,12 +206,23 @@ void twist2Callback(const void *msgin)
     prev_cmd_time = millis();
 }
 
+void encoderModeCallback(const void *msgin)
+{
+    const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
+    encoder_mode_msg = *msg;
+}
+
 bool createEntities()
 {
 
     flashLED(3);
 
     allocator = rcl_get_default_allocator();
+
+    geometry_msgs__msg__Twist__init(&encoder_mode_msg);
+    geometry_msgs__msg__Twist__init(&shooter_msg);
+    geometry_msgs__msg__Twist__init(&servo_msg);
+    geometry_msgs__msg__Twist__init(&debug_motor_msg);
 
     init_options = rcl_get_zero_initialized_init_options();
     rcl_init_options_init(&init_options, allocator);
@@ -246,7 +257,8 @@ bool createEntities()
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
         "/shaq/encoder"));
 
-        
+        // motorshooter1.spin(motor1Speed);
+    // motorshooter2.spin(motor2Speed);
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -256,7 +268,7 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback));
     executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 4, &allocator));
 
     RCCHECK(rclc_executor_add_subscription(
         &executor,
@@ -276,7 +288,7 @@ bool createEntities()
         &executor,
         &encoder_mode_subscriber,
         &encoder_mode_msg,
-        &twistCallback,
+        &encoderModeCallback,
         ON_NEW_DATA));
             
     
@@ -336,8 +348,6 @@ void Move()
     float servo_angle = servo_msg.linear.x;
     servo.write(servo_angle);
 
-    // motorshooter1.spin(motor1Speed);
-    // motorshooter2.spin(motor2Speed);
 
     float current_rpm_motor1 = motor1_encoder.getRPM();
     float current_rpm_motor2 = motor2_encoder.getRPM();
@@ -346,14 +356,21 @@ void Move()
     debug_motor_msg.angular.y = std::round(current_rpm_motor2 * 100.0) / 100.0;
 
     debug_motor_msg.angular.z = servo_angle;
+
+    debug_motor_msg.linear.z = encoder_mode;
+
     
-    if(encoder_mode == 1){
-        motorshooter1.spin(motor1Speed);
-        motorshooter2.spin(motor2Speed);
-    }else{
-        motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
-        motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
-    }
+    // if(encoder_mode == 1){
+    //     motorshooter1.spin(motor1Speed);
+    //     motorshooter2.spin(motor2Speed);
+    // }else{
+    //     motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
+    //     motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
+    // }
+
+    motorshooter1.spin(motor1Speed);
+    motorshooter2.spin(motor2Speed);
+
     // motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
     // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
     
@@ -363,12 +380,15 @@ void Move()
 
 
 
+
 void publishData()
 {
 
     debug_motor_msg.linear.x = shooter_msg.linear.x;
     debug_motor_msg.linear.y = shooter_msg.linear.y;
-    debug_motor_msg.linear.z = shooter_msg.linear.z;
+    // debug_motor_msg.linear.z = shooter_msg.linear.z;
+
+
 
     
 
