@@ -255,10 +255,9 @@ bool createEntities()
         &encoder_mode_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/shaq/encoder"));
+        "/shaq/cmd_encoder"));
 
-        // motorshooter1.spin(motor1Speed);
-    // motorshooter2.spin(motor2Speed);
+
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -357,19 +356,19 @@ void Move()
 
     debug_motor_msg.angular.z = servo_angle;
 
-    debug_motor_msg.linear.z = encoder_mode;
+    // debug_motor_msg.linear.z = encoder_mode;
 
     
-    // if(encoder_mode == 1){
-    //     motorshooter1.spin(motor1Speed);
-    //     motorshooter2.spin(motor2Speed);
-    // }else{
-    //     motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
-    //     motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
-    // }
+    if(encoder_mode == 1){
+        motorshooter1.spin(motor1Speed);
+        motorshooter2.spin(motor2Speed);
+    }else{
+        motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
+        motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
+    }
 
-    motorshooter1.spin(motor1Speed);
-    motorshooter2.spin(motor2Speed);
+    // motorshooter1.spin(motor1Speed);
+    // motorshooter2.spin(motor2Speed);
 
     // motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
     // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
@@ -386,7 +385,7 @@ void publishData()
 
     debug_motor_msg.linear.x = shooter_msg.linear.x;
     debug_motor_msg.linear.y = shooter_msg.linear.y;
-    // debug_motor_msg.linear.z = shooter_msg.linear.z;
+    debug_motor_msg.linear.z = shooter_msg.linear.z;
 
 
 
