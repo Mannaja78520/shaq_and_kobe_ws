@@ -54,6 +54,9 @@
 rcl_subscription_t servo_subscriber;
 geometry_msgs__msg__Twist servo_msg;
 
+rcl_publisher_t servo_debug;
+geometry_msgs__msg__Twist servo_debug_msg;
+
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -191,6 +194,12 @@ bool createEntities()
             ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
             "/kobe/cmd_servo/angle"));
 
+    RCCHECK(rclc_publisher_init_best_effort(
+            &servo_debug,
+            &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+            "/kobe/debug/servo"));
+
     
       
 
@@ -225,6 +234,7 @@ bool destroyEntities()
     rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
+    rcl_publisher_fini(&servo_debug, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rcl_subscription_fini(&servo_subscriber, &node);
@@ -239,6 +249,9 @@ bool destroyEntities()
 void servo_controll(){
     float servo_angle = servo_msg.linear.x;
     servo.write(servo_angle);
+
+    servo_debug_msg.linear.x = servo_angle;
+    rcl_publish(&servo_debug,&servo_debug_msg,NULL);
 }
 
 
