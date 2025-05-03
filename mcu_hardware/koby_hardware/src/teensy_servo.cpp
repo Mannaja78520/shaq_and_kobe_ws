@@ -111,12 +111,12 @@ void flashLED(int n_times)
 
 void doReboot()
 {
-//   SCB_AIRCR = 0x05FA0004;
+  SCB_AIRCR = 0x05FA0004;
 }
 
 void setup()
 {
-    servo.attach(20);
+    servo.attach(37);
     delay(1000);
     Serial.begin(115200);
     set_microros_serial_transports(Serial);
@@ -168,8 +168,11 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
 
 void twistCallback(const void *msgin)
 {
+    const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
+    servo_msg = *msg;  // Update the global variable
     prev_cmd_time = millis();
 }
+
 
 
 bool createEntities()

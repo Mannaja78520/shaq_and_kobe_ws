@@ -21,6 +21,8 @@ class Cmd_vel_to_motor_speed(Node):
         
         self.moveSpeed: float = 0.0
         self.turnSpeed: float = 0.0
+        #new
+        self.slideSpeed: float = 0.0
 
         self.maxSpeed : float = 1023.0
         self.shootmaxSpeed : float = 1023.0
@@ -57,6 +59,11 @@ class Cmd_vel_to_motor_speed(Node):
         self.tag_id : float = 0.0
 
         self.servo_angle : float = 0.0
+
+        #new omni
+        self.R : float = 0.0 #radius
+        self.L : float = 0.0 #length
+        self.W : float = 0.0 #width
 
         
  
@@ -199,8 +206,15 @@ class Cmd_vel_to_motor_speed(Node):
         if self.motor2Speed >= self.maxSpeed:
             self.motor2Speed = self.maxSpeed    
 
+    #new for omni
 
-            
+        k = self.L + self.W
+
+        # Calculate wheel speeds (rad/s)
+        wheel_front_left = (1 / self.R) * (self.slideSpeed - self.moveSpeed - k * self.turnSpeed)
+        wheel_front_right = (1 / self.R) * (self.slideSpeed + self.moveSpeed + k * self.turnSpeed)
+        wheel_rear_left = (1 / self.R) * (self.slideSpeed + self.moveSpeed - k * self.turnSpeed)
+        wheel_rear_right = (1 / self.R) * (self.slideSpeed - self.moveSpeed + k * self.turnSpeed)
         
 
 

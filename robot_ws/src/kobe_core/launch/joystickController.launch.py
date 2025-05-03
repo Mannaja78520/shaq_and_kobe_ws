@@ -22,7 +22,8 @@ def generate_launch_description():
         name="joy_node",
         # output="screen",
         namespace="",
-        # arguments=["--dev", "/dev/input/js0"],  # replace with your joystick device path
+        parameters=[{"autorepeat_rate": 50.0}],
+        # arguments["auto"]],  # replace with your joystick device path
         remappings = [
             ('/joy', '/kobe/joy')
         ]

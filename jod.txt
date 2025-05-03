@@ -94,3 +94,24 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash usbcore.autosuspend=-1"
 cat /sys/module/usbcore/parameters/autosuspend
 
 
+
+PS4 P Ping : 84:30:95:24:5E:C7
+
+bluetoothctl
+
+power on
+agent on
+default-agent
+
+scan on
+
+pair 84:30:95:24:5E:C7
+connect 84:30:95:24:5E:C7
+trust 84:30:95:24:5E:C7
+
+upower -i /org/freedesktop/UPower/devices/battery_ps_controller_battery_84o30o95o24o5eoc7
+
+
+PS4 Me 98:B6:E9:D7:56:B2
+
+PS5 :90:B6:85:9A:50:B0
