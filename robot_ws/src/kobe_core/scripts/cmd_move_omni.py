@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# from pynput import keyboard
 import threading
 import rclpy
 from rclpy.node import Node
@@ -21,15 +20,19 @@ class Cmd_vel_to_motor_speed(Node):
         
         self.moveSpeed: float = 0.0
         self.turnSpeed: float = 0.0
-        #new
         self.slideSpeed: float = 0.0
 
         self.maxSpeed : float = 1023.0
         self.shootmaxSpeed : float = 1023.0
+
         self.motor1Speed : float = 0
         self.motor2Speed : float = 0
-        
-        self.trackWidth : float = 2.0
+        self.motor3Speed : float = 0
+        self.motor4Speed : float = 0
+
+        self.motorshooter1Speed : float = 0
+        self.motorshooter2Speed : float = 0
+        self.motorshooter3Speed : float = 0
 
         self.yaw : float = 0
         self.yaw_setpoint = self.yaw
@@ -39,17 +42,10 @@ class Cmd_vel_to_motor_speed(Node):
         self.controller = Controller(kp = 1.0, ki = 0.05, kd = 0.001, baseSpeed = 0.3  ,errorTolerance= To_Radians(0.5), i_min= -1, i_max= 1)
         self.hooprotage = Controller(kp = 0.001, ki = 0.001, kd = 0.0,  errorTolerance=(5))
         self.april_controller = Controller(kp = 0.002, ki = 0.001, kd = 0.0, errorTolerance  = (10))
-        
-
-        self.motorshooter1Speed : float = 0
-        self.motorshooter2Speed : float = 0
-        self.motorshooter3Speed : float = 0
-
             
         self.macro_active = False
 
         self.middlecam : float = 0.0
-
         self.hoop_distance_x : float = 0.0
         self.hoop_distance_y : float = 0.0
 
@@ -60,14 +56,7 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.servo_angle : float = 0.0
 
-        #new omni
-        self.R : float = 0.0 #radius
-        self.L : float = 0.0 #length
-        self.W : float = 0.0 #width
 
-        
- 
-        
         self.send_robot_speed = self.create_publisher(
             Twist, "/kobe/cmd_move/rpm", qos_profile=qos.qos_profile_system_default
         )
@@ -113,7 +102,6 @@ class Cmd_vel_to_motor_speed(Node):
         )
 
 
-
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
         
     def distance(self,msg):
@@ -139,9 +127,10 @@ class Cmd_vel_to_motor_speed(Node):
     def cmd_move(self, msg):
 
         CurrentTime = time.time()
-        self.moveSpeed = msg.linear.x
-        self.turnSpeed = msg.angular.x 
-        self.turnSpeed = self.turnSpeed / 3
+        self.slideSpeed = msg.linear.x
+        self.moveSpeed = msg.linear.y
+        self.turnSpeed = msg.angular.z
+        
 
 
         if self.mode == 1:
@@ -194,28 +183,29 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.previous_manual_turn = CurrentTime if self.turnSpeed != 0 else self.previous_manual_turn
 
-    
+
+        """
         
-        self.motor1Speed = (self.moveSpeed + rotation) * self.maxSpeed #Left Start Slower
-        self.motor2Speed = (self.moveSpeed - rotation) * self.maxSpeed #Right
+        (Motor2)//-------------\\(Motor1)
+                |               |
+                |               |
+                |               |
+                |               |               
+        (Motor3)\\-------------//(Motor4)
+
+
         
+        """
 
-        if self.motor1Speed >= self.maxSpeed:
-            self.motor1Speed = self.maxSpeed
+        self.motor1Speed = clip(float((-self.slideSpeed + self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        self.motor2Speed = clip(float((self.slideSpeed + self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        self.motor3Speed = clip(float((self.slideSpeed - self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        self.motor4Speed = clip(float((-self.slideSpeed - self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
 
-        if self.motor2Speed >= self.maxSpeed:
-            self.motor2Speed = self.maxSpeed    
-
-    #new for omni
-
-        k = self.L + self.W
-
-        # Calculate wheel speeds (rad/s)
-        wheel_front_left = (1 / self.R) * (self.slideSpeed - self.moveSpeed - k * self.turnSpeed)
-        wheel_front_right = (1 / self.R) * (self.slideSpeed + self.moveSpeed + k * self.turnSpeed)
-        wheel_rear_left = (1 / self.R) * (self.slideSpeed + self.moveSpeed - k * self.turnSpeed)
-        wheel_rear_right = (1 / self.R) * (self.slideSpeed - self.moveSpeed + k * self.turnSpeed)
-        
+        # self.motor1Speed = float((-self.slideSpeed + self.moveSpeed - self.turnSpeed) * self.maxSpeed)
+        # self.motor2Speed = float((self.slideSpeed + self.moveSpeed + self.turnSpeed) * self.maxSpeed)
+        # self.motor3Speed = float((self.slideSpeed - self.moveSpeed - self.turnSpeed) * self.maxSpeed)
+        # self.motor4Speed = float((-self.slideSpeed - self.moveSpeed + self.turnSpeed) * self.maxSpeed) 
 
 
 
@@ -278,10 +268,23 @@ class Cmd_vel_to_motor_speed(Node):
         servo_msg = Twist()
 
 
-       
-        motorspeed_msg.linear.x = float(self.motor1Speed) #Left
-        motorspeed_msg.linear.y = float(self.motor2Speed) #Right
+        """
+        
+        (Motor2)//-------------\\(Motor1)
+                |               |
+                |               |
+                |               |
+                |               |               
+        (Motor3)\\-------------//(Motor4)
+  
+        
+        """
 
+       
+        motorspeed_msg.linear.x = float(self.motor1Speed) 
+        motorspeed_msg.linear.y = float(self.motor2Speed)
+        motorspeed_msg.linear.z = float(self.motor3Speed) 
+        motorspeed_msg.angular.x = float(self.motor4Speed) 
 
         motorshooter_msg.linear.x = float(self.motorshooter1Speed)
         motorshooter_msg.linear.y = float(self.motorshooter2Speed)

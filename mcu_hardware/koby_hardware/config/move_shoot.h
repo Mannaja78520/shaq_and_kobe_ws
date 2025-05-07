@@ -64,6 +64,17 @@
 #define MOTORMOVE1_INV true
 #define MOTORMOVE2_INV false
 
+/*
+
+        (Motor2)//-------------\\(Motor1)
+                |               |
+                |               |
+                |               |
+                |               |               
+        (Motor3)\\-------------//(Motor4)
+
+*/
+
 // Motor 1 Parameters
 #define MOTOR1_PWM  3
 #define MOTOR1_IN_A 4

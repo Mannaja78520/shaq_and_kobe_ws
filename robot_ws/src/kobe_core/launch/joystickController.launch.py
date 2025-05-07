@@ -39,7 +39,7 @@ def generate_launch_description():
     
     cmd_vel_to_motor_speed = Node(
         package="kobe_core",
-        executable="cmd_vel_to_motor_speed.py",
+        executable="cmd_move_omni.py",
         name="Cmd_Vel_To_Rpm",
         # output="screen",
         namespace="",
