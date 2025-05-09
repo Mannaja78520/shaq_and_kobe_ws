@@ -36,10 +36,17 @@ class mainRun(Node):
         self.center_x = 0.0
         self.center_y = 0.0
 
+        self.led_state = False
+
         # Publisher for detected hoop data
         self.sent_where_hoop = self.create_publisher(
             Twist, "/shaq/send_where_hoop", qos_profile=qos.qos_profile_sensor_data
         )
+
+        self.sent_led = self.create_publisher(
+            Twist, "/shaq/led", qos_profile=qos.qos_profile_default
+        )
+
 
         self.subscription = self.create_subscription(
             Image,
@@ -67,7 +74,7 @@ class mainRun(Node):
             conf=0.4,
             half=False,
             device=device,
-            stream=True
+            # stream=True
         )
 
         for result in results:
@@ -87,11 +94,22 @@ class mainRun(Node):
 
     def sendData(self):
         hoopdata_msg = Twist()
+        led_msg = Twist()
+
         hoopdata_msg.linear.x = float(self.x)
         hoopdata_msg.linear.y = float(self.y)
         hoopdata_msg.angular.x = float(270.0)
         hoopdata_msg.angular.y = float(self.center_y)
 
+        if 265 <= self.x <= 275:
+            self.led_state = True
+        else:
+            self.led_state = False
+
+        led_msg.linear.x = float(self.led_state)
+
+
+        self.sent_led.publish(led_msg)
         self.sent_where_hoop.publish(hoopdata_msg)
         
 def main():

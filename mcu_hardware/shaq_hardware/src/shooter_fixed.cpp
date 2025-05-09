@@ -5,6 +5,8 @@
 
 #define LED_PIN 13
 
+#define LED_AIM 14
+
 #include <micro_ros_platformio.h>
 #include <stdio.h>
 
@@ -68,6 +70,9 @@ geometry_msgs__msg__Twist shooter_msg;
 rcl_subscription_t servo_subscriber;
 geometry_msgs__msg__Twist servo_msg;
 
+rcl_subscription_t led_subscriber;
+geometry_msgs__msg__Twist led_msg;
+
 rcl_subscription_t encoder_mode_subscriber;
 geometry_msgs__msg__Twist encoder_mode_msg;
 
@@ -118,6 +123,7 @@ struct timespec getTime();
 void fullStop();
 
 void Move();
+void led();
 
 //------------------------------ < Main > -------------------------------------//
 
@@ -141,7 +147,9 @@ void doReboot()
 
 
 void setup()
-{
+{   
+    pinMode(LED_AIM, OUTPUT);
+
     servo.attach(SERVO_PIN);
     Serial.begin(115200);
     set_microros_serial_transports(Serial);
@@ -193,6 +201,7 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     {
         Move();
         publishData();
+        led();
     }
 }
 
@@ -210,6 +219,12 @@ void encoderModeCallback(const void *msgin)
 {
     const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
     encoder_mode_msg = *msg;
+}
+
+void ledCallback(const void *msgin)
+{
+    const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
+    led_msg = *msg;
 }
 
 bool createEntities()
@@ -252,6 +267,12 @@ bool createEntities()
         "/shaq/cmd_servo/angle"));
 
     RCCHECK(rclc_subscription_init_default(
+        &led_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/shaq/led"));
+
+    RCCHECK(rclc_subscription_init_default(
         &encoder_mode_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
@@ -267,7 +288,7 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback));
     executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 4, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator));
 
     RCCHECK(rclc_executor_add_subscription(
         &executor,
@@ -288,6 +309,13 @@ bool createEntities()
         &encoder_mode_subscriber,
         &encoder_mode_msg,
         &encoderModeCallback,
+        ON_NEW_DATA));
+
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &led_subscriber,
+        &led_msg,
+        &ledCallback,
         ON_NEW_DATA));
             
     
@@ -374,6 +402,18 @@ void Move()
     // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
     
     motorlift.spin(motor3Speed);
+
+}
+
+void led(){
+
+    bool led_state = led_msg.linear.x;
+
+    if(led_state){
+        digitalWrite(LED_AIM,HIGH);
+    }else{
+        digitalWrite(LED_AIM,LOW);
+    }
 
 }
 
