@@ -115,3 +115,19 @@ upower -i /org/freedesktop/UPower/devices/battery_ps_controller_battery_84o30o95
 PS4 Me 98:B6:E9:D7:56:B2
 
 PS5 :90:B6:85:9A:50:B0
+
+Bluetooth Adapter Shaq: Controller 98:BA:5F:31:8A:84
+
+
+https://askubuntu.com/questions/1423752/ubuntu-20-04-unable-to-use-a-bluetooth-dongle-tp-link-ub500
+
+cd /tmp
+wget https://www.lwfinger.com/download/rtl_bt/rtl8761b_fw.bin
+wget https://www.lwfinger.com/download/rtl_bt/rtl8761b_config.bin
+
+curl -o rtl8761b_config.bin https://raw.githubusercontent.com/Realtek-OpenSource/android_hardware_realtek/rtk1395/bt/rtkbt/Firmware/BT/rtl8761b_config
+curl -o rtl8761b_fw.bin https://raw.githubusercontent.com/Realtek-OpenSource/android_hardware_realtek/rtk1395/bt/rtkbt/Firmware/BT/rtl8761b_fw
+
+
+sudo cp rtl8761b_config.bin /usr/lib/firmware/rtl_bt/rtl8761bu_config.bin
+sudo cp rtl8761b_fw.bin /usr/lib/firmware/rtl_bt/rtl8761bu_fw.bin
