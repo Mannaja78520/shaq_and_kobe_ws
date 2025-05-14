@@ -4,14 +4,13 @@ import rclpy
 from rclpy import qos
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-import cv2 as cv
+# import cv2 as cv
 import os
 import time
-import threading
 import torch
 from ultralytics import YOLO
-from cameracapture import CameraCapture  
-import numpy as np
+# from cameracapture import CameraCapture  
+# import numpy as np
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
@@ -96,7 +95,7 @@ class mainRun(Node):
         hoopdata_msg = Twist()
         led_msg = Twist()
 
-        hoopdata_msg.linear.x = float(self.x)
+        hoopdata_msg.linear.x = float(self.cvx)
         hoopdata_msg.linear.y = float(self.y)
         hoopdata_msg.angular.x = float(270.0)
         hoopdata_msg.angular.y = float(self.center_y)

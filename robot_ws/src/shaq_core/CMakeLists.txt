@@ -19,20 +19,26 @@ find_package(ament_cmake REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(rclcpp REQUIRED)
-# find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(std_msgs REQUIRED)
-#find_package(nav2_msgs REQUIRED)
-# find_package(cv_bridge REQUIRED)
-# find_package(sensor_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+#find_package(nav2_msgs REQUIRED)
 #find_package(behaviortree_cpp_v3 REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+
+include_directories(
+  ${OpenCV_INCLUDE_DIRS}
+  ${cv_bridge_INCLUDE_DIRS}
+)
 
 ################################################################################
 # Install
@@ -48,7 +54,7 @@ install(
 ament_python_install_package(${PROJECT_NAME})
 
 ################################################################################
-# Install Programs
+# Install Python Programs
 ################################################################################
 install(PROGRAMS
 # scripts/helloworld.py
@@ -75,6 +81,46 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}/src
 )
 
+################################################################################
+# Install C++ Programs
+################################################################################
+add_executable(apriltag_auto_aim scripts_camera/apriltag_auto_aim.cpp)
+add_executable(hoop_detection scripts_camera/hoop_detection.cpp)
+
+ament_target_dependencies(apriltag_auto_aim 
+  rclcpp
+  sensor_msgs 
+  geometry_msgs 
+  cv_bridge
+)
+
+ament_target_dependencies(hoop_detection
+  rclcpp
+  sensor_msgs
+  std_msgs
+  cv_bridge
+  # image_transport
+  ament_index_cpp
+)
+
+target_link_libraries(apriltag_auto_aim ${OpenCV_LIBS} apriltag)
+target_link_libraries(hoop_detection  ${OpenCV_LIBS})
+
+install(TARGETS
+  apriltag_auto_aim
+  hoop_detection
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+################################################################################
+# Install Picture Model
+################################################################################
+install(DIRECTORY 
+  models/
+  DESTINATION share/${PROJECT_NAME}/models
+)
+
+################################################################################
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
