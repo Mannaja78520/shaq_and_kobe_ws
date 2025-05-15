@@ -30,9 +30,9 @@
 #include <encoder.h>
 
 
-EVODrive motorshooter1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTORSHOOTER1_PWM, MOTORSHOOTER1_IN_A, MOTORSHOOTER1_IN_B);
-EVODrive motorshooter2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTORSHOOTER2_PWM, MOTORSHOOTER2_IN_A, MOTORSHOOTER2_IN_B);
-Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
+// EVODrive motorshooter1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTORSHOOTER1_PWM, MOTORSHOOTER1_IN_A, MOTORSHOOTER1_IN_B);
+// EVODrive motorshooter2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTORSHOOTER2_PWM, MOTORSHOOTER2_IN_A, MOTORSHOOTER2_IN_B);
+// Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
 // EVODrive motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
 
 Encoder motor1_encoder(MOTOR1_ENCODER_PIN_A, MOTOR1_ENCODER_PIN_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV, ENCODER_GEAR_RATIO);
@@ -42,10 +42,14 @@ PIDF motor1_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
 PIDF motor2_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
 
 
-Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTORMOVE1_INV, MOTOR1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
-Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTORMOVE2_INV, MOTOR2_BRAKE, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTORMOVE1_INV, MOTORMOVE1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
+Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTORMOVE2_INV, MOTORMOVE2_BRAKE, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+Motor motor3(PWM_FREQUENCY, PWM_BITS, MOTORMOVE3_INV, MOTORMOVE3_BRAKE, MOTOR3_PWM, MOTOR3_IN_A, MOTOR3_IN_B);
+Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTORMOVE4_INV, MOTORMOVE4_BRAKE, MOTOR4_PWM, MOTOR4_IN_A, MOTOR4_IN_B);
 
-IMU_BNO055 bno055;
+
+
+// IMU_BNO055 bno055;
 
 
 
@@ -162,7 +166,7 @@ void doReboot()
 void setup()
 {
     Serial.begin(115200);
-    bno055.init();
+    // bno055.init();
     set_microros_serial_transports(Serial);
 }
 
@@ -331,7 +335,8 @@ void fullStop()
 {
     shooter_msg = {}; move_msg = {};
     motor1.brake(); motor2.brake();
-    motorshooter1.brake(); motorshooter2.brake(); motorlift.brake();
+    motor3.brake(); motor4.brake();
+    // motorshooter1.brake(); motorshooter2.brake(); motorlift.brake();
 
 }
 
@@ -344,8 +349,8 @@ void Move()
     float motor2Speed = shooter_msg.linear.y;
     float motor3Speed = shooter_msg.linear.z;
     
-    motorshooter1.spin(motor1Speed);
-    motorshooter2.spin(motor2Speed);
+    // motorshooter1.spin(motor1Speed);
+    // motorshooter2.spin(motor2Speed);
 
     
     float current_rpm_motor1 = motor1_encoder.getRPM();
@@ -356,45 +361,23 @@ void Move()
     
     // motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
     // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
-    motorlift.spin(motor3Speed);
+    // motorlift.spin(motor3Speed);
 
 
-//------------------------SHOOTER--------------------
-    float motor1ShooterSpeed = move_msg.linear.x;
-    float motor2ShooterSpeed = move_msg.linear.y;
-    motor1.spin(motor1ShooterSpeed);
-    motor2.spin(motor2ShooterSpeed);
+//------------------------MOVE--------------------
+    float motor1MoveSpeed = move_msg.linear.x;
+    float motor2MoveSpeed = move_msg.linear.y;
+    float motor3MoveSpeed = move_msg.linear.z;
+    float motor4MoveSpeed = move_msg.angular.x;
+
+    motor1.spin(motor1MoveSpeed);
+    motor2.spin(motor2MoveSpeed);
+    motor3.spin(motor3MoveSpeed);
+    motor4.spin(motor4MoveSpeed);
 
 
 }
 
-void imu_pub(){
-    bno055.getIMUData(imu_data_msg, imu_mag_msg, imu_pos_angle_msg);
-
-    struct timespec time_stamp = getTime();
-    imu_data_msg.header.stamp.sec = time_stamp.tv_sec;
-    imu_data_msg.header.stamp.nanosec = time_stamp.tv_nsec;
-    imu_data_msg.header.frame_id.data = "imu_link";
-  
-    imu_data_msg.angular_velocity_covariance[0] = 0.0001;
-    imu_data_msg.angular_velocity_covariance[4] = 0.0001;
-    imu_data_msg.angular_velocity_covariance[8] = 0.0001;
-  
-    imu_data_msg.linear_acceleration_covariance[0] = 0.04;
-    imu_data_msg.linear_acceleration_covariance[4] = 0.04;
-    imu_data_msg.linear_acceleration_covariance[8] = 0.04;
-  
-    imu_data_msg.orientation_covariance[0] = 0.0025;
-    imu_data_msg.orientation_covariance[4] = 0.0025;
-    imu_data_msg.orientation_covariance[8] = 0.0025;
-  
-    imu_mag_msg.header.stamp.sec = time_stamp.tv_sec;
-    imu_mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
-  
-    rcl_publish(&imu_data_publisher, &imu_data_msg, NULL);
-    rcl_publish(&imu_mag_publisher, &imu_mag_msg, NULL);
-    rcl_publish(&imu_pos_angle_publisher, &imu_pos_angle_msg, NULL);
-}
 
 
 
