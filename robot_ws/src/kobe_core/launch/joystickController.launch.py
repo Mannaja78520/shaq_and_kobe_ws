@@ -22,7 +22,8 @@ def generate_launch_description():
         name="joy_node",
         # output="screen",
         namespace="",
-        # arguments=["--dev", "/dev/input/js0"],  # replace with your joystick device path
+        parameters=[{"autorepeat_rate": 50.0}],
+        # arguments["auto"]],  # replace with your joystick device path
         remappings = [
             ('/joy', '/kobe/joy')
         ]
@@ -38,7 +39,7 @@ def generate_launch_description():
     
     cmd_vel_to_motor_speed = Node(
         package="kobe_core",
-        executable="cmd_vel_to_motor_speed.py",
+        executable="cmd_move_omni.py",
         name="Cmd_Vel_To_Rpm",
         # output="screen",
         namespace="",

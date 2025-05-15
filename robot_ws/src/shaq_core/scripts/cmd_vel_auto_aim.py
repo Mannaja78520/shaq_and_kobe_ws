@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-# from pynput import keyboard
+
 import threading
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
-
 from rclpy import qos
+
 from src.utilize import * 
 from src.controller import *
-# from hoop_detection import mainRun
+
 import time 
 import math
 
@@ -22,8 +22,6 @@ class Cmd_vel_to_motor_speed(Node):
     slideSpeed: float = 0.0
     turnSpeed: float = 0.0
 
-    # maxSpeed : int = 1023.0/2 # pwm
-    # max_linear_speed = 2.0  # m/s max
     motor1Speed : float = 0
     motor2Speed : float = 0
     motor3Speed : float = 0
@@ -52,8 +50,7 @@ class Cmd_vel_to_motor_speed(Node):
         self.motorshooter3Speed : float = 0
         self.yaw : float = 0
         self.yaw_setpoint = self.yaw
-        
-        # self.main_run_instance = mainRun
+
 
         self.middlecam : float = 0.0
         
@@ -72,6 +69,10 @@ class Cmd_vel_to_motor_speed(Node):
         self.apriltag_distance : float = 0.0
         self.tag_id : float = 0.0
 
+        self.servo_angle : float = 0.0
+
+        self.encoder_mode : float = 0.0
+
 
 
         
@@ -84,6 +85,10 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, "/shaq/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
         )
 
+        self.send_servo_angle = self.create_publisher(
+            Twist, "/shaq/cmd_servo/angle", qos_profile=qos.qos_profile_system_default
+        )
+
 
         self.create_subscription(
             Twist, '/shaq/cmd_move', self.cmd_vel, qos_profile=qos.qos_profile_system_default
@@ -92,18 +97,22 @@ class Cmd_vel_to_motor_speed(Node):
         self.create_subscription(
             Twist, '/shaq/cmd_shoot', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
         )
+
+        self.create_subscription(
+            Twist, '/shaq/cmd_servo', self.cmd_servo, qos_profile=qos.qos_profile_system_default
+        )
         
         self.create_subscription(
             Twist, '/shaq/cmd_macro', self.cmd_macro, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
-        self.create_subscription(
-            Twist, '/shaq/imu/pos_angle', self.get_robot_angle, qos_profile=qos.qos_profile_sensor_data # 10
-        )
+        # self.create_subscription(
+        #     Twist, '/shaq/imu/pos_angle', self.get_robot_angle, qos_profile=qos.qos_profile_sensor_data # 10
+        # )
 
-        self.create_subscription(
-            Float32MultiArray, '/shaq/pid/rotate', self.get_pid, qos_profile=qos.qos_profile_sensor_data # 10
-        )
+        # self.create_subscription(
+        #     Float32MultiArray, '/shaq/pid/rotate', self.get_pid, qos_profile=qos.qos_profile_sensor_data # 10
+        # )
 
 
         self.create_subscription(
@@ -114,8 +123,15 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, '/shaq/distance/kobe', self.distance, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
+        self.create_subscription(
+            Twist, "/shaq/cmd_encoder", self.encoder, qos_profile=qos.qos_profile_sensor_data
+        )
+
 
         self.sent_data_timer = self.create_timer(0.03, self.sendData)
+
+    def encoder(self,msg):
+        self.encoder_mode = msg.linear.x    # 1 Bit, 2 RPM
         
     def distance(self,msg):
         self.apriltag_distance = msg.linear.x
@@ -207,9 +223,13 @@ class Cmd_vel_to_motor_speed(Node):
 
     def cmd_shoot(self, msg):
             if not self.macro_active:  # Only update if macro is inactive
-                self.motorshooter1Speed = abs(msg.linear.x - 1) * self.maxSpeed
-                self.motorshooter2Speed = abs(msg.linear.x - 1) * self.maxSpeed
-            
+                if msg.linear.x == 1 and msg.linear.y == 1:
+                    self.motorshooter1Speed = 0.0
+                    self.motorshooter2Speed = 0.0
+                else:
+                    self.motorshooter1Speed = min((abs(msg.linear.x - 1)) * self.maxSpeed + 500, self.maxSpeed)
+                    self.motorshooter2Speed = min((abs(msg.linear.x - 1)) * self.maxSpeed + 500, self.maxSpeed)
+                
             self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
             self.motorshooter3Speed += msg.angular.x * self.maxSpeed
 
@@ -219,40 +239,83 @@ class Cmd_vel_to_motor_speed(Node):
 
     def cmd_macro(self, msg):
 
-        if msg.linear.z == 1:
-            self.macro_active = True
-            self.motorshooter1Speed = 780.0  # Upper
-            self.motorshooter2Speed = 800.0  # Lower
+        if self.encoder_mode == 1:      #1 Bit
 
-            # 715 --> 4300
-            # 755 --> 4800
-
-        elif msg.linear.x == 1:
-            self.macro_active = True
-            self.motorshooter1Speed = -560.0  # Upper
-            self.motorshooter2Speed = 790.0   # Lower
-
-            # -580 --> -1000
-            # 760 --> 4800
-
-        else:
-            self.macro_active = False 
+            if msg.linear.z == 1: #Shoot    #Cross
+                self.macro_active = True
+                self.motorshooter1Speed = 750.0  # Upper
+                self.motorshooter2Speed = 770.0  # Lower
 
 
-        if msg.linear.y == 1 :
+            elif msg.linear.x == 1: #Dribble    #Triangle
+                self.macro_active = True
+                self.motorshooter1Speed = -610.0  # Upper
+                self.motorshooter2Speed = 700.0   # Lower
+
+
+            elif msg.angular.y == 1: #Pass      #L1
+                self.macro_active = True
+                self.motorshooter1Speed = 635.0  # Upper
+                self.motorshooter2Speed = 635.0   # Lower
+            
+            elif msg.angular.z == 1: #Shoot2    #R1
+                self.macro_active = True
+                self.motorshooter1Speed = 710.0  # Upper
+                self.motorshooter2Speed = 710.0   # Lower
+        
+            else:
+                self.macro_active = False 
+
+        else:   #RPM
+
+            if msg.linear.z == 1: #Shoot    #Cross
+                self.macro_active = True
+                self.motorshooter1Speed = 4700.0  # Upper
+                self.motorshooter2Speed = 5400.0  # Lower
+
+
+            elif msg.linear.x == 1: #Dribble    #Triangle
+                self.macro_active = True
+                self.motorshooter1Speed = -2100.0  # Upper
+                self.motorshooter2Speed = 5300.0   # Lower
+
+
+            elif msg.angular.y == 1: #Pass      #L1
+                self.macro_active = True
+                self.motorshooter1Speed = 550.0  # Upper
+                self.motorshooter2Speed = 550.0   # Lower
+            
+            elif msg.angular.z == 1: #Shoot2    #R1
+                self.macro_active = True
+                self.motorshooter1Speed = 4300.0  # Upper
+                self.motorshooter2Speed = 4700.0   # Lower
+        
+            else:
+                self.macro_active = False 
+
+
+        if msg.linear.y == 1 :      # Circle
             self.mode = 2
 
-        elif msg.angular.x == 1:
+        elif msg.angular.x == 1:    # Square
             self.mode = 3
             
         else:
-            self.mode = 1
+            self.mode = 1           # Default
             
-         
+    
+    def cmd_servo(self, msg):
+        
+        if msg.linear.x == 1:               # Closed Servo
+            self.servo_angle = float(0.0)
+
+        if msg.linear.x == 2:               # Opened Servo
+            self.servo_angle = float(60.0)
             
     def sendData(self):
         motorspeed_msg = Twist()
         motorshooter_msg = Twist()
+        servo_msg = Twist()
        
         motorspeed_msg.linear.x = float(self.motor1Speed)
         motorspeed_msg.linear.y = float(self.motor2Speed)
@@ -264,8 +327,11 @@ class Cmd_vel_to_motor_speed(Node):
         motorshooter_msg.linear.z = float(self.motorshooter3Speed)
 
         motorshooter_msg.angular.x = float(self.mode)
+        motorshooter_msg._angular.y = float(self.encoder_mode)
 
+        servo_msg.linear.x = float(self.servo_angle)
 
+        self.send_servo_angle.publish(servo_msg)
         self.send_shoot_speed.publish(motorshooter_msg)
         self.send_robot_speed.publish(motorspeed_msg)
 

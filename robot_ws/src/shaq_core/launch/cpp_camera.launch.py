@@ -32,7 +32,7 @@ def generate_launch_description():
 
     apriltag_auto_aim = Node(
         package="shaq_core",
-        executable="apriltag_auto_aim.py",
+        executable="apriltag_auto_aim",
         name="Apriltag_Distance",
         # output="screen",
         namespace="",
@@ -41,7 +41,7 @@ def generate_launch_description():
 
     hoop_detection = Node(
         package="shaq_core",
-        executable="hoop_detection.py",
+        executable="hoop_detection",
         name="Hoop_Detection",
         # output="screen",
         namespace="",
@@ -55,21 +55,21 @@ def generate_launch_description():
         parameters=[{
             'video_device': '/dev/video0',
             'image_size': [640, 480],
-            'time_per_frame': [1, 20]  # 30 FPS
+            'time_per_frame': [1, 20]  # 20 FPS
         }],
         remappings=[
             ('/image_raw', '/shaq/image_raw')
         ],
-        output='screen'
+        # output='screen'
     )
 
 
 
     # Add actions to the launch description
-    ld.add_action(microros_launch)
-    ld.add_action(cmd_vel_auto_aim)
+    # ld.add_action(microros_launch)
+    # ld.add_action(cmd_vel_auto_aim)
     ld.add_action(camera_driver)
-    ld.add_action(apriltag_auto_aim)
+    # ld.add_action(apriltag_auto_aim)
     ld.add_action(hoop_detection)
 
 

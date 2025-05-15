@@ -22,6 +22,7 @@ def generate_launch_description():
         name="Joy_Node",
         # output="screen",
         namespace="",
+        # parameters=[{"autorepeat_rate": 50.0}],
         # arguments=["--dev", "/dev/input/js0"],  # replace with your joystick device path
         remappings = [
             ('/joy', '/shaq/joy')
@@ -57,6 +58,6 @@ def generate_launch_description():
     ld.add_action(joy)
     ld.add_action(joystick_control)
     # ld.add_action(cmd_vel_to_motor_speed)
-    ld.add_action(shaq_cmd_koby_node)
+    # ld.add_action(shaq_cmd_koby_node)
 
     return ld

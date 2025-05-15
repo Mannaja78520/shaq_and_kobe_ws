@@ -5,6 +5,8 @@
 
 #define LED_PIN 13
 
+#define LED_AIM 14
+
 #include <micro_ros_platformio.h>
 #include <stdio.h>
 
@@ -23,8 +25,9 @@
 #include <motorprik.h>
 #include <encoder.h>
 #include <PIDF.h>
+#include <Servo.h>
 #include "../config/shooter_output.h"
-// #include "../config/drive_output_teensy.h"
+
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -61,11 +64,17 @@
 rcl_publisher_t debug_motor_publisher;
 geometry_msgs__msg__Twist debug_motor_msg;
 
-rcl_publisher_t encoder_publisher;
-geometry_msgs__msg__Twist encoder_msg;
-
 rcl_subscription_t shooter_motor_subscriber;
 geometry_msgs__msg__Twist shooter_msg;
+
+rcl_subscription_t servo_subscriber;
+geometry_msgs__msg__Twist servo_msg;
+
+rcl_subscription_t led_subscriber;
+geometry_msgs__msg__Twist led_msg;
+
+rcl_subscription_t encoder_mode_subscriber;
+geometry_msgs__msg__Twist encoder_mode_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -93,11 +102,13 @@ EVODrive motorshooter2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTORS
 Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
 // EVODrive motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
 
-Encoder motor1_encoder(MOTOR1_ENCODER_PIN_A, MOTOR1_ENCODER_PIN_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV, ENCODER_GEAR_RATIO);
+Encoder motor1_encoder(MOTOR1_ENCODER_PIN_A, MOTOR1_ENCODER_PIN_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV, ENCODER_GEAR_RATIO_4);
 Encoder motor2_encoder(MOTOR2_ENCODER_PIN_A, MOTOR2_ENCODER_PIN_B, COUNTS_PER_REV2, MOTOR2_ENCODER_INV, ENCODER_GEAR_RATIO);
 
-PIDF motor1_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
+PIDF motor1_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P_Motor_2, K_I, K_D, K_F);
 PIDF motor2_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
+
+Servo servo;
 
 
 
@@ -112,6 +123,7 @@ struct timespec getTime();
 void fullStop();
 
 void Move();
+void led();
 
 //------------------------------ < Main > -------------------------------------//
 
@@ -135,8 +147,10 @@ void doReboot()
 
 
 void setup()
-{
+{   
+    pinMode(LED_AIM, OUTPUT);
 
+    servo.attach(SERVO_PIN);
     Serial.begin(115200);
     set_microros_serial_transports(Serial);
 }
@@ -187,6 +201,7 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     {
         Move();
         publishData();
+        led();
     }
 }
 
@@ -200,12 +215,29 @@ void twist2Callback(const void *msgin)
     prev_cmd_time = millis();
 }
 
+void encoderModeCallback(const void *msgin)
+{
+    const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
+    encoder_mode_msg = *msg;
+}
+
+void ledCallback(const void *msgin)
+{
+    const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
+    led_msg = *msg;
+}
+
 bool createEntities()
 {
 
     flashLED(3);
 
     allocator = rcl_get_default_allocator();
+
+    geometry_msgs__msg__Twist__init(&encoder_mode_msg);
+    geometry_msgs__msg__Twist__init(&shooter_msg);
+    geometry_msgs__msg__Twist__init(&servo_msg);
+    geometry_msgs__msg__Twist__init(&debug_motor_msg);
 
     init_options = rcl_get_zero_initialized_init_options();
     rcl_init_options_init(&init_options, allocator);
@@ -228,6 +260,26 @@ bool createEntities()
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
         "/shaq/cmd_shoot/rpm"));
 
+    RCCHECK(rclc_subscription_init_default(
+        &servo_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/shaq/cmd_servo/angle"));
+
+    RCCHECK(rclc_subscription_init_default(
+        &led_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/shaq/led"));
+
+    RCCHECK(rclc_subscription_init_default(
+        &encoder_mode_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/shaq/cmd_encoder"));
+
+
+
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
     RCCHECK(rclc_timer_init_default(
@@ -236,7 +288,7 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback));
     executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator));
 
     RCCHECK(rclc_executor_add_subscription(
         &executor,
@@ -244,8 +296,30 @@ bool createEntities()
         &shooter_msg,
         &twistCallback,
         ON_NEW_DATA));
-    RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
+        
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &servo_subscriber,
+        &servo_msg,
+        &twistCallback,
+        ON_NEW_DATA));
 
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &encoder_mode_subscriber,
+        &encoder_mode_msg,
+        &encoderModeCallback,
+        ON_NEW_DATA));
+
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &led_subscriber,
+        &led_msg,
+        &ledCallback,
+        ON_NEW_DATA));
+            
+    
+    RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
     // synchronize time with the agent
     syncTime();
 
@@ -259,6 +333,8 @@ bool destroyEntities()
 
     rcl_publisher_fini(&debug_motor_publisher, &node);
     rcl_subscription_fini(&shooter_motor_subscriber, &node);
+    rcl_subscription_fini(&servo_subscriber,&node);
+    rcl_subscription_fini(&encoder_mode_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rclc_executor_fini(&executor);
@@ -288,26 +364,59 @@ void fullStop()
 void Move()
 {
 
+    float encoder_mode = encoder_mode_msg.linear.x;
+    //encoder_mode 1 = Spin Bit
+    //encoder_mode 2 = Spin RPM
+
     float motor1Speed = shooter_msg.linear.x;
     float motor2Speed = shooter_msg.linear.y;
     float motor3Speed = shooter_msg.linear.z;
-    
-    motorshooter1.spin(motor1Speed);
-    motorshooter2.spin(motor2Speed);
 
-    
+    float servo_angle = servo_msg.linear.x;
+    servo.write(servo_angle);
+
+
     float current_rpm_motor1 = motor1_encoder.getRPM();
     float current_rpm_motor2 = motor2_encoder.getRPM();
 
     debug_motor_msg.angular.x = std::round(current_rpm_motor1 * 100.0) / 100.0;
     debug_motor_msg.angular.y = std::round(current_rpm_motor2 * 100.0) / 100.0;
 
+    debug_motor_msg.angular.z = servo_angle;
+
+    // debug_motor_msg.linear.z = encoder_mode;
+
     
+    if(encoder_mode == 1){
+        motorshooter1.spin(motor1Speed);
+        motorshooter2.spin(motor2Speed);
+    }else{
+        motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
+        motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
+    }
+
+    // motorshooter1.spin(motor1Speed);
+    // motorshooter2.spin(motor2Speed);
+
     // motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
     // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
+    
     motorlift.spin(motor3Speed);
 
 }
+
+void led(){
+
+    bool led_state = led_msg.linear.x;
+
+    if(led_state){
+        digitalWrite(LED_AIM,HIGH);
+    }else{
+        digitalWrite(LED_AIM,LOW);
+    }
+
+}
+
 
 
 
@@ -317,6 +426,8 @@ void publishData()
     debug_motor_msg.linear.x = shooter_msg.linear.x;
     debug_motor_msg.linear.y = shooter_msg.linear.y;
     debug_motor_msg.linear.z = shooter_msg.linear.z;
+
+
 
     
 
