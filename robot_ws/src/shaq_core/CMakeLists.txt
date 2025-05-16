@@ -35,11 +35,6 @@ find_package(tf2_geometry_msgs REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 
-include_directories(
-  ${OpenCV_INCLUDE_DIRS}
-  ${cv_bridge_INCLUDE_DIRS}
-)
-
 ################################################################################
 # Install
 ################################################################################
@@ -72,6 +67,7 @@ install(PROGRAMS
   scripts/joystick_control.py
   scripts/hoop_detection.py
   scripts/slider.py
+  scripts/cmd_vel_auto_aim_feed.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -92,6 +88,7 @@ ament_target_dependencies(apriltag_auto_aim
   sensor_msgs 
   geometry_msgs 
   cv_bridge
+  OpenCV
 )
 
 ament_target_dependencies(hoop_detection
@@ -99,8 +96,8 @@ ament_target_dependencies(hoop_detection
   sensor_msgs
   std_msgs
   cv_bridge
-  # image_transport
   ament_index_cpp
+  OpenCV
 )
 
 target_link_libraries(apriltag_auto_aim ${OpenCV_LIBS} apriltag)
