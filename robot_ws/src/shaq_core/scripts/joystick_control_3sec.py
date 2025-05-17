@@ -6,6 +6,9 @@ from std_msgs.msg import String, Int16MultiArray , Float32MultiArray
 from geometry_msgs.msg import Twist 
 from sensor_msgs.msg import Joy
 from rclpy import qos
+import threading
+import time
+
 
 class Gamepad:
     def __init__(self):
@@ -43,16 +46,43 @@ class Gamepad:
         self.toggle_shoot_bool : bool = False 
         self.toggle_pass_bool : bool = False
         self.toggle_pass_motor_bool : bool = False
+        self.toggle_shoot_2_bool : bool = False
+        self.toggle_encoder_bool : bool = False
 
         self.previous_triangle_state = False
         self.previous_circle_state = False
         self.previous_cross_state = False
         self.previous_square_state = False
         self.previous_l1_state = False
+        self.previous_r1_state = False
+        self.previous_PressedRightAnalog_state = False
 
-        self.last_macro_button = None  # Stores 'shoot', 'pass', 'dribble', 'auto_aim' , 'pass_motor' 
 
-        
+
+        self.last_macro_button = None  # Stores 'shoot', 'pass', 'dribble', 'auto_aim', 'pass_motor', 'shoot2'
+
+    def shoot_macro_sequence(self):
+        # Spin motor 1 and 2
+        cmd = Twist()
+        cmd.linear.z = 1.0  # Assume motor 1 and 2 spin with linear.z (as in your shoot command)
+        self.pub_macro.publish(cmd)
+
+        self.get_logger().info("Spinning Motor 1 and 2")
+        time.sleep(3)
+
+        # Now spin motor 3
+        cmd = Twist()
+        cmd.angular.z = 1.0  # Use angular.z for motor 3 (or change if different)
+        self.pub_macro.publish(cmd)
+
+        self.get_logger().info("Spinning Motor 3")
+
+        time.sleep(2)  # Let motor 3 spin for 2 seconds while 1 and 2 continue (total 5 seconds)
+
+        # Step 3: Stop all motors
+        cmd = Twist()  # All zeros by default
+        self.pub_macro.publish(cmd)
+        self.get_logger().info("Stopping All Motors")
 
     def update_dribble(self):
         if self.button_triangle and not self.previous_triangle_state:
@@ -62,6 +92,7 @@ class Gamepad:
                 self.toggle_shoot_bool = False
                 self.toggle_pass_bool = False
                 self.toggle_pass_motor_bool = False
+                self.toggle_shoot_2_bool = False
                 self.last_macro_button = 'dribble'
             else:
                 self.last_macro_button = None
@@ -75,23 +106,42 @@ class Gamepad:
                 self.toggle_shoot_bool = False
                 self.toggle_pass_bool = False
                 self.toggle_pass_motor_bool = False
+                self.toggle_shoot_2_bool = False
                 self.last_macro_button = 'auto_aim'
             else:
                 self.last_macro_button = None
         self.previous_circle_state = self.button_circle
 
-    def update_toggle_shoot(self):
-        if self.button_cross and not self.previous_cross_state:
+    # def update_toggle_shoot(self):
+    #     if self.button_cross and not self.previous_cross_state:
+    #         self.toggle_shoot_bool = not self.toggle_shoot_bool
+    #         if self.toggle_shoot_bool:
+    #             self.dribble = False
+    #             self.auto_aim_bool = False
+    #             self.toggle_pass_bool = False
+    #             self.toggle_pass_motor_bool = False
+    #             self.toggle_shoot_2_bool = False
+    #             self.last_macro_button = 'shoot'
+    #         else:
+    #             self.last_macro_button = None
+    #     self.previous_cross_state = self.button_cross
+
+    def update_toggle_shoot(self, trigger_callback=None):
+        if self.dpadLeftRight and not self.previous_dpadLeftRight_state:
             self.toggle_shoot_bool = not self.toggle_shoot_bool
             if self.toggle_shoot_bool:
                 self.dribble = False
                 self.auto_aim_bool = False
                 self.toggle_pass_bool = False
                 self.toggle_pass_motor_bool = False
+                self.toggle_shoot_2_bool = False
                 self.last_macro_button = 'shoot'
+                if trigger_callback:
+                    trigger_callback()  # Launch macro sequence
             else:
                 self.last_macro_button = None
-        self.previous_cross_state = self.button_cross
+        self.previous_dpadLeftRight_state = self.dpadLeftRight
+
 
     def update_toggle_pass(self):
         if self.button_square and not self.previous_square_state:
@@ -101,6 +151,7 @@ class Gamepad:
                 self.dribble = False
                 self.auto_aim_bool = False
                 self.toggle_pass_motor_bool = False
+                self.toggle_shoot_2_bool = False
                 self.last_macro_button = 'pass'
             else:
                 self.last_macro_button = None
@@ -114,10 +165,31 @@ class Gamepad:
                 self.dribble = False
                 self.auto_aim_bool = False
                 self.toggle_pass_bool = False
+                self.toggle_shoot_2_bool = False
                 self.last_macro_button = 'pass_motor'
             else:
                 self.last_macro_button = None
         self.previous_l1_state = self.l1
+
+    def update_toggle_shoot_2(self):
+        if self.r1 and not self.previous_r1_state:
+            self.toggle_shoot_2_bool = not self.toggle_shoot_2_bool
+            if self.toggle_shoot_2_bool:
+                self.toggle_shoot_bool = False
+                self.dribble = False
+                self.auto_aim_bool = False
+                self.toggle_pass_bool = False
+                self.toggle_pass_motor_bool = False
+                self.last_macro_button = 'shoot2'
+            else:
+                self.last_macro_button = None
+        self.previous_r1_state = self.r1
+
+    def update_toggle_encoder(self):
+        if self.PressedRightAnalog and not self.previous_PressedRightAnalog_state:
+            self.toggle_encoder_bool = not self.toggle_encoder_bool
+
+        self.previous_PressedRightAnalog_state = self.PressedRightAnalog
 
     def reset_toggles(self):
         self.auto_aim_bool = False
@@ -125,7 +197,9 @@ class Gamepad:
         self.toggle_shoot_bool = False 
         self.toggle_pass_bool = False
         self.toggle_pass_motor_bool = False
+        self.toggle_shoot_2_bool = False
         self.last_macro_button = None
+        
 
         
 
@@ -135,28 +209,34 @@ class Joystick(Node):
         super().__init__("joystick")
 
         self.pub_move = self.create_publisher(
-            Twist, "/kobe/cmd_move", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_move", qos_profile=qos.qos_profile_system_default
         )
         
         self.pub_macro = self.create_publisher(
-            Twist, "/kobe/cmd_macro", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_macro", qos_profile=qos.qos_profile_system_default
         )
 
         self.pub_shoot = self.create_publisher(
-            Twist, "/kobe/cmd_shoot", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_shoot", qos_profile=qos.qos_profile_system_default
         )
 
         self.pub_servo = self.create_publisher(
-            Twist, "/kobe/cmd_servo", qos_profile=qos.qos_profile_system_default
+            Twist, "/shaq/cmd_servo", qos_profile=qos.qos_profile_system_default
         )
-    
+
+        self.pub_encoder = self.create_publisher(
+            Twist, "/shaq/cmd_encoder", qos_profile=qos.qos_profile_system_default
+        )
+        
         self.create_subscription(
-            Joy, '/kobe/joy', self.joy, qos_profile=qos.qos_profile_sensor_data 
+            Joy, '/shaq/joy', self.joy, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
         self.gamepad = Gamepad()
         self.maxspeed : float = 1.0
-     
+        
+
+
         self.sent_data_timer = self.create_timer(0.01, self.sendData)
 
     def joy(self, msg):
@@ -193,17 +273,17 @@ class Joystick(Node):
         
         self.gamepad.update_dribble()
         self.gamepad.update_auto_aim()
-        self.gamepad.update_toggle_shoot()
+        self.gamepad.update_toggle_shoot( trigger_callback=lambda: threading.Thread(target=self.shoot_macro_sequence).start())
         self.gamepad.update_toggle_pass()
         self.gamepad.update_toggle_pass_motor()
+        self.gamepad.update_toggle_shoot_2()
+        self.gamepad.update_toggle_encoder()
     
         
         if self.gamepad.button_logo:
             self.gamepad.reset_toggles()
 
 
-        
-        
 
     def sendData(self):
         
@@ -211,23 +291,26 @@ class Joystick(Node):
         cmd_vel_shoot = Twist()
         cmd_vel_macro = Twist()
         cmd_servo = Twist()
+        cmd_encoder = Twist()
 
 
-        cmd_vel_move.linear.x = float(self.gamepad.ly * self.maxspeed)
-        cmd_vel_move.angular.x = float(self.gamepad.rx * self.maxspeed)
+        cmd_vel_move.linear.x = float(self.gamepad.lx * self.maxspeed)
+        cmd_vel_move.linear.y = float(self.gamepad.ly * self.maxspeed)
+        cmd_vel_move.angular.z = float(self.gamepad.rx * self.maxspeed)
         
         cmd_vel_shoot.linear.x = float(self.gamepad.r2 * self.maxspeed)
         cmd_vel_shoot.linear.y = float(self.gamepad.r2 * self.maxspeed)
         cmd_vel_shoot.linear.z = float(self.gamepad.l2 * self.maxspeed)
         cmd_vel_shoot.angular.x = float(self.gamepad.dpadUpDown * self.maxspeed)
-
-
+        
         if self.gamepad.button_share:
             cmd_servo.linear.x = float(1.0)  #Closed Servo
         
         if self.gamepad.button_option:
             cmd_servo.linear.x = float(2.0)  #Opened Servo
-        
+
+
+            
 
         if self.gamepad.last_macro_button == 'dribble' and self.gamepad.dribble:
             cmd_vel_macro.linear.x = 1.0
@@ -244,7 +327,15 @@ class Joystick(Node):
         elif self.gamepad.last_macro_button == 'pass_motor' and self.gamepad.toggle_pass_motor_bool:
             cmd_vel_macro.angular.y = 1.0
 
+        elif self.gamepad.last_macro_button == 'shoot2' and self.gamepad.toggle_shoot_2_bool:
+            cmd_vel_macro.angular.z = 1.0
+
+        if self.gamepad.toggle_encoder_bool:
+            cmd_encoder.linear.x = 2.0 #RPM
+        else:
+            cmd_encoder.linear.x = 1.0 #Bit
         
+        self.pub_encoder.publish(cmd_encoder)
         self.pub_servo.publish(cmd_servo)
         self.pub_macro.publish(cmd_vel_macro)
         self.pub_move.publish(cmd_vel_move)

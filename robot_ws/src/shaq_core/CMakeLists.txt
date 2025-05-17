@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.8)
 project(shaq_core)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -36,11 +36,6 @@ find_package(tf2_geometry_msgs REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 
-include_directories(
-  ${OpenCV_INCLUDE_DIRS}
-  ${cv_bridge_INCLUDE_DIRS}
-)
-
 ################################################################################
 # Install
 ################################################################################
@@ -70,6 +65,7 @@ install(PROGRAMS
   scripts/cmd_vel_to_motor_speed.py
   scripts/joystick_control.py
   scripts/slider.py
+  scripts/cmd_vel_auto_aim_feed.py
 
   scripts_camera/cameracapture.py
   scripts_camera/hoop_detection.py
@@ -105,6 +101,7 @@ ament_target_dependencies(apriltag_auto_aim
   sensor_msgs 
   geometry_msgs 
   cv_bridge
+  OpenCV
 )
 
 ament_target_dependencies(hoop_detection_onnx
@@ -121,6 +118,7 @@ ament_target_dependencies(hoop_detection_TFLite
   std_msgs
   cv_bridge
   ament_index_cpp
+  OpenCV
 )
 
 target_include_directories(hoop_detection_TFLite 

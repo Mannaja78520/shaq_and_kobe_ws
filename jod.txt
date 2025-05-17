@@ -131,3 +131,37 @@ curl -o rtl8761b_fw.bin https://raw.githubusercontent.com/Realtek-OpenSource/and
 
 sudo cp rtl8761b_config.bin /usr/lib/firmware/rtl_bt/rtl8761bu_config.bin
 sudo cp rtl8761b_fw.bin /usr/lib/firmware/rtl_bt/rtl8761bu_fw.bin
+
+8bit : E4:17:D8:BC:B2:BA 8BitDo Ultimate 2 Wireless
+
+
+sudo nano /etc/modprobe.d/usb_bt_quirks.conf
+
+options btusb enable_autosuspend=n	
+
+sudo update-initramfs -u
+sudo reboot
+
+
+sudo nano /etc/modprobe.d/rtl8761bu_bt.conf
+
+options btusb enable_autosuspend=0
+
+
+sudo nano /etc/udev/rules.d/99-tplink-bt.rules
+
+sudo update-initramfs -u
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
+
+sudo nano /boot/firmware/config.txt
+
+
+cd /tmp
+wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_bt/rtl8761bu_fw.bin
+wget https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_bt/rtl8761bu_config.bin
+sudo cp rtl8761bu_fw.bin rtl8761bu_config.bin /lib/firmware/rtl_bt/
+sudo chmod 644 /lib/firmware/rtl_bt/rtl8761bu_*
+sudo reboot
+

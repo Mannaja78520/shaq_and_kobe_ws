@@ -58,6 +58,7 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.servo_angle : float = 0.0
 
+
         
  
         
@@ -79,10 +80,6 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.create_subscription(
             Twist, '/kobe/cmd_shoot', self.cmd_shoot, qos_profile=qos.qos_profile_sensor_data # 10
-        )
-
-        self.create_subscription(
-            Twist, '/kobe/cmd_servo', self.cmd_servo, qos_profile=qos.qos_profile_system_default
         )
         
         self.create_subscription(
