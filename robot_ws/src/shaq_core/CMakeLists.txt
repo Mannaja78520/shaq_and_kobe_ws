@@ -66,13 +66,15 @@ install(PROGRAMS
   # scripts/cmd_koby_task.py
   # scripts/apriltag_distance.py
   # scripts/both_detect.py
-  scripts/apriltag_auto_aim.py
-  scripts/cameracapture.py
   scripts/cmd_vel_auto_aim.py
   scripts/cmd_vel_to_motor_speed.py
   scripts/joystick_control.py
-  scripts/hoop_detection.py
   scripts/slider.py
+
+  scripts_camera/cameracapture.py
+  scripts_camera/hoop_detection.py
+  scripts_camera/apriltag_auto_aim.py
+  
   DESTINATION lib/${PROJECT_NAME}
 )
 
