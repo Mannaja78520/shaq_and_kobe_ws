@@ -79,7 +79,7 @@ def generate_launch_description():
     # ld.add_action(cmd_vel_auto_aim)
     ld.add_action(camera_driver)
     # ld.add_action(apriltag_auto_aim)
-    ld.add_action(hoop_detection)
+    # ld.add_action(hoop_detection)
 
 
     return ld

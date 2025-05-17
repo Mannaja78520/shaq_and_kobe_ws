@@ -70,6 +70,7 @@ install(PROGRAMS
   scripts_camera/cameracapture.py
   scripts_camera/hoop_detection.py
   scripts_camera/apriltag_auto_aim.py
+  scripts_camera/show_camera.py
   
   DESTINATION lib/${PROJECT_NAME}
 )
