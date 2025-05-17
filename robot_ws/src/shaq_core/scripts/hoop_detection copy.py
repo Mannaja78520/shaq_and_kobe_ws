@@ -45,10 +45,6 @@ class mainRun(Node):
         self.sent_where_hoop = self.create_publisher(
             Twist, "/shaq/send_where_hoop", qos_profile=qos.qos_profile_sensor_data
         )
-        self.image_pub = self.create_publisher(
-            Image, "/shaq/image/annotated_image", qos_profile=qos.qos_profile_sensor_data
-        )
-
         self.sent_led = self.create_publisher(
             Twist, "/shaq/led", qos_profile=qos.qos_profile_default
         )
@@ -78,25 +74,11 @@ class mainRun(Node):
             device=device,
         )
 
-        # Draw square if object is detected
+        # Parse results
         for result in results:
             if len(result.boxes) > 0:
-                box = result.boxes.xywh[0]
-                self.x = float(box[0].item())
-                self.y = float(box[1].item())
-
-                # Get top-left and bottom-right coordinates of square
-                w = h = int(result.boxes.xywh[0][2].item())  # Make it square
-                center_x = int(self.x)
-                center_y = int(self.y)
-                x1 = int(center_x - w // 2)
-                y1 = int(center_y - h // 2)
-                x2 = int(center_x + w // 2)
-                y2 = int(center_y + h // 2)
-
-                # Draw the square
-                cv2.rectangle(frame_resized, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
+                self.x = float(result.boxes.xywh[0][0].item())
+                self.y = float(result.boxes.xywh[0][1].item())
             else:
                 self.x, self.y = 0.0, 0.0
 
@@ -104,14 +86,6 @@ class mainRun(Node):
         height, width = frame_resized.shape[:2]
         self.center_x = float(width // 2)
         self.center_y = float(height // 2)
-
-        # Publish annotated image
-        try:
-            annotated_msg = self.bridge.cv2_to_imgmsg(frame_resized, encoding="bgr8")
-            self.image_pub.publish(annotated_msg)
-        except Exception as e:
-            self.get_logger().error(f"Image publishing error: {e}")
-
 
     def sendData(self):
         hoopdata_msg = Twist()

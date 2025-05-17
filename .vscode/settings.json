@@ -2,6 +2,7 @@
     "cmake.sourceDirectory": "/home/aing/shaq_and_koby_ws/robot_ws/src/koby_core",
     "files.associations": {
         "*.ipp": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "*.inc": "cpp"
     }
 }

@@ -43,7 +43,7 @@ def generate_launch_description():
         package="shaq_core",
         executable="hoop_detection.py",
         name="Hoop_Detection",
-        # output="screen",
+        output="screen",
         namespace="",
         # parameters=[], #Testing
     )
@@ -66,8 +66,8 @@ def generate_launch_description():
 
 
     # Add actions to the launch description
-    ld.add_action(microros_launch)
-    ld.add_action(cmd_vel_auto_aim)
+    # ld.add_action(microros_launch)
+    # ld.add_action(cmd_vel_auto_aim)
     ld.add_action(camera_driver)
     ld.add_action(apriltag_auto_aim)
     ld.add_action(hoop_detection)

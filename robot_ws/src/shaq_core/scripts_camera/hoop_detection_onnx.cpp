@@ -14,7 +14,7 @@ class HoopDetectionNode : public rclcpp::Node
 {
 public:
     HoopDetectionNode()
-    : Node("Hoop_Detection"), x_(0.0), y_(0.0), led_state_(false)
+    : Node("Hoop_Detection_onnx"), x_(0.0), y_(0.0), led_state_(false)
     {
         // Load the ONNX model
         std::string package_share_directory = ament_index_cpp::get_package_share_directory("shaq_core");
@@ -40,7 +40,7 @@ private:
     {
         try {
             cv::Mat frame = cv_bridge::toCvCopy(msg, "bgr8")->image;
-            cv::Mat blob = cv::dnn::blobFromImage(frame, 1.0 / 255.0, cv::Size(300, 300), cv::Scalar(), true, false);
+            cv::Mat blob = cv::dnn::blobFromImage(frame, 1.0 / 255.0, cv::Size(640, 480), cv::Scalar(), true, false);
 
             net_.setInput(blob);
             cv::Mat outputs = net_.forward();  // Assumes single output
