@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-#include <Servo.h>
+
 #define LED_PIN 13
 
 #include <micro_ros_platformio.h>
@@ -22,24 +22,11 @@
 #include <sensor_msgs/msg/magnetic_field.h>
 #include <std_msgs/msg/int32.h>
 
-#include <motorevo.h>
+// #include <motorevo.h>
 #include <motorprik.h>
-#include <PIDF.h>
-#include "../config/move_shoot.h"
+#include "../config/move_omni.h"
 #include <imu_bno055.h>
-#include <encoder.h>
 
-
-// EVODrive motorshooter1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTORSHOOTER1_PWM, MOTORSHOOTER1_IN_A, MOTORSHOOTER1_IN_B);
-// EVODrive motorshooter2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTORSHOOTER2_PWM, MOTORSHOOTER2_IN_A, MOTORSHOOTER2_IN_B);
-// Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
-// EVODrive motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
-
-Encoder motor1_encoder(MOTOR1_ENCODER_PIN_A, MOTOR1_ENCODER_PIN_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV, ENCODER_GEAR_RATIO);
-Encoder motor2_encoder(MOTOR2_ENCODER_PIN_A, MOTOR2_ENCODER_PIN_B, COUNTS_PER_REV2, MOTOR2_ENCODER_INV, ENCODER_GEAR_RATIO);
-
-PIDF motor1_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
-PIDF motor2_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
 
 
 Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTORMOVE1_INV, MOTORMOVE1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
@@ -88,8 +75,9 @@ Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTORMOVE4_INV, MOTORMOVE4_BRAKE, MOTOR4_P
 rcl_subscription_t move_motor_subscriber;
 geometry_msgs__msg__Twist move_msg;
 
+rcl_publisher_t debug_motor_publisher;
 geometry_msgs__msg__Twist debug_motor_msg;
-geometry_msgs__msg__Twist debug_encoder_msg;
+
 
 rcl_publisher_t imu_pos_angle_publisher;
 geometry_msgs__msg__Twist imu_pos_angle_msg;
@@ -100,13 +88,6 @@ sensor_msgs__msg__Imu imu_data_msg;
 rcl_publisher_t imu_mag_publisher;
 sensor_msgs__msg__MagneticField imu_mag_msg;
 
-rcl_publisher_t debug_motor_publisher;
-
-rcl_publisher_t encoder_publisher;
-geometry_msgs__msg__Twist encoder_msg;
-
-rcl_subscription_t shooter_motor_subscriber;
-geometry_msgs__msg__Twist shooter_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -164,7 +145,9 @@ void doReboot()
 }
 
 void setup()
-{
+{   
+    
+    pinMode(LED_PIN, OUTPUT);
     Serial.begin(115200);
     // bno055.init();
     set_microros_serial_transports(Serial);
@@ -246,19 +229,13 @@ bool createEntities()
         &debug_motor_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/kobe/debug/motor/move"));
+        "/kobe/debug/cmd_move/rpm"));
 
     RCCHECK(rclc_subscription_init_default(
         &move_motor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
         "/kobe/cmd_move/rpm"));
-
-    RCCHECK(rclc_subscription_init_default(
-        &shooter_motor_subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/kobe/cmd_shoot/rpm"));    
 
     RCCHECK(rclc_publisher_init_best_effort(
         &imu_data_publisher,
@@ -286,7 +263,7 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback));
     executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
 
     RCCHECK(rclc_executor_add_subscription(
         &executor,
@@ -294,13 +271,7 @@ bool createEntities()
         &move_msg,
         &twistCallback,
         ON_NEW_DATA));
-
-    RCCHECK(rclc_executor_add_subscription(
-        &executor,
-        &shooter_motor_subscriber,
-        &shooter_msg,
-        &twistCallback,
-        ON_NEW_DATA));        
+      
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
 
     // synchronize time with the agent
@@ -317,7 +288,6 @@ bool destroyEntities()
 
     rcl_publisher_fini(&debug_motor_publisher, &node);
     rcl_subscription_fini(&move_motor_subscriber, &node);
-    rcl_subscription_fini(&shooter_motor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rcl_publisher_fini(&imu_data_publisher, &node);
@@ -333,38 +303,16 @@ bool destroyEntities()
 
 void fullStop()
 {
-    shooter_msg = {}; move_msg = {};
+    move_msg = {};
     motor1.brake(); motor2.brake();
     motor3.brake(); motor4.brake();
-    // motorshooter1.brake(); motorshooter2.brake(); motorlift.brake();
 
 }
 
 void Move()
 {
 
-//--------------------MOVE-----------------------
 
-    float motor1Speed = shooter_msg.linear.x;
-    float motor2Speed = shooter_msg.linear.y;
-    float motor3Speed = shooter_msg.linear.z;
-    
-    // motorshooter1.spin(motor1Speed);
-    // motorshooter2.spin(motor2Speed);
-
-    
-    float current_rpm_motor1 = motor1_encoder.getRPM();
-    float current_rpm_motor2 = motor2_encoder.getRPM();
-
-    debug_motor_msg.angular.x = current_rpm_motor1;
-    debug_motor_msg.angular.y = current_rpm_motor2;
-    
-    // motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
-    // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
-    // motorlift.spin(motor3Speed);
-
-
-//------------------------MOVE--------------------
     float motor1MoveSpeed = move_msg.linear.x;
     float motor2MoveSpeed = move_msg.linear.y;
     float motor3MoveSpeed = move_msg.linear.z;
@@ -385,7 +333,8 @@ void publishData()
 {
     debug_motor_msg.linear.x = move_msg.linear.x;
     debug_motor_msg.linear.y = move_msg.linear.y;
-
+    debug_motor_msg.linear.z = move_msg.linear.z;
+    debug_motor_msg.angular.x = move_msg.angular.x;
 
     struct timespec time_stamp = getTime();
     rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
