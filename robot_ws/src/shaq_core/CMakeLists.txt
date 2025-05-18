@@ -66,6 +66,7 @@ install(PROGRAMS
   scripts/joystick_control.py
   scripts/hoop_detection.py
   scripts/slider.py
+  scripts/joystick_control_3sec.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

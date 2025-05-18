@@ -22,6 +22,7 @@ def generate_launch_description():
         name="Joy_Node",
         # output="screen",
         namespace="",
+        parameters=[{"autorepeat_rate": 50.0}],
         # arguments=["--dev", "/dev/input/js0"],  # replace with your joystick device path
         remappings = [
             ('/joy', '/shaq/joy')
@@ -46,17 +47,17 @@ def generate_launch_description():
         # parameters=[motor_config], #Testing
     )
     
-    shaq_cmd_koby_node = Node(
+    joy_auto = Node(
         package="shaq_core",
-        executable="cmd_koby_task.py",
-        name="shaq_cmd_koby_task",
+        executable="joystick_control_3sec.py",
+        name="joy_auto",
         # output="screen",
         namespace="",
     )
     
     ld.add_action(joy)
     ld.add_action(joystick_control)
+    # ld.add_action(joy_auto)
     # ld.add_action(cmd_vel_to_motor_speed)
-    # ld.add_action(shaq_cmd_koby_node)
 
     return ld
