@@ -1,11 +1,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-#include <cmath>
 
 #define LED_PIN 13
-
-#define LED_AIM 14
 
 #include <micro_ros_platformio.h>
 #include <stdio.h>
@@ -20,13 +17,27 @@
 #include <std_msgs/msg/int8.h>
 #include <std_msgs/msg/int16_multi_array.h>
 #include <geometry_msgs/msg/twist.h>
+#include <sensor_msgs/msg/imu.h>
+#include <geometry_msgs/msg/twist.h>
+#include <sensor_msgs/msg/magnetic_field.h>
+#include <std_msgs/msg/int32.h>
 
-#include <motorevo.h>
+// #include <motorevo.h>
 #include <motorprik.h>
-#include <encoder.h>
-#include <PIDF.h>
-#include <Servo.h>
-#include "../config/shooter_output.h"
+#include "../config/move_omni.h"
+#include <imu_bno055.h>
+
+
+
+Motor motor1(PWM_FREQUENCY, PWM_BITS, MOTORMOVE1_INV, MOTORMOVE1_BRAKE, MOTOR1_PWM, MOTOR1_IN_A, MOTOR1_IN_B);
+Motor motor2(PWM_FREQUENCY, PWM_BITS, MOTORMOVE2_INV, MOTORMOVE2_BRAKE, MOTOR2_PWM, MOTOR2_IN_A, MOTOR2_IN_B);
+Motor motor3(PWM_FREQUENCY, PWM_BITS, MOTORMOVE3_INV, MOTORMOVE3_BRAKE, MOTOR3_PWM, MOTOR3_IN_A, MOTOR3_IN_B);
+Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTORMOVE4_INV, MOTORMOVE4_BRAKE, MOTOR4_PWM, MOTOR4_IN_A, MOTOR4_IN_B);
+
+
+
+// IMU_BNO055 bno055;
+
 
 
 #define RCCHECK(fn)                  \
@@ -61,20 +72,22 @@
 
 //------------------------------ < Define > -------------------------------------//
 
+rcl_subscription_t move_motor_subscriber;
+geometry_msgs__msg__Twist move_msg;
+
 rcl_publisher_t debug_motor_publisher;
 geometry_msgs__msg__Twist debug_motor_msg;
 
-rcl_subscription_t shooter_motor_subscriber;
-geometry_msgs__msg__Twist shooter_msg;
 
-rcl_subscription_t servo_subscriber;
-geometry_msgs__msg__Twist servo_msg;
+rcl_publisher_t imu_pos_angle_publisher;
+geometry_msgs__msg__Twist imu_pos_angle_msg;
 
-rcl_subscription_t led_subscriber;
-geometry_msgs__msg__Twist led_msg;
+rcl_publisher_t imu_data_publisher;
+sensor_msgs__msg__Imu imu_data_msg;
 
-rcl_subscription_t encoder_mode_subscriber;
-geometry_msgs__msg__Twist encoder_mode_msg;
+rcl_publisher_t imu_mag_publisher;
+sensor_msgs__msg__MagneticField imu_mag_msg;
+
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -88,6 +101,7 @@ unsigned long prev_cmd_time = 0;
 unsigned long prev_odom_update = 0;
 unsigned long current_time = 0;
 
+
 enum states
 {
     WAITING_AGENT,
@@ -97,21 +111,6 @@ enum states
 } state;
 
 
-EVODrive motorshooter1(PWM_FREQUENCY, PWM_BITS, MOTOR1_INV, MOTOR1_BREAK, MOTORSHOOTER1_PWM, MOTORSHOOTER1_IN_A, MOTORSHOOTER1_IN_B);
-EVODrive motorshooter2(PWM_FREQUENCY, PWM_BITS, MOTOR2_INV, MOTOR2_BREAK, MOTORSHOOTER2_PWM, MOTORSHOOTER2_IN_A, MOTORSHOOTER2_IN_B);
-Motor motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
-// EVODrive motorlift(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTORLIFT_PWM, MOTORLIFT_IN_A, MOTORLIFT_IN_B);
-
-Encoder motor1_encoder(MOTOR1_ENCODER_PIN_A, MOTOR1_ENCODER_PIN_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV, ENCODER_GEAR_RATIO_4);
-Encoder motor2_encoder(MOTOR2_ENCODER_PIN_A, MOTOR2_ENCODER_PIN_B, COUNTS_PER_REV2, MOTOR2_ENCODER_INV, ENCODER_GEAR_RATIO);
-
-PIDF motor1_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P_Motor_2, K_I, K_D, K_F);
-PIDF motor2_controller(I_Min, I_Max, PWM_Min, PWM_Max, K_P, K_I, K_D, K_F);
-
-Servo servo;
-
-
-
 //------------------------------ < Fuction Prototype > ------------------------------//
 
 void rclErrorLoop();
@@ -119,11 +118,11 @@ void syncTime();
 bool createEntities();
 bool destroyEntities();
 void publishData();
-struct timespec getTime();
+void imu_pub();
 void fullStop();
+struct timespec getTime();
 
 void Move();
-void led();
 
 //------------------------------ < Main > -------------------------------------//
 
@@ -145,13 +144,12 @@ void doReboot()
   SCB_AIRCR = 0x05FA0004;
 }
 
-
 void setup()
 {   
-    pinMode(LED_AIM, OUTPUT);
-
-    servo.attach(SERVO_PIN);
+    
+    pinMode(LED_PIN, OUTPUT);
     Serial.begin(115200);
+    // bno055.init();
     set_microros_serial_transports(Serial);
 }
 
@@ -177,12 +175,8 @@ void loop()
         }
         break;
     case AGENT_DISCONNECTED:
-        motorshooter1.spin(0);
-        motorshooter2.spin(0);
-        motorlift.spin(0);
-
+        
         fullStop();
-
         destroyEntities();
         state = WAITING_AGENT;
         break;
@@ -201,7 +195,7 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     {
         Move();
         publishData();
-        led();
+        // imu_pub();
     }
 }
 
@@ -215,29 +209,12 @@ void twist2Callback(const void *msgin)
     prev_cmd_time = millis();
 }
 
-void encoderModeCallback(const void *msgin)
-{
-    const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
-    encoder_mode_msg = *msg;
-}
-
-void ledCallback(const void *msgin)
-{
-    const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
-    led_msg = *msg;
-}
-
 bool createEntities()
 {
 
-    flashLED(3);
+    flashLED(5);
 
     allocator = rcl_get_default_allocator();
-
-    geometry_msgs__msg__Twist__init(&encoder_mode_msg);
-    geometry_msgs__msg__Twist__init(&shooter_msg);
-    geometry_msgs__msg__Twist__init(&servo_msg);
-    geometry_msgs__msg__Twist__init(&debug_motor_msg);
 
     init_options = rcl_get_zero_initialized_init_options();
     rcl_init_options_init(&init_options, allocator);
@@ -246,39 +223,37 @@ bool createEntities()
     rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
 
     // create node
-    RCCHECK(rclc_node_init_default(&node, "shaq_shooter_node", "", &support));
+    RCCHECK(rclc_node_init_default(&node, "kobe_mcu", "", &support));
 
     RCCHECK(rclc_publisher_init_best_effort(
         &debug_motor_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/shaq/debug/cmd_shoot/rpm"));
+        "/kobe/debug/cmd_move/rpm"));
 
     RCCHECK(rclc_subscription_init_default(
-        &shooter_motor_subscriber,
+        &move_motor_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/shaq/cmd_shoot/rpm"));
+        "/kobe/cmd_move/rpm"));
 
-    RCCHECK(rclc_subscription_init_default(
-        &servo_subscriber,
+    RCCHECK(rclc_publisher_init_best_effort(
+        &imu_data_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+        "/kobe/imu/data"));
+      
+    RCCHECK(rclc_publisher_init_best_effort(
+         &imu_mag_publisher,
+         &node,
+         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, MagneticField),
+         "/kobe/imu/mag"));
+      
+    RCCHECK(rclc_publisher_init_best_effort(
+        &imu_pos_angle_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/shaq/cmd_servo/angle"));
-
-    RCCHECK(rclc_subscription_init_default(
-        &led_subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/shaq/led"));
-
-    RCCHECK(rclc_subscription_init_default(
-        &encoder_mode_subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/shaq/cmd_encoder"));
-
-
+        "/kobe/imu/pos_angle"));
 
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = 20;
@@ -288,42 +263,22 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback));
     executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
 
     RCCHECK(rclc_executor_add_subscription(
         &executor,
-        &shooter_motor_subscriber,
-        &shooter_msg,
+        &move_motor_subscriber,
+        &move_msg,
         &twistCallback,
         ON_NEW_DATA));
-        
-    RCCHECK(rclc_executor_add_subscription(
-        &executor,
-        &servo_subscriber,
-        &servo_msg,
-        &twistCallback,
-        ON_NEW_DATA));
-
-    RCCHECK(rclc_executor_add_subscription(
-        &executor,
-        &encoder_mode_subscriber,
-        &encoder_mode_msg,
-        &encoderModeCallback,
-        ON_NEW_DATA));
-
-    RCCHECK(rclc_executor_add_subscription(
-        &executor,
-        &led_subscriber,
-        &led_msg,
-        &ledCallback,
-        ON_NEW_DATA));
-            
-    
+      
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
+
     // synchronize time with the agent
     syncTime();
 
     return true;
+
 }
 
 bool destroyEntities()
@@ -332,11 +287,12 @@ bool destroyEntities()
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
     rcl_publisher_fini(&debug_motor_publisher, &node);
-    rcl_subscription_fini(&shooter_motor_subscriber, &node);
-    rcl_subscription_fini(&servo_subscriber,&node);
-    rcl_subscription_fini(&encoder_mode_subscriber, &node);
+    rcl_subscription_fini(&move_motor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
+    rcl_publisher_fini(&imu_data_publisher, &node);
+    rcl_publisher_fini(&imu_mag_publisher, &node);
+    rcl_publisher_fini(&imu_pos_angle_publisher, &node);
     rclc_executor_fini(&executor);
     rclc_support_fini(&support);
 
@@ -347,73 +303,26 @@ bool destroyEntities()
 
 void fullStop()
 {
-  shooter_msg.linear.x = 0.0;
-  shooter_msg.linear.y = 0.0;
-  shooter_msg.linear.z = 0.0;
-  shooter_msg.angular.x = 0.0;
-  shooter_msg.angular.y = 0.0;
-  shooter_msg.angular.z = 0.0;
-
-  motorshooter1.brake();
-  motorshooter2.brake();
-  motorlift.brake();
+    move_msg = {};
+    motor1.brake(); motor2.brake();
+    motor3.brake(); motor4.brake();
 
 }
-
 
 void Move()
 {
 
-    float encoder_mode = encoder_mode_msg.linear.x;
-    //encoder_mode 1 = Spin Bit
-    //encoder_mode 2 = Spin RPM
 
-    float motor1Speed = shooter_msg.linear.x;
-    float motor2Speed = shooter_msg.linear.y;
-    float motor3Speed = shooter_msg.linear.z;
+    float motor1MoveSpeed = move_msg.linear.x;
+    float motor2MoveSpeed = move_msg.linear.y;
+    float motor3MoveSpeed = move_msg.linear.z;
+    float motor4MoveSpeed = move_msg.angular.x;
 
-    float servo_angle = servo_msg.linear.x;
-    servo.write(servo_angle);
+    motor1.spin(motor1MoveSpeed);
+    motor2.spin(motor2MoveSpeed);
+    motor3.spin(motor3MoveSpeed);
+    motor4.spin(motor4MoveSpeed);
 
-
-    float current_rpm_motor1 = motor1_encoder.getRPM();
-    float current_rpm_motor2 = motor2_encoder.getRPM();
-
-    debug_motor_msg.angular.x = std::round(current_rpm_motor1 * 100.0) / 100.0;
-    debug_motor_msg.angular.y = std::round(current_rpm_motor2 * 100.0) / 100.0;
-
-    debug_motor_msg.angular.z = servo_angle;
-
-    // debug_motor_msg.linear.z = encoder_mode;
-
-    
-    if(encoder_mode == 1){
-        motorshooter1.spin(motor1Speed);
-        motorshooter2.spin(motor2Speed);
-    }else{
-        motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
-        motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
-    }
-
-    // motorshooter1.spin(motor1Speed);
-    // motorshooter2.spin(motor2Speed);
-
-    // motorshooter1.spin(motor1_controller.compute(motor1Speed, current_rpm_motor1));
-    // motorshooter2.spin(motor2_controller.compute(motor2Speed, current_rpm_motor2));
-    
-    motorlift.spin(motor3Speed);
-
-}
-
-void led(){
-
-    bool led_state = led_msg.linear.x;
-
-    if(led_state){
-        digitalWrite(LED_AIM,HIGH);
-    }else{
-        digitalWrite(LED_AIM,LOW);
-    }
 
 }
 
@@ -422,14 +331,10 @@ void led(){
 
 void publishData()
 {
-
-    debug_motor_msg.linear.x = shooter_msg.linear.x;
-    debug_motor_msg.linear.y = shooter_msg.linear.y;
-    debug_motor_msg.linear.z = shooter_msg.linear.z;
-
-
-
-    
+    debug_motor_msg.linear.x = move_msg.linear.x;
+    debug_motor_msg.linear.y = move_msg.linear.y;
+    debug_motor_msg.linear.z = move_msg.linear.z;
+    debug_motor_msg.angular.x = move_msg.angular.x;
 
     struct timespec time_stamp = getTime();
     rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
@@ -437,11 +342,9 @@ void publishData()
 
 void syncTime()
 {
-    // get the current time from the agent
     unsigned long now = millis();
     RCCHECK(rmw_uros_sync_session(10));
     unsigned long long ros_time_ms = rmw_uros_epoch_millis();
-    // now we can find the difference between ROS time and uC time
     time_offset = ros_time_ms - now;
 }
 
@@ -459,7 +362,10 @@ struct timespec getTime()
 
 void rclErrorLoop()
 {
-    flashLED(2);
-    doReboot();
+    while (true)
+    {
+        flashLED(2);
+        doReboot();
+    }
 }
 

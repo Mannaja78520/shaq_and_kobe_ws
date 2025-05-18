@@ -18,7 +18,7 @@ from cv_bridge import CvBridge
 
 # Load YOLO model
 username = os.getenv("USER")
-model_path = f"/home/{username}/shaq_and_koby_ws/image_test/trainvschair.pt"
+model_path = f"/home/{username}/shaq_and_koby_ws/image_test/200pic.pt"
 model = YOLO(model_path)
 
 # Use CUDA if available
@@ -89,7 +89,7 @@ class mainRun(Node):
         hoopdata_msg = Twist()
         hoopdata_msg.linear.x = float(self.x)
         hoopdata_msg.linear.y = float(self.y)
-        hoopdata_msg.angular.x = float(127.0)
+        hoopdata_msg.angular.x = float(315.0)
         hoopdata_msg.angular.y = float(self.center_y)
 
         self.sent_where_hoop.publish(hoopdata_msg)

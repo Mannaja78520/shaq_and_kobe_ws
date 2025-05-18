@@ -14,7 +14,14 @@
   <!-- ROS 2 Dependencies -->
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>  <!-- Add std_msgs for Float32 messages -->
+
+  <!-- Camera Node Dependencies -->
+  <depend>cv_bridge</depend>
+  <depend>image_transport</depend>
+  <depend>tensorflow-lite</depend>
 
   <!-- Python Dependencies -->
   <depend>tf-transformations</depend>

@@ -63,6 +63,8 @@ install(PROGRAMS
   scripts/cmd_vel_auto_aim.py
   scripts/cameracapture.py
   scripts/apriltag_auto_aim.py
+  scripts/joystickaing.py
+  scripts/cmd_move_omni.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

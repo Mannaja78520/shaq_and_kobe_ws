@@ -45,7 +45,7 @@ class AprilTagDetector(Node):
 
         frame_h, frame_w = gray.shape
         SCREEN_CENTERS = {
-            26: (148, 0),
+            26: (170, 0),
             27: (148, 0)
         }
         default_center = (frame_w // 2, frame_h // 2)
