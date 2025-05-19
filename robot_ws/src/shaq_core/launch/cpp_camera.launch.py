@@ -39,10 +39,19 @@ def generate_launch_description():
         # parameters=[], #Testing
     )
 
-    hoop_detection = Node(
+    hoop_detection_onnx = Node(
         package="shaq_core",
-        executable="hoop_detection",
-        name="Hoop_Detection",
+        executable="hoop_detection_onnx",
+        name="hoop_detection_onnx",
+        # output="screen",
+        namespace="",
+        # parameters=[], #Testing
+    )
+    
+    hoop_detection_TFLite = Node(
+        package="shaq_core",
+        executable="hoop_detection_TFLite",
+        name="hoop_detection_TFLite",
         # output="screen",
         namespace="",
         # parameters=[], #Testing
@@ -70,7 +79,7 @@ def generate_launch_description():
     # ld.add_action(cmd_vel_auto_aim)
     ld.add_action(camera_driver)
     # ld.add_action(apriltag_auto_aim)
-    ld.add_action(hoop_detection)
+    # ld.add_action(hoop_detection)
 
 
     return ld

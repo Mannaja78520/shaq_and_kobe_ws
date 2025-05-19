@@ -13,6 +13,7 @@ from src.controller import *
 
 import time 
 import math
+import rospy
 
 
 class Cmd_vel_to_motor_speed(Node):
@@ -44,6 +45,10 @@ class Cmd_vel_to_motor_speed(Node):
         self.motor2Speed : float = 0
         self.motor3Speed : float = 0
         self.motor4Speed : float = 0
+
+        self.shoot_start_time : float = 0
+        self.shoot_delay : float = 3.0
+        self.shoot_end : float = 5.0
 
         self.motorshooter1Speed : float = 0
         self.motorshooter2Speed : float = 0
@@ -83,10 +88,6 @@ class Cmd_vel_to_motor_speed(Node):
 
         self.send_shoot_speed = self.create_publisher(
             Twist, "/shaq/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
-        )
-
-        self.create_subscription(
-            Twist, '/shaq/cmd_shoot/auto', self.cmd_shoot_auto, qos_profile=qos.qos_profile_sensor_data # 10
         )
 
         self.send_servo_angle = self.create_publisher(
@@ -225,30 +226,39 @@ class Cmd_vel_to_motor_speed(Node):
         self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - rotation) / D * self.maxSpeed))
         
 
-    def cmd_shoot(self, msg):
-            if not self.macro_active:  # Only update if macro is inactive
-                if msg.linear.x == 1 and msg.linear.y == 1:
-                    self.motorshooter1Speed = 0.0
-                    self.motorshooter2Speed = 0.0
-                else:
-                    self.motorshooter1Speed = min((abs(msg.linear.x - 1)) * self.maxSpeed + 500, self.maxSpeed)
-                    self.motorshooter2Speed = min((abs(msg.linear.x - 1)) * self.maxSpeed + 500, self.maxSpeed)
+    # def cmd_shoot(self, msg):
+    #         if not self.macro_active:  # Only update if macro is inactive
+    #             if msg.linear.x == 1 and msg.linear.y == 1:
+    #                 self.motorshooter1Speed = 0.0
+    #                 self.motorshooter2Speed = 0.0
+    #             else:
+    #                 self.motorshooter1Speed = min((abs(msg.linear.x - 1)) * self.maxSpeed + 500, self.maxSpeed)
+    #                 self.motorshooter2Speed = min((abs(msg.linear.x - 1)) * self.maxSpeed + 500, self.maxSpeed)
                 
+    #         self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
+    #         self.motorshooter3Speed += msg.angular.x * self.maxSpeed
+
+    #         if self.motorshooter3Speed >= 1023.0:
+    #             self.motorshooter3Speed = 1023.0
+
+    def cmd_shoot(self, msg):
+
+        if msg.linear.x 
+
+        # check 3 sec or not
+        if self.shoot_start_time != 0.0 and (rospy.get_time() - self.shoot_start_time) >= self.shoot_delay:
             self.motorshooter3Speed = abs(msg.linear.z - 1) * self.maxSpeed
             self.motorshooter3Speed += msg.angular.x * self.maxSpeed
 
+            # limit 1023
             if self.motorshooter3Speed >= 1023.0:
                 self.motorshooter3Speed = 1023.0
 
+        elif self.shoot_start_time != 0.0 and (rospy.get_time() - self.shoot_start_time) >= self.shoot_end:
+            self.motorshooter3Speed = 0.0
 
-    def cmd_shoot_auto(self, msg):  
-
-        if  msg.linear.x and msg.linear.y == 1:
-                self.motorshooter1Speed = 730.0  # Upper
-                self.motorshooter2Speed = 730.0   # Lower
-
-        if msg.linear.z == 1:
-                self.motorshooter3Speed = 1023.0
+        else:
+            self.motorshooter3Speed = 0.0  
 
 
     def cmd_macro(self, msg):
@@ -257,25 +267,25 @@ class Cmd_vel_to_motor_speed(Node):
 
             if msg.linear.z == 1: #Shoot    #Cross
                 self.macro_active = True
-                self.motorshooter1Speed = 730.0  # Upper
-                self.motorshooter2Speed = 750.0  # Lower
+                self.motorshooter1Speed = 750.0  # Upper
+                self.motorshooter2Speed = 770.0  # Lower
 
 
             elif msg.linear.x == 1: #Dribble    #Triangle
                 self.macro_active = True
-                self.motorshooter1Speed = -620.0  # Upper
+                self.motorshooter1Speed = -610.0  # Upper
                 self.motorshooter2Speed = 700.0   # Lower
 
 
             elif msg.angular.y == 1: #Pass      #L1
                 self.macro_active = True
-                self.motorshooter1Speed = 750.0  # Upper
-                self.motorshooter2Speed = 680.0   # Lower
+                self.motorshooter1Speed = 635.0  # Upper
+                self.motorshooter2Speed = 635.0   # Lower
             
             elif msg.angular.z == 1: #Shoot2    #R1
                 self.macro_active = True
-                self.motorshooter1Speed = 730.0  # Upper
-                self.motorshooter2Speed = 730.0   # Lower
+                self.motorshooter1Speed = 710.0  # Upper
+                self.motorshooter2Speed = 710.0   # Lower
         
             else:
                 self.macro_active = False 
@@ -301,8 +311,8 @@ class Cmd_vel_to_motor_speed(Node):
             
             elif msg.angular.z == 1: #Shoot2    #R1
                 self.macro_active = True
-                self.motorshooter1Speed = 4600.0  # Upper
-                self.motorshooter2Speed = 4600.0   # Lower
+                self.motorshooter1Speed = 4300.0  # Upper
+                self.motorshooter2Speed = 4700.0   # Lower
         
             else:
                 self.macro_active = False 

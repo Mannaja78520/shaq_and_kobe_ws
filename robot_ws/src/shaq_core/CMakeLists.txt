@@ -28,17 +28,13 @@ find_package(rclcpp_action REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+# find_package(tensorflow-lite REQUIRED)
 #find_package(nav2_msgs REQUIRED)
 #find_package(behaviortree_cpp_v3 REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-
-include_directories(
-  ${OpenCV_INCLUDE_DIRS}
-  ${cv_bridge_INCLUDE_DIRS}
-)
 
 ################################################################################
 # Install
@@ -65,13 +61,17 @@ install(PROGRAMS
   # scripts/cmd_koby_task.py
   # scripts/apriltag_distance.py
   # scripts/both_detect.py
-  scripts/apriltag_auto_aim.py
-  scripts/cameracapture.py
   scripts/cmd_vel_auto_aim.py
   scripts/cmd_vel_to_motor_speed.py
   scripts/joystick_control.py
-  scripts/hoop_detection.py
   scripts/slider.py
+  scripts/joystick_control_3sec.py
+  scripts/cmd_vel_auto_aim_feed.py
+  scripts_camera/cameracapture.py
+  scripts_camera/hoop_detection.py
+  scripts_camera/apriltag_auto_aim.py
+  scripts_camera/show_camera.py
+  
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -82,33 +82,64 @@ install(PROGRAMS
 )
 
 ################################################################################
+# TensorFlow Lite
+################################################################################
+
+# Adjust the following to match your path (if you didn't install to /usr/local)
+include_directories(/usr/local/include)
+link_directories(/usr/local/lib)
+
+################################################################################
 # Install C++ Programs
 ################################################################################
+
 add_executable(apriltag_auto_aim scripts_camera/apriltag_auto_aim.cpp)
-add_executable(hoop_detection scripts_camera/hoop_detection.cpp)
+add_executable(hoop_detection_onnx scripts_camera/hoop_detection_onnx.cpp)
+add_executable(hoop_detection_TFLite scripts_camera/hoop_detection_TFLite.cpp)
 
 ament_target_dependencies(apriltag_auto_aim 
   rclcpp
   sensor_msgs 
   geometry_msgs 
   cv_bridge
+  OpenCV
 )
 
-ament_target_dependencies(hoop_detection
+ament_target_dependencies(hoop_detection_onnx
   rclcpp
   sensor_msgs
   std_msgs
   cv_bridge
-  # image_transport
   ament_index_cpp
 )
 
+ament_target_dependencies(hoop_detection_TFLite
+  rclcpp
+  sensor_msgs
+  std_msgs
+  cv_bridge
+  ament_index_cpp
+  OpenCV
+)
+
+target_include_directories(hoop_detection_TFLite 
+  PUBLIC 
+    /usr/local/include
+    ${PROJECT_SOURCE_DIR}/include  # Optional: Add your own headers
+)
+
 target_link_libraries(apriltag_auto_aim ${OpenCV_LIBS} apriltag)
-target_link_libraries(hoop_detection  ${OpenCV_LIBS})
+target_link_libraries(hoop_detection_onnx  ${OpenCV_LIBS})
+target_link_libraries(hoop_detection_TFLite
+  ${OpenCV_LIBS}
+  tensorflowlite
+)
+
 
 install(TARGETS
   apriltag_auto_aim
-  hoop_detection
+  hoop_detection_onnx
+  hoop_detection_TFLite
   DESTINATION lib/${PROJECT_NAME}
 )
 
