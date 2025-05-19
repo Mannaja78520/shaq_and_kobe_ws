@@ -235,8 +235,8 @@ class Cmd_vel_to_motor_speed(Node):
 
         elif msg.angular.y == 1: #Pass L1
             self.macro_active = True
-            self.motorshooter1Speed = 720.0  # Upper
-            self.motorshooter2Speed = 810.0   # Lower
+            self.motorshooter1Speed = 0.0  # Upper
+            self.motorshooter2Speed = 0.0   # Lower
 
 
         else:

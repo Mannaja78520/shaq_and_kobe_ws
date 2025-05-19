@@ -31,7 +31,7 @@ def generate_launch_description():
 
     joystick_control = Node(
         package="kobe_core",
-        executable="joystick_control.py",
+        executable="joystickaing.py",
         name="Joystick_Node",
         # output="screen",
         namespace="",

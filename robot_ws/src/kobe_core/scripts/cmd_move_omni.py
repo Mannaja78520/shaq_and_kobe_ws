@@ -197,10 +197,16 @@ class Cmd_vel_to_motor_speed(Node):
         
         """
 
-        self.motor1Speed = clip(float((-self.slideSpeed + self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
-        self.motor2Speed = clip(float((self.slideSpeed + self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
-        self.motor3Speed = clip(float((self.slideSpeed - self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
-        self.motor4Speed = clip(float((-self.slideSpeed - self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(rotation), 1.0)
+        self.motor1Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - rotation) / D * self.maxSpeed))
+        self.motor2Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + rotation) / D * self.maxSpeed))
+        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + rotation) / D * self.maxSpeed))
+        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - rotation) / D * self.maxSpeed))
+
+        # self.motor1Speed = clip(float((-self.slideSpeed + self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        # self.motor2Speed = clip(float((self.slideSpeed + self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        # self.motor3Speed = clip(float((self.slideSpeed - self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        # self.motor4Speed = clip(float((-self.slideSpeed - self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
 
         # self.motor1Speed = float((-self.slideSpeed + self.moveSpeed - self.turnSpeed) * self.maxSpeed)
         # self.motor2Speed = float((self.slideSpeed + self.moveSpeed + self.turnSpeed) * self.maxSpeed)
@@ -223,22 +229,22 @@ class Cmd_vel_to_motor_speed(Node):
             
     def cmd_macro(self, msg):
 
-        if msg.linear.z == 1:
+        if msg.linear.z == 1: #Cross
             self.macro_active = True
             self.motorshooter1Speed = 760.0  # Upper
             self.motorshooter2Speed = 920.0  # Lower
 
 
-        elif msg.linear.x == 1:
+        elif msg.linear.x == 1: #Triangle
             self.macro_active = True
             self.motorshooter1Speed = 720.0  # Upper
             self.motorshooter2Speed = 720.0   # Lower
 
         
-        elif msg.angular.y == 1: #Pass
+        elif msg.angular.y == 1: #Pass L1
             self.macro_active = True
-            self.motorshooter1Speed = 720.0  # Upper
-            self.motorshooter2Speed = 800.0   # Lower
+            self.motorshooter1Speed = 790.0  # Upper
+            self.motorshooter2Speed = 710.0   # Lower
 
         else:
             self.macro_active = False 
