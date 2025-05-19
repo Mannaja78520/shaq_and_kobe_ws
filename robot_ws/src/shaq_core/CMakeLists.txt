@@ -66,11 +66,13 @@ install(PROGRAMS
   scripts/joystick_control.py
   scripts/slider.py
   scripts/joystick_control_3sec.py
+  scripts/joystick_control_xbox.py
   scripts/cmd_vel_auto_aim_feed.py
   scripts_camera/cameracapture.py
   scripts_camera/hoop_detection.py
   scripts_camera/apriltag_auto_aim.py
   scripts_camera/show_camera.py
+  
   
   DESTINATION lib/${PROJECT_NAME}
 )
