@@ -12,6 +12,7 @@ import cv2
 import time
 from ament_index_python.packages import get_package_share_directory
 import tensorflow.lite as tflite  # or use `import tensorflow.lite as tflite` if using full TensorFlow
+from threading import Lock
 
 # Load TFLite model
 package_share_directory = get_package_share_directory("shaq_core")
@@ -36,6 +37,12 @@ class mainRun(Node):
         self.center_x = 0.0
         self.center_y = 0.0
         self.led_state = False
+        
+        # self.frame_count = 0
+        # self.last_fps_time = time.time()
+        
+        self.processing = False
+        self.lock = Lock()
 
         self.sent_where_hoop = self.create_publisher(
             Twist, "/shaq/send_where_hoop", qos_profile=qos.qos_profile_sensor_data
@@ -56,6 +63,10 @@ class mainRun(Node):
         self.sent_data_timer = self.create_timer(0.05, self.sendData)
 
     def image_callback(self, msg):
+        with self.lock:
+            if self.processing:
+                return  # skip if busy
+            self.processing = True
         start_time = time.time()
         try:
             frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
@@ -110,7 +121,15 @@ class mainRun(Node):
         
         elapsed_ms = (time.time() - start_time) * 1000.0
         # print((time.time() - start_time) * 1000.0)
-        self.get_logger().info(f"Inference time: {elapsed_ms:.2f} ms")
+        self.get_logger().info(f"Process time: {elapsed_ms:.2f} ms")
+        # self.frame_count += 1
+        # current_time = time.time()
+        # if current_time - self.last_fps_time >= 1.0:  # every 1 second
+        #     self.get_logger().info(f"FPS: {self.frame_count}")
+        #     self.frame_count = 0
+        #     self.last_fps_time = current_time
+        self.processing = False
+
 
     def sendData(self):
         hoopdata_msg = Twist()

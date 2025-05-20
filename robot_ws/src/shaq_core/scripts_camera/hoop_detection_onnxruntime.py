@@ -12,6 +12,7 @@ import cv2
 import onnxruntime as ort
 from ament_index_python.packages import get_package_share_directory
 import time
+from threading import Lock
 
 
 # Get the share directory of the package and ONNX model path
@@ -37,6 +38,8 @@ class mainRun(Node):
         self.center_x = 0.0
         self.center_y = 0.0
         self.led_state = False
+        self.processing = False
+        self.lock = Lock()
 
         self.sent_where_hoop = self.create_publisher(
             Twist, "/shaq/send_where_hoop", qos_profile=qos.qos_profile_sensor_data
@@ -57,6 +60,10 @@ class mainRun(Node):
         self.sent_data_timer = self.create_timer(0.05, self.sendData)
 
     def image_callback(self, msg):
+        with self.lock:
+            if self.processing:
+                return  # skip if busy
+            self.processing = True
         start_time = time.time()
         try:
             frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
@@ -114,7 +121,10 @@ class mainRun(Node):
             self.image_pub.publish(annotated_msg)
         except Exception as e:
             self.get_logger().error(f"Image publishing error: {e}")
-        print((time.time() - start_time) * 1000.0)
+        elapsed_ms = (time.time() - start_time) * 1000.0
+        # print((time.time() - start_time) * 1000.0)
+        self.get_logger().info(f"Process time: {elapsed_ms:.2f} ms")
+        self.processing = False
 
     def sendData(self):
         hoopdata_msg = Twist()

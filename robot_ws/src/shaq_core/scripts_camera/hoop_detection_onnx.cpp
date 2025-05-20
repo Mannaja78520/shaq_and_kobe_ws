@@ -13,6 +13,9 @@
 #include <string>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
+#include <mutex>
+
+
 using namespace std::chrono_literals;
 
 class HoopDetectionNode : public rclcpp::Node {
@@ -97,6 +100,15 @@ public:
 
 private:
   void imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) {
+    // Lock guard to protect access to processing flag
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (processing) {
+            return;  // skip if busy
+        }
+        processing = true;
+    }
+
     auto start_time = std::chrono::steady_clock::now();
 
     cv_bridge::CvImagePtr cv_ptr;
@@ -213,7 +225,11 @@ private:
 
     auto end_time = std::chrono::steady_clock::now();
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-    RCLCPP_INFO(this->get_logger(), "Inference time: %ld ms", elapsed_ms);
+    RCLCPP_INFO(this->get_logger(), "Process time: %ld ms", elapsed_ms);
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        processing = false;
+    }
   }
 
   void sendData() {
@@ -265,6 +281,10 @@ private:
   float center_x_;
   float center_y_;
   bool led_state_;
+
+  // thread data
+  bool processing = false;
+  std::mutex mutex_;   
 };
 
 int main(int argc, char* argv[]) {

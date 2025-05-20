@@ -44,7 +44,8 @@ def generate_launch_description():
         parameters=[{
             'video_device': '/dev/video0',
             'image_size': [256, 256],
-            'time_per_frame': [1, 20]  # 20 FPS
+            # 'pixel_format': 'MJPG',  
+            'time_per_frame': [1, 30]  # 30 FPS
         }],
         remappings=[
             ('/image_raw', '/shaq/image_raw')
