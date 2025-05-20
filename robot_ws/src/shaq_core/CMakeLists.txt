@@ -61,6 +61,7 @@ install(PROGRAMS
   # scripts/cmd_koby_task.py
   # scripts/apriltag_distance.py
   # scripts/both_detect.py
+  
   scripts/cmd_vel_auto_aim.py
   scripts/cmd_vel_to_motor_speed.py
   scripts/joystick_control.py
@@ -68,6 +69,7 @@ install(PROGRAMS
   scripts/joystick_control_3sec.py
   scripts/joystick_control_xbox.py
   scripts/cmd_vel_auto_aim_feed.py
+
   scripts_camera/cameracapture.py
   scripts_camera/hoop_detection_onnxruntime.py
   scripts_camera/hoop_detection_tflite.py
@@ -132,7 +134,7 @@ ament_target_dependencies(hoop_detection_onnx
 #)
 
 target_link_libraries(apriltag_auto_aim ${OpenCV_LIBS} apriltag)
-target_link_libraries(hoop_detection_onnx  ${OpenCV_LIBS})
+target_link_libraries(hoop_detection_onnx ${OpenCV_LIBS} onnxruntime)
 
 #target_link_libraries(hoop_detection_TFLite
 #  ${OpenCV_LIBS}

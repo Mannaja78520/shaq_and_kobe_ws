@@ -103,6 +103,7 @@ test_hoop_detect_onnx: /usr/local/lib/libopencv_dnn_objdetect.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_dnn_superres.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_dpm.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_face.so.4.8.0
+test_hoop_detect_onnx: /usr/local/lib/libopencv_freetype.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_fuzzy.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_hdf.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_hfs.so.4.8.0
@@ -115,14 +116,12 @@ test_hoop_detect_onnx: /usr/local/lib/libopencv_rapid.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_reg.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_rgbd.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_saliency.so.4.8.0
-test_hoop_detect_onnx: /usr/local/lib/libopencv_sfm.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_stereo.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_structured_light.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_superres.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_surface_matching.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_tracking.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_videostab.so.4.8.0
-test_hoop_detect_onnx: /usr/local/lib/libopencv_viz.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_wechat_qrcode.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_xfeatures2d.so.4.8.0
 test_hoop_detect_onnx: /usr/local/lib/libopencv_xobjdetect.so.4.8.0

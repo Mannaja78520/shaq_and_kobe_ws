@@ -1,3 +1,4 @@
 /home/mannaja/shaq_and_kobe_ws/image_test/build/CMakeFiles/test_hoop_detect_onnx.dir
+/home/mannaja/shaq_and_kobe_ws/image_test/build/CMakeFiles/test_hoop_detect_tflite.dir
 /home/mannaja/shaq_and_kobe_ws/image_test/build/CMakeFiles/edit_cache.dir
 /home/mannaja/shaq_and_kobe_ws/image_test/build/CMakeFiles/rebuild_cache.dir

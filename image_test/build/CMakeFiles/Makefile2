@@ -64,6 +64,7 @@ CMAKE_BINARY_DIR = /home/mannaja/shaq_and_kobe_ws/image_test/build
 
 # The main recursive "all" target.
 all: CMakeFiles/test_hoop_detect_onnx.dir/all
+all: CMakeFiles/test_hoop_detect_tflite.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -72,6 +73,7 @@ preinstall:
 
 # The main recursive "clean" target.
 clean: CMakeFiles/test_hoop_detect_onnx.dir/clean
+clean: CMakeFiles/test_hoop_detect_tflite.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -99,6 +101,32 @@ test_hoop_detect_onnx: CMakeFiles/test_hoop_detect_onnx.dir/rule
 CMakeFiles/test_hoop_detect_onnx.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_onnx.dir/build.make CMakeFiles/test_hoop_detect_onnx.dir/clean
 .PHONY : CMakeFiles/test_hoop_detect_onnx.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_hoop_detect_tflite.dir
+
+# All Build rule for target.
+CMakeFiles/test_hoop_detect_tflite.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_tflite.dir/build.make CMakeFiles/test_hoop_detect_tflite.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_tflite.dir/build.make CMakeFiles/test_hoop_detect_tflite.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/mannaja/shaq_and_kobe_ws/image_test/build/CMakeFiles --progress-num=3,4 "Built target test_hoop_detect_tflite"
+.PHONY : CMakeFiles/test_hoop_detect_tflite.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_hoop_detect_tflite.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mannaja/shaq_and_kobe_ws/image_test/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_hoop_detect_tflite.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mannaja/shaq_and_kobe_ws/image_test/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_hoop_detect_tflite.dir/rule
+
+# Convenience name for target.
+test_hoop_detect_tflite: CMakeFiles/test_hoop_detect_tflite.dir/rule
+.PHONY : test_hoop_detect_tflite
+
+# clean rule for target.
+CMakeFiles/test_hoop_detect_tflite.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_tflite.dir/build.make CMakeFiles/test_hoop_detect_tflite.dir/clean
+.PHONY : CMakeFiles/test_hoop_detect_tflite.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

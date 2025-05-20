@@ -89,6 +89,10 @@
         "typeindex": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "__split_buffer": "cpp"
+        "__split_buffer": "cpp",
+        "__mutex_base": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "__config": "cpp"
     }
 }

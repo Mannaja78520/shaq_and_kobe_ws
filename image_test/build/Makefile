@@ -129,6 +129,19 @@ test_hoop_detect_onnx/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_onnx.dir/build.make CMakeFiles/test_hoop_detect_onnx.dir/build
 .PHONY : test_hoop_detect_onnx/fast
 
+#=============================================================================
+# Target rules for targets named test_hoop_detect_tflite
+
+# Build rule for target.
+test_hoop_detect_tflite: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_hoop_detect_tflite
+.PHONY : test_hoop_detect_tflite
+
+# fast build rule for target.
+test_hoop_detect_tflite/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_tflite.dir/build.make CMakeFiles/test_hoop_detect_tflite.dir/build
+.PHONY : test_hoop_detect_tflite/fast
+
 test_hoop_detect_onnx.o: test_hoop_detect_onnx.cpp.o
 .PHONY : test_hoop_detect_onnx.o
 
@@ -153,6 +166,30 @@ test_hoop_detect_onnx.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_onnx.dir/build.make CMakeFiles/test_hoop_detect_onnx.dir/test_hoop_detect_onnx.cpp.s
 .PHONY : test_hoop_detect_onnx.cpp.s
 
+test_hoop_detect_tflite.o: test_hoop_detect_tflite.cpp.o
+.PHONY : test_hoop_detect_tflite.o
+
+# target to build an object file
+test_hoop_detect_tflite.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_tflite.dir/build.make CMakeFiles/test_hoop_detect_tflite.dir/test_hoop_detect_tflite.cpp.o
+.PHONY : test_hoop_detect_tflite.cpp.o
+
+test_hoop_detect_tflite.i: test_hoop_detect_tflite.cpp.i
+.PHONY : test_hoop_detect_tflite.i
+
+# target to preprocess a source file
+test_hoop_detect_tflite.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_tflite.dir/build.make CMakeFiles/test_hoop_detect_tflite.dir/test_hoop_detect_tflite.cpp.i
+.PHONY : test_hoop_detect_tflite.cpp.i
+
+test_hoop_detect_tflite.s: test_hoop_detect_tflite.cpp.s
+.PHONY : test_hoop_detect_tflite.s
+
+# target to generate assembly for a file
+test_hoop_detect_tflite.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_hoop_detect_tflite.dir/build.make CMakeFiles/test_hoop_detect_tflite.dir/test_hoop_detect_tflite.cpp.s
+.PHONY : test_hoop_detect_tflite.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -162,9 +199,13 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test_hoop_detect_onnx"
+	@echo "... test_hoop_detect_tflite"
 	@echo "... test_hoop_detect_onnx.o"
 	@echo "... test_hoop_detect_onnx.i"
 	@echo "... test_hoop_detect_onnx.s"
+	@echo "... test_hoop_detect_tflite.o"
+	@echo "... test_hoop_detect_tflite.i"
+	@echo "... test_hoop_detect_tflite.s"
 .PHONY : help
 
 

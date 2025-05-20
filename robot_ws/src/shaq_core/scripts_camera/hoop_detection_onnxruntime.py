@@ -20,6 +20,7 @@ model_path = os.path.join(package_share_directory, "models", "trainvschair.onnx"
 
 # Create ONNX Runtime session
 session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
+session.set_providers(["CPUExecutionProvider"], [{'intra_op_num_threads': 1}])
 input_name = session.get_inputs()[0].name
 output_names = [output.name for output in session.get_outputs()]
 input_size = (256, 256)  # Make sure this matches your model input
