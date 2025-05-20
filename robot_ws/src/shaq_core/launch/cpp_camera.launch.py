@@ -27,10 +27,10 @@ def generate_launch_description():
         # parameters=[], #Testing
     )
     
-    hoop_detection_TFLite = Node(
+    hoop_detection_tflite = Node(
         package="shaq_core",
-        executable="hoop_detection_TFLite",
-        name="hoop_detection_TFLite",
+        executable="hoop_detection_tflite",
+        name="hoop_detection_tflite",
         # output="screen",
         namespace="",
         # parameters=[], #Testing
@@ -43,7 +43,8 @@ def generate_launch_description():
         parameters=[{
             'video_device': '/dev/video0',
             'image_size': [256, 256],
-            'time_per_frame': [1, 20]  # 20 FPS
+            # 'pixel_format': 'MJPG',  
+            'time_per_frame': [1, 30]  # 30 FPS
         }],
         remappings=[
             ('/image_raw', '/shaq/image_raw')
@@ -55,8 +56,9 @@ def generate_launch_description():
 
     # Add actions to the launch description
     ld.add_action(camera_driver)
-    # ld.add_action(apriltag_auto_aim)
-    ld.add_action(hoop_detection_onnx)
+    ld.add_action(apriltag_auto_aim)
+    # ld.add_action(hoop_detection_onnx)
+    ld.add_action(hoop_detection_tflite)
 
 
     return ld

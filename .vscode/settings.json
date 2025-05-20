@@ -93,6 +93,11 @@
         "__mutex_base": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "__config": "cpp"
+        "__config": "cpp",
+        "__bit_reference": "cpp",
+        "__hash_table": "cpp",
+        "__tree": "cpp",
+        "filesystem": "cpp",
+        "ios": "cpp"
     }
 }
