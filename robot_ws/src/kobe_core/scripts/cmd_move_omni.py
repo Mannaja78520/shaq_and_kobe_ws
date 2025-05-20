@@ -197,10 +197,16 @@ class Cmd_vel_to_motor_speed(Node):
         
         """
 
-        self.motor1Speed = clip(float((-self.slideSpeed + self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
-        self.motor2Speed = clip(float((self.slideSpeed + self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
-        self.motor3Speed = clip(float((self.slideSpeed - self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
-        self.motor4Speed = clip(float((-self.slideSpeed - self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        D = max(abs(self.moveSpeed)+abs(self.slideSpeed)+abs(rotation), 1.0)
+        self.motor1Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed - rotation) / D * self.maxSpeed))
+        self.motor2Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed + rotation) / D * self.maxSpeed))
+        self.motor3Speed = float("{:.1f}".format((self.moveSpeed - self.slideSpeed + rotation) / D * self.maxSpeed))
+        self.motor4Speed = float("{:.1f}".format((self.moveSpeed + self.slideSpeed - rotation) / D * self.maxSpeed))
+
+        # self.motor1Speed = clip(float((-self.slideSpeed + self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        # self.motor2Speed = clip(float((self.slideSpeed + self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        # self.motor3Speed = clip(float((self.slideSpeed - self.moveSpeed - self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
+        # self.motor4Speed = clip(float((-self.slideSpeed - self.moveSpeed + self.turnSpeed) * self.maxSpeed), -self.maxSpeed, self.maxSpeed)
 
         # self.motor1Speed = float((-self.slideSpeed + self.moveSpeed - self.turnSpeed) * self.maxSpeed)
         # self.motor2Speed = float((self.slideSpeed + self.moveSpeed + self.turnSpeed) * self.maxSpeed)

@@ -103,6 +103,10 @@ class Cmd_vel_to_motor_speed(Node):
         )
 
         self.create_subscription(
+            Twist, '/shaq/cmd_shoot/auto', self.cmd_shoot_auto, qos_profile=qos.qos_profile_sensor_data # 10
+        )
+
+        self.create_subscription(
             Twist, '/shaq/cmd_servo', self.cmd_servo, qos_profile=qos.qos_profile_system_default
         )
         
@@ -239,6 +243,17 @@ class Cmd_vel_to_motor_speed(Node):
 
             if self.motorshooter3Speed >= 1023.0:
                 self.motorshooter3Speed = 1023.0
+
+    def cmd_shoot_auto(self, msg):  
+
+        if  msg.linear.x and msg.linear.y == 1:
+                self.motorshooter1Speed = 710.0  # Upper
+                self.motorshooter2Speed = 710.0   # Lower
+
+        if msg.linear.z == 1:
+                self.motorshooter3Speed = 1023.0
+             
+            
 
 
     def cmd_shoot_auto(self, msg):  
