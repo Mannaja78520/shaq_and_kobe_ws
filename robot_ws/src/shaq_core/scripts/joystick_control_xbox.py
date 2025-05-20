@@ -6,9 +6,6 @@ from std_msgs.msg import String, Int16MultiArray , Float32MultiArray
 from geometry_msgs.msg import Twist 
 from sensor_msgs.msg import Joy
 from rclpy import qos
-import threading
-import time
-
 
 class Gamepad:
     def __init__(self):
@@ -16,28 +13,26 @@ class Gamepad:
         
         self.lx : float = 0.0                   # 0: Left X-Axis
         self.ly : float = 0.0                   # 1: Left Y-Axis
-        self.l2 : float = 0.0                   # 2: L2
+        self.l2 : float = 0.0                   # 2: LT
         self.rx : float = 0.0                   # 3: Right X-Axis
         self.ry : float = 0.0                   # 4: Right Y-Axis
-        self.r2 : float = 0.0                   # 5: R2
+        self.r2 : float = 0.0                   # 5: RT
         self.dpadLeftRight : float = 0.0        # 6: Dpad Left and Right
         self.dpadUpDown : float = 0.0           # 7: Dpad Up and Down
         
         #Buttons:-------------------------------------------------------
         
-        self.button_cross : float = 0.0         # 0: 
-        self.button_circle : float = 0.0        # 1:
-        self.button_triangle : float = 0.0      # 2:
-        self.button_square : float = 0.0        # 3:
-        self.l1 : float = 0.0                   # 4:
-        self.r1 : float = 0.0                   # 5:
-        #self.l2_logic : float = 0.0                   # 6:
-        #self.r2_logic : float = 0.0                   # 7:
-        self.button_share : float = 0.0         # 8:
-        self.button_option : float = 0.0        # 9:
-        self.button_logo : float = 0.0          # 10:
-        self.PressedLeftAnalog : float = 0.0    # 11:
-        self.PressedRightAnalog : float = 0.0   # 12:
+        self.button_cross : float = 0.0         # 0: A
+        self.button_circle : float = 0.0        # 1: B
+        self.button_triangle : float = 0.0      # 2: X
+        self.button_square : float = 0.0        # 3: Y
+        self.l1 : float = 0.0                   # 4: LB
+        self.r1 : float = 0.0                   # 5: RB
+        self.button_share : float = 0.0         # 8: -
+        self.button_option : float = 0.0        # 9: +
+        self.button_logo : float = 0.0          # 10: Logo
+        self.PressedLeftAnalog : float = 0.0    # 11: Pressed Left Analog
+        self.PressedRightAnalog : float = 0.0   # 12: Pressed Right Analog
 
         #----------------------------------------------------------------
         
@@ -61,29 +56,6 @@ class Gamepad:
 
         self.last_macro_button = None  # Stores 'shoot', 'pass', 'dribble', 'auto_aim', 'pass_motor', 'shoot2'
 
-    def shoot_macro_sequence(self):
-        # Spin motor 1 and 2
-        cmd = Twist()
-        cmd.linear.x = 1.0 
-        cmd.linear.y = 1.0
-        self.pub_shoot_auto.publish(cmd)
-
-
-        self.get_logger().info("Spinning Motor 1 and 2")
-        time.sleep(3)
-
-        # Now spin motor 3
-        cmd.linear.z = 1.0  # Use angular.z for motor 3 (or change if different)
-        self.pub_shoot_auto.publish(cmd)
-
-        self.get_logger().info("Spinning Motor 3")
-
-        time.sleep(2)  # Let motor 3 spin for 2 seconds while 1 and 2 continue (total 5 seconds)
-
-        # Step 3: Stop all motors
-        cmd = Twist()  # All zeros by default
-        self.pub_shoot_auto.publish(cmd)
-        self.get_logger().info("Stopping All Motors")
 
     def update_dribble(self):
         if self.button_triangle and not self.previous_triangle_state:
@@ -113,22 +85,8 @@ class Gamepad:
                 self.last_macro_button = None
         self.previous_circle_state = self.button_circle
 
-    # def update_toggle_shoot(self):
-    #     if self.button_cross and not self.previous_cross_state:
-    #         self.toggle_shoot_bool = not self.toggle_shoot_bool
-    #         if self.toggle_shoot_bool:
-    #             self.dribble = False
-    #             self.auto_aim_bool = False
-    #             self.toggle_pass_bool = False
-    #             self.toggle_pass_motor_bool = False
-    #             self.toggle_shoot_2_bool = False
-    #             self.last_macro_button = 'shoot'
-    #         else:
-    #             self.last_macro_button = None
-    #     self.previous_cross_state = self.button_cross
-
-    def update_toggle_shoot(self, trigger_callback=None):
-        if self.dpadLeftRight and not self.previous_dpadLeftRight_state:
+    def update_toggle_shoot(self):
+        if self.button_cross and not self.previous_cross_state:
             self.toggle_shoot_bool = not self.toggle_shoot_bool
             if self.toggle_shoot_bool:
                 self.dribble = False
@@ -137,12 +95,9 @@ class Gamepad:
                 self.toggle_pass_motor_bool = False
                 self.toggle_shoot_2_bool = False
                 self.last_macro_button = 'shoot'
-                if trigger_callback:
-                    trigger_callback()  # Launch macro sequence
             else:
                 self.last_macro_button = None
-        self.previous_dpadLeftRight_state = self.dpadLeftRight
-
+        self.previous_cross_state = self.button_cross
 
     def update_toggle_pass(self):
         if self.button_square and not self.previous_square_state:
@@ -221,10 +176,6 @@ class Joystick(Node):
             Twist, "/shaq/cmd_shoot", qos_profile=qos.qos_profile_system_default
         )
 
-        self.pub_shoot_auto = self.create_publisher(
-            Twist, "/shaq/cmd_shoot/auto", qos_profile=qos.qos_profile_system_default
-        )
-
         self.pub_servo = self.create_publisher(
             Twist, "/shaq/cmd_servo", qos_profile=qos.qos_profile_system_default
         )
@@ -265,33 +216,30 @@ class Joystick(Node):
         self.gamepad.button_square   = float(msg.buttons[3])        # 3:
         self.gamepad.l1              = float(msg.buttons[4])        # 4:
         self.gamepad.r1              = float(msg.buttons[5])        # 5:
-        #self.gamepad.l2              = float(msg.buttons[6])        # 6:
-        #self.gamepad.r2              = float(msg.buttons[7])        # 7:
-        self.gamepad.button_share    = float(msg.buttons[8])        # 8:
-        self.gamepad.button_option   = float(msg.buttons[9])        # 9:
-        self.gamepad.button_logo     = float(msg.buttons[10])       # 10:
-        self.gamepad.PressedLeftAnalog  = float(msg.buttons[11])    # 11:
-        self.gamepad.PressedRightAnalog = float(msg.buttons[12])    # 12:
+        self.gamepad.button_share    = float(msg.buttons[6])        # 8:
+        self.gamepad.button_option   = float(msg.buttons[7])        # 9:
+        self.gamepad.button_logo     = float(msg.buttons[8])       # 10:
+        self.gamepad.PressedLeftAnalog  = float(msg.buttons[9])    # 11:
+        self.gamepad.PressedRightAnalog = float(msg.buttons[10])    # 12:
         
         
         #Macro-----------------------------------------------------------
         
         self.gamepad.update_dribble()
         self.gamepad.update_auto_aim()
+        self.gamepad.update_toggle_shoot()
         self.gamepad.update_toggle_pass()
         self.gamepad.update_toggle_pass_motor()
         self.gamepad.update_toggle_shoot_2()
         self.gamepad.update_toggle_encoder()
-
-
-        
-        self.current_cross_state = self.gamepad.button_cross
     
         
         if self.gamepad.button_logo:
             self.gamepad.reset_toggles()
 
 
+        
+        
 
     def sendData(self):
         
@@ -317,43 +265,13 @@ class Joystick(Node):
         if self.gamepad.button_option:
             cmd_servo.linear.x = float(2.0)  #Opened Servo
 
-        if self.gamepad.button_cross and self.gamepad.button_cross != self.gamepad.previous_cross_state:
-            # Spin motor 1 and 2
-            cmd = Twist()
-            cmd.linear.x = 1.0 
-            cmd.linear.y = 1.0
-            self.pub_shoot_auto.publish(cmd)
-
-
-            self.get_logger().info("Spinning Motor 1 and 2")
-            time.sleep(3)
-
-            # Now spin motor 3
-            cmd.linear.z = 1.0  # Use angular.z for motor 3 (or change if different)
-            self.pub_shoot_auto.publish(cmd)
-
-            self.get_logger().info("Spinning Motor 3")
-
-            time.sleep(2)  # Let motor 3 spin for 2 seconds while 1 and 2 continue (total 5 seconds)
-
-            # Step 3: Stop all motors
-            cmd = Twist()  # All zeros by default
-            self.pub_shoot_auto.publish(cmd)
-            self.get_logger().info("Stopping All Motors")
-
-
-        self.gamepad.previous_cross_state = self.gamepad.button_cross
-            
-
-
-
 
             
 
         if self.gamepad.last_macro_button == 'dribble' and self.gamepad.dribble:
             cmd_vel_macro.linear.x = 1.0
 
-        if self.gamepad.last_macro_button == 'auto_aim' and self.gamepad.auto_aim_bool:
+        elif self.gamepad.last_macro_button == 'auto_aim' and self.gamepad.auto_aim_bool:
             cmd_vel_macro.linear.y = 1.0
 
         elif self.gamepad.last_macro_button == 'shoot' and self.gamepad.toggle_shoot_bool:

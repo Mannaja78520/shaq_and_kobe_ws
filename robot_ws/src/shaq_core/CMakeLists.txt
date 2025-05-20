@@ -65,13 +65,15 @@ install(PROGRAMS
   scripts/cmd_vel_to_motor_speed.py
   scripts/joystick_control.py
   scripts/slider.py
+  scripts/joystick_control_3sec.py
+  scripts/joystick_control_xbox.py
   scripts/cmd_vel_auto_aim_feed.py
-
   scripts_camera/cameracapture.py
   scripts_camera/hoop_detection_onnxruntime.py
   scripts_camera/hoop_detection_tflite.py
   scripts_camera/apriltag_auto_aim.py
   scripts_camera/show_camera.py
+  
   
   DESTINATION lib/${PROJECT_NAME}
 )
@@ -96,7 +98,7 @@ link_directories(/usr/local/lib)
 
 add_executable(apriltag_auto_aim scripts_camera/apriltag_auto_aim.cpp)
 add_executable(hoop_detection_onnx scripts_camera/hoop_detection_onnx.cpp)
-add_executable(hoop_detection_TFLite scripts_camera/hoop_detection_TFLite.cpp)
+#add_executable(hoop_detection_TFLite scripts_camera/hoop_detection_TFLite.cpp)
 
 ament_target_dependencies(apriltag_auto_aim 
   rclcpp
@@ -114,33 +116,34 @@ ament_target_dependencies(hoop_detection_onnx
   ament_index_cpp
 )
 
-ament_target_dependencies(hoop_detection_TFLite
-  rclcpp
-  sensor_msgs
-  std_msgs
-  cv_bridge
-  ament_index_cpp
-  OpenCV
-)
+#ament_target_dependencies(hoop_detection_TFLite
+#  rclcpp
+#  sensor_msgs
+#  std_msgs
+#  cv_bridge
+#  ament_index_cpp
+#  OpenCV
+#)
 
-target_include_directories(hoop_detection_TFLite 
-  PUBLIC 
-    /usr/local/include
-    ${PROJECT_SOURCE_DIR}/include  # Optional: Add your own headers
-)
+#target_include_directories(hoop_detection_TFLite 
+#  PUBLIC 
+#    /usr/local/include
+#    ${PROJECT_SOURCE_DIR}/include  # Optional: Add your own headers
+#)
 
 target_link_libraries(apriltag_auto_aim ${OpenCV_LIBS} apriltag)
 target_link_libraries(hoop_detection_onnx  ${OpenCV_LIBS})
-target_link_libraries(hoop_detection_TFLite
-  ${OpenCV_LIBS}
-  tensorflowlite
-)
+
+#target_link_libraries(hoop_detection_TFLite
+#  ${OpenCV_LIBS}
+#  tensorflowlite
+#)
 
 
 install(TARGETS
   apriltag_auto_aim
   hoop_detection_onnx
-  hoop_detection_TFLite
+  #hoop_detection_TFLite
   DESTINATION lib/${PROJECT_NAME}
 )
 

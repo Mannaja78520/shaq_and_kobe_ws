@@ -31,7 +31,7 @@ def generate_launch_description():
 
     joystick_control = Node(
         package="shaq_core",
-        executable="joystick_control.py",
+        executable="joystick_control_xbox.py",
         name="Joystick_Node",
         # output="screen",
         namespace="",

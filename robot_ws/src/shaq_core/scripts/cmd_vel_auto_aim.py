@@ -85,6 +85,10 @@ class Cmd_vel_to_motor_speed(Node):
             Twist, "/shaq/cmd_shoot/rpm", qos_profile=qos.qos_profile_system_default
         )
 
+        self.create_subscription(
+            Twist, '/shaq/cmd_shoot/auto', self.cmd_shoot_auto, qos_profile=qos.qos_profile_sensor_data # 10
+        )
+
         self.send_servo_angle = self.create_publisher(
             Twist, "/shaq/cmd_servo/angle", qos_profile=qos.qos_profile_system_default
         )
@@ -237,31 +241,41 @@ class Cmd_vel_to_motor_speed(Node):
                 self.motorshooter3Speed = 1023.0
 
 
+    def cmd_shoot_auto(self, msg):  
+
+        if  msg.linear.x and msg.linear.y == 1:
+                self.motorshooter1Speed = 730.0  # Upper
+                self.motorshooter2Speed = 730.0   # Lower
+
+        if msg.linear.z == 1:
+                self.motorshooter3Speed = 1023.0
+
+
     def cmd_macro(self, msg):
 
         if self.encoder_mode == 1:      #1 Bit
 
             if msg.linear.z == 1: #Shoot    #Cross
                 self.macro_active = True
-                self.motorshooter1Speed = 750.0  # Upper
-                self.motorshooter2Speed = 770.0  # Lower
+                self.motorshooter1Speed = 730.0  # Upper
+                self.motorshooter2Speed = 750.0  # Lower
 
 
             elif msg.linear.x == 1: #Dribble    #Triangle
                 self.macro_active = True
-                self.motorshooter1Speed = -610.0  # Upper
+                self.motorshooter1Speed = -620.0  # Upper
                 self.motorshooter2Speed = 700.0   # Lower
 
 
             elif msg.angular.y == 1: #Pass      #L1
                 self.macro_active = True
-                self.motorshooter1Speed = 635.0  # Upper
-                self.motorshooter2Speed = 635.0   # Lower
+                self.motorshooter1Speed = 750.0  # Upper
+                self.motorshooter2Speed = 680.0   # Lower
             
             elif msg.angular.z == 1: #Shoot2    #R1
                 self.macro_active = True
-                self.motorshooter1Speed = 710.0  # Upper
-                self.motorshooter2Speed = 710.0   # Lower
+                self.motorshooter1Speed = 730.0  # Upper
+                self.motorshooter2Speed = 730.0   # Lower
         
             else:
                 self.macro_active = False 
@@ -287,8 +301,8 @@ class Cmd_vel_to_motor_speed(Node):
             
             elif msg.angular.z == 1: #Shoot2    #R1
                 self.macro_active = True
-                self.motorshooter1Speed = 4300.0  # Upper
-                self.motorshooter2Speed = 4700.0   # Lower
+                self.motorshooter1Speed = 4600.0  # Upper
+                self.motorshooter2Speed = 4600.0   # Lower
         
             else:
                 self.macro_active = False 
