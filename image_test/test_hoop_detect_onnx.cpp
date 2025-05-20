@@ -1,123 +1,128 @@
-#include <opencv2/opencv.hpp>
-#include <opencv2/dnn.hpp>
 #include <iostream>
-#include <vector>
-#include <string>
+#include <opencv2/opencv.hpp>
+#include <onnxruntime_cxx_api.h>
+#include <chrono>
 
-// Helper function to get class names (fill with your classes)
-std::vector<std::string> getClassNames() {
-    return { "class0", "class1", "class2" /* add your class names here */ };
-}
+using namespace std;
+using namespace cv;
+using namespace Ort;
+
+const int input_width = 320;
+const int input_height = 320;
+const float confidence_threshold = 0.5f;
 
 int main() {
-    // Load ONNX model
-    std::string modelPath = "trainvschair.onnx";
-    cv::dnn::Net net = cv::dnn::readNetFromONNX(modelPath);
-    if (net.empty()) {
-        std::cerr << "Failed to load ONNX model\n";
+    Env env(ORT_LOGGING_LEVEL_WARNING, "OnnxRuntime");
+    SessionOptions session_options;
+    session_options.SetIntraOpNumThreads(1);
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+
+    Session session(env, "../trainvschair.onnx", session_options);
+
+    Ort::AllocatorWithDefaultOptions allocator;
+
+    // Get input name
+    auto input_name_alloc = session.GetInputNameAllocated(0, allocator);
+    const char* input_name = input_name_alloc.get();  // used in Run()
+
+    // Get output names
+    size_t num_outputs = session.GetOutputCount();
+    std::vector<std::string> output_names_str;
+    std::vector<const char*> output_names;
+    for (size_t i = 0; i < num_outputs; ++i) {
+        auto out_name_alloc = session.GetOutputNameAllocated(i, allocator);
+        output_names_str.emplace_back(out_name_alloc.get());
+        output_names.push_back(output_names_str.back().c_str());
+    }
+
+    VideoCapture cap(0);
+    if (!cap.isOpened()) {
+        cerr << "Error: Could not open camera." << endl;
         return -1;
     }
 
-    // Load image
-    cv::Mat image = cv::imread("hoop.png");
-    if (image.empty()) {
-        std::cerr << "Image not found or invalid path!\n";
-        return -1;
-    }
+    while (true) {
+        Mat frame;
+        cap >> frame;
+        if (frame.empty()) break;
 
-    // Resize image to input size (640x480)
-    cv::Size inputSize(640, 480);
-    cv::Mat imageResized;
-    cv::resize(image, imageResized, inputSize);
+        Mat resized;
+        resize(frame, resized, Size(input_width, input_height));
+        resized.convertTo(resized, CV_32FC3, 1.0f / 255.0f);
 
-    cv::Mat imageTransposed;
-    cv::transpose(imageResized, imageTransposed);
-
-    // Prepare input blob
-    cv::Mat blob = cv::dnn::blobFromImage(imageResized, 1.0/255.0, inputSize, cv::Scalar(), true, false);
-
-    // Set input blob
-    net.setInput(blob);
-
-    // Run forward pass
-    std::vector<cv::Mat> outputs;
-    net.forward(outputs, net.getUnconnectedOutLayersNames());
-
-    // Assuming YOLOv8 ONNX output format: [num_detections, 85] (for COCO classes: 80 classes + 5)
-    // 85 = 4 box coords + 1 objectness + 80 class scores
-    // You may need to adjust parsing depending on your model output
-
-    float confThreshold = 0.25f;
-    float nmsThreshold = 0.45f;
-
-    std::vector<int> classIds;
-    std::vector<float> confidences;
-    std::vector<cv::Rect> boxes;
-
-    // Retrieve output data (assume outputs[0] contains detections)
-    cv::Mat& detections = outputs[0];
-
-    int rows = detections.rows;
-
-    for (int i = 0; i < rows; ++i) {
-        float* data = (float*)detections.ptr(i);
-        float confidence = data[4]; // objectness score
-
-        if (confidence >= confThreshold) {
-            // Get class scores and find max class id
-            float* scores = data + 5;
-            cv::Mat scoresMat(1, (int)(detections.cols - 5), CV_32FC1, scores);
-            cv::Point classIdPoint;
-            double maxClassScore;
-            minMaxLoc(scoresMat, 0, &maxClassScore, 0, &classIdPoint);
-
-            if (maxClassScore > confThreshold) {
-                int centerX = (int)(data[0] * inputSize.width);
-                int centerY = (int)(data[1] * inputSize.height);
-                int width = (int)(data[2] * inputSize.width);
-                int height = (int)(data[3] * inputSize.height);
-                int left = centerX - width / 2;
-                int top = centerY - height / 2;
-
-                classIds.push_back(classIdPoint.x);
-                confidences.push_back((float)maxClassScore);
-                boxes.push_back(cv::Rect(left, top, width, height));
+        // Prepare input tensor
+        vector<float> input_tensor_values(input_width * input_height * 3);
+        int idx = 0;
+        for (int c = 0; c < 3; ++c) {
+            for (int i = 0; i < input_height; ++i) {
+                for (int j = 0; j < input_width; ++j) {
+                    input_tensor_values[idx++] = resized.at<Vec3f>(i, j)[c];
+                }
             }
         }
+
+        array<int64_t, 4> input_shape = {1, 3, input_height, input_width};
+
+        auto memory_info = MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+        Value input_tensor = Value::CreateTensor<float>(memory_info, input_tensor_values.data(), input_tensor_values.size(), input_shape.data(), input_shape.size());
+
+        // Run inference
+        auto start = chrono::high_resolution_clock::now();
+        std::vector<Value> output_tensors = session.Run(RunOptions{nullptr},
+                                                        &input_name,
+                                                        &input_tensor,
+                                                        1,
+                                                        output_names.data(),
+                                                        output_names.size());
+        auto end = chrono::high_resolution_clock::now();
+        double inference_time = chrono::duration<double, milli>(end - start).count();
+
+        // Assuming output[0] shape = (1, 5, N)
+        float* output_data = output_tensors[0].GetTensorMutableData<float>();
+        auto output_shape = output_tensors[0].GetTensorTypeAndShapeInfo().GetShape();
+        size_t num_detections = output_shape[2];
+
+        vector<float> best_det;
+        float max_conf = 0.0f;
+
+        for (size_t i = 0; i < num_detections; ++i) {
+            float x = output_data[i * 5 + 0];
+            float y = output_data[i * 5 + 1];
+            float w = output_data[i * 5 + 2];
+            float h = output_data[i * 5 + 3];
+            float conf = output_data[i * 5 + 4];
+
+            if (conf > confidence_threshold && conf > max_conf) {
+                best_det = {x, y, w, h, conf};
+                max_conf = conf;
+            }
+        }
+
+        if (!best_det.empty()) {
+            float x = best_det[0];
+            float y = best_det[1];
+            float w = best_det[2];
+            float h = best_det[3];
+            float conf = best_det[4];
+
+            int x1 = static_cast<int>((x - w / 2.0f) * input_width);
+            int y1 = static_cast<int>((y - h / 2.0f) * input_height);
+            int x2 = static_cast<int>((x + w / 2.0f) * input_width);
+            int y2 = static_cast<int>((y + h / 2.0f) * input_height);
+
+            rectangle(resized, Point(x1, y1), Point(x2, y2), Scalar(0, 255, 255), 2);
+            putText(resized, format("hoop: %.2f", conf), Point(x1, y1 - 5),
+                    FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 255), 1);
+        }
+
+        putText(resized, format("Inference: %.1f ms", inference_time), Point(10, 25),
+                FONT_HERSHEY_SIMPLEX, 0.7, Scalar(255, 255, 0), 2);
+
+        imshow("Webcam Detections", resized);
+        if (waitKey(10) == 'q') break;
     }
 
-    // Perform Non-Maximum Suppression to eliminate redundant overlapping boxes
-    std::vector<int> indices;
-    cv::dnn::NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
-
-    // Get class names
-    std::vector<std::string> classNames = getClassNames();
-
-    // Draw boxes and labels on the image
-    for (int idx : indices) {
-        cv::Rect box = boxes[idx];
-        int clsId = classIds[idx];
-        float conf = confidences[idx];
-
-        cv::rectangle(imageResized, box, cv::Scalar(0, 255, 0), 2);
-
-        std::string label = classNames.size() > clsId ? classNames[clsId] : std::to_string(clsId);
-        label += ": " + cv::format("%.2f", conf);
-
-        int baseline = 0;
-        cv::Size labelSize = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 2, &baseline);
-        int top = std::max(box.y, labelSize.height);
-
-        cv::rectangle(imageResized, cv::Point(box.x, top - labelSize.height),
-                      cv::Point(box.x + labelSize.width, top + baseline),
-                      cv::Scalar(255, 255, 255), cv::FILLED);
-        cv::putText(imageResized, label, cv::Point(box.x, top),
-                    cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 0, 0), 2);
-    }
-
-    // Show image with detections
-    cv::imshow("YOLO_Onnx_Detection", imageResized);
-    cv::waitKey(0);
-
+    cap.release();
+    destroyAllWindows();
     return 0;
 }

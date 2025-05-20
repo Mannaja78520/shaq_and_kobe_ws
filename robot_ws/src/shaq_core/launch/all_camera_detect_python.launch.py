@@ -9,26 +9,6 @@ from launch_ros.actions import Node
 def generate_launch_description():
     ld = LaunchDescription()
 
-    # Define the path to the launch file directory
-    launch_file_dir = os.path.join(get_package_share_directory('shaq_core'), 'launch')
-    
-    
-    # Include microros.launch.py
-    microros_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(launch_file_dir, 'microros.launch.py')
-        )
-    )
-    
-    
-    cmd_vel_auto_aim = Node(
-        package="shaq_core",
-        executable="cmd_vel_auto_aim.py",
-        name="Cmd_Vel_Auto_Aim",
-        # output="screen",
-        namespace="",
-        # parameters=[], #Testing
-    )
 
     apriltag_auto_aim = Node(
         package="shaq_core",
@@ -39,20 +19,20 @@ def generate_launch_description():
         # parameters=[], #Testing
     )
 
-    hoop_detection_onnx = Node(
+    hoop_detection_onnxruntime = Node(
         package="shaq_core",
-        executable="hoop_detection_onnx",
-        name="hoop_detection_onnx",
+        executable="hoop_detection_onnxruntime.py",
+        name="hoop_detection_onnxruntime",
         # output="screen",
         namespace="",
         # parameters=[], #Testing
     )
     
-    hoop_detection_TFLite = Node(
+    hoop_detection_tflite = Node(
         package="shaq_core",
-        executable="hoop_detection_TFLite",
-        name="hoop_detection_TFLite",
-        # output="screen",
+        executable="hoop_detection_tflite.py",
+        name="hoop_detection_tflite",
+        output="screen",
         namespace="",
         # parameters=[], #Testing
     )
@@ -75,11 +55,9 @@ def generate_launch_description():
 
 
     # Add actions to the launch description
-    # ld.add_action(microros_launch)
-    # ld.add_action(cmd_vel_auto_aim)
     ld.add_action(camera_driver)
-    # ld.add_action(apriltag_auto_aim)
-    # ld.add_action(hoop_detection)
+    ld.add_action(apriltag_auto_aim)
+    ld.add_action(hoop_detection_tflite)
 
 
     return ld

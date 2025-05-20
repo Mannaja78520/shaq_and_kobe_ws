@@ -68,7 +68,8 @@ install(PROGRAMS
   scripts/cmd_vel_auto_aim_feed.py
 
   scripts_camera/cameracapture.py
-  scripts_camera/hoop_detection.py
+  scripts_camera/hoop_detection_onnxruntime.py
+  scripts_camera/hoop_detection_tflite.py
   scripts_camera/apriltag_auto_aim.py
   scripts_camera/show_camera.py
   
