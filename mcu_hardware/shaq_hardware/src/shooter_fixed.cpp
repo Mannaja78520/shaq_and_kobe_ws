@@ -5,7 +5,7 @@
 
 #define LED_PIN 13
 
-#define LED_AIM 14
+#define LED_STRIP 14
 
 #include <micro_ros_platformio.h>
 #include <stdio.h>
@@ -28,6 +28,13 @@
 #include <Servo.h>
 #include "../config/shooter_output.h"
 
+#include <FastLED.h>
+
+#define LED_PIN     5        // GPIO pin where WS2812B data line is connected
+#define NUM_LEDS    30        // Number of WS2812B LEDs
+#define COLOR_ORDER GRB      // Most WS2812B use GRB order
+
+CRGB leds[NUM_LEDS];
 
 #define RCCHECK(fn)                  \
     {                                \
@@ -70,8 +77,8 @@ geometry_msgs__msg__Twist shooter_msg;
 rcl_subscription_t servo_subscriber;
 geometry_msgs__msg__Twist servo_msg;
 
-rcl_subscription_t led_subscriber;
-geometry_msgs__msg__Twist led_msg;
+rcl_subscription_t led_subscriber; //AprilTag
+geometry_msgs__msg__Twist led_msg; //AprilTag
 
 rcl_subscription_t encoder_mode_subscriber;
 geometry_msgs__msg__Twist encoder_mode_msg;
@@ -148,7 +155,9 @@ void doReboot()
 
 void setup()
 {   
-    pinMode(LED_AIM, OUTPUT);
+    FastLED.addLeds<WS2812B, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+    FastLED.setBrightness(100);   // adjust brightness (0-255)
+
 
     servo.attach(SERVO_PIN);
     Serial.begin(115200);
@@ -270,7 +279,7 @@ bool createEntities()
         &led_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/shaq/led"));
+        "/shaq/distance/kobe"));
 
     RCCHECK(rclc_subscription_init_default(
         &encoder_mode_subscriber,
@@ -335,6 +344,7 @@ bool destroyEntities()
     rcl_subscription_fini(&shooter_motor_subscriber, &node);
     rcl_subscription_fini(&servo_subscriber,&node);
     rcl_subscription_fini(&encoder_mode_subscriber, &node);
+    rcl_subscription_fini(&led_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
     rclc_executor_fini(&executor);
@@ -405,17 +415,44 @@ void Move()
 
 }
 
-void led(){
+void led() {
 
-    bool led_state = led_msg.linear.x;
+    double val = led_msg.angular.y; // -1 to 1
+    static uint8_t startIndex = 0;
+    CRGB color;
 
-    if(led_state){
-        digitalWrite(LED_AIM,HIGH);
-    }else{
-        digitalWrite(LED_AIM,LOW);
+    if (val == 123123.0){
+        startIndex = startIndex + 1;
+        fill_rainbow(leds, NUM_LEDS, startIndex, 7);
+        FastLED.show();
+        return;
     }
 
+    if (val < 0) {
+        // Map from [-1, 0] => blue to green gradient
+        // blue = (0,0,255), green = (0,255,0)
+        float t = (val + 1.0); // map [-1..0] to [0..1]
+        uint8_t r = 0;
+        uint8_t g = (uint8_t)(255 * t);
+        uint8_t b = (uint8_t)(255 * (1 - t));
+        color = CRGB(r, g, b);
+    } else {
+        // Map from [0, 1] => green to red gradient
+        // green = (0,255,0), red = (255,0,0)
+        float t = val; // [0..1]
+        uint8_t r = (uint8_t)(255 * t);
+        uint8_t g = (uint8_t)(255 * (1 - t));
+        uint8_t b = 0;
+        color = CRGB(r, g, b);
+    }
+
+    for (int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = color;
+    }
+
+    FastLED.show();
 }
+
 
 
 

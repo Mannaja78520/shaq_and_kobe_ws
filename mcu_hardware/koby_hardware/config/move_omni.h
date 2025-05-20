@@ -18,8 +18,8 @@
 // INVERT MOTOR DIRECTIONS
 #define MOTORMOVE1_INV true
 #define MOTORMOVE2_INV false
-#define MOTORMOVE3_INV true
-#define MOTORMOVE4_INV false
+#define MOTORMOVE3_INV false
+#define MOTORMOVE4_INV true
 
 /*
 
@@ -43,14 +43,14 @@
 #define MOTOR2_IN_B 5
 
 // Motor 3 Parameters
-#define MOTOR3_PWM  36
-#define MOTOR3_IN_A 37
-#define MOTOR3_IN_B 38
+#define MOTOR3_PWM  6
+#define MOTOR3_IN_A 7
+#define MOTOR3_IN_B 8
 
 // Motor 4 Parameters
-#define MOTOR4_PWM  33
-#define MOTOR4_IN_A 34
-#define MOTOR4_IN_B 35
+#define MOTOR4_PWM  9
+#define MOTOR4_IN_A 10
+#define MOTOR4_IN_B 11
 
 
 // I2C communication

@@ -13,3 +13,32 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
+
+
+
+
+def cmd_macro(self, msg):
+
+        if self.encoder_mode == 1:      #1 Bit
+
+            if msg.linear.z == 1: #Shoot    #Cross
+                self.macro_active = True
+                self.motorshooter1Speed = 730.0  # Upper
+                self.motorshooter2Speed = 750.0  # Lower
+
+
+            elif msg.linear.x == 1: #Dribble    #Triangle
+                self.macro_active = True
+                self.motorshooter1Speed = -620.0  # Upper
+                self.motorshooter2Speed = 700.0   # Lower
+
+
+            elif msg.angular.y == 1: #Pass      #L1
+                self.macro_active = True
+                self.motorshooter1Speed = 750.0  # Upper
+                self.motorshooter2Speed = 680.0   # Lower
+            
+            elif msg.angular.z == 1: #Shoot2    #R1
+                self.macro_active = True
+                self.motorshooter1Speed = 730.0  # Upper
+                self.motorshooter2Speed = 730.0   # Lower

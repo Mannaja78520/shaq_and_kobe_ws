@@ -9,6 +9,8 @@ sudo apt install python3.12-venv
 python3 -m venv shaq_and_koby_venv
 echo "source /home/shaq/shaq_and_koby_ws/shaq_and_koby_venv/bin/activate" >> ~/.bashrc
 
+
+
 pip install catkin_pkg empy lark-parser colcon-common-extensions
 
 #microros
@@ -165,3 +167,7 @@ sudo cp rtl8761bu_fw.bin rtl8761bu_config.bin /lib/firmware/rtl_bt/
 sudo chmod 644 /lib/firmware/rtl_bt/rtl8761bu_*
 sudo reboot
 
+
+sudo fsck -fy /dev/nvme0n1p2
+
+iw dev
