@@ -32,7 +32,7 @@ def generate_launch_description():
 
     apriltag_auto_aim = Node(
         package="shaq_core",
-        executable="apriltag_auto_aim.py",
+        executable="apriltag_auto_aim",
         name="Apriltag_Distance",
         # output="screen",
         namespace="",
@@ -68,8 +68,8 @@ def generate_launch_description():
     # Add actions to the launch description
     ld.add_action(microros_launch)
     ld.add_action(cmd_vel_auto_aim)
-    # ld.add_action(camera_driver)
-    # ld.add_action(apriltag_auto_aim)
+    ld.add_action(camera_driver)
+    ld.add_action(apriltag_auto_aim)
     # ld.add_action(hoop_detection)
 
 
