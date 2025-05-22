@@ -7,6 +7,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2 as cv
 import time
+from threading import Lock
 
 class Show_Camera_Node(Node):
     def __init__(self):
@@ -15,6 +16,9 @@ class Show_Camera_Node(Node):
         self.bridge = CvBridge()
         self.last_annotated_time = 0  # Time when last annotated image was received
         self.annotated_timeout = 2.0  # Seconds to wait before falling back to raw image
+        self.processing = False
+        self.lock = Lock()
+
 
         self.annotated_sub = self.create_subscription(
             Image,
@@ -31,6 +35,12 @@ class Show_Camera_Node(Node):
         )
 
     def image_callback(self, msg):
+        with self.lock:
+            if self.processing:
+                return  # skip if busy
+            self.processing = True
+        start_time = time.time()
+
         # Only show raw image if annotated image hasn't been shown recently
         if time.time() - self.last_annotated_time < self.annotated_timeout:
             return
@@ -41,6 +51,8 @@ class Show_Camera_Node(Node):
             cv.waitKey(1)
         except Exception as e:
             self.get_logger().error(f"Raw CvBridge error: {e}")
+        
+        self.processing = False
 
     def annotated_image_callback(self, msg):
         try:
