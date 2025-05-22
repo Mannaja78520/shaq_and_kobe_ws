@@ -120,7 +120,7 @@ sudo apt install -y \
 
 cd ~
 sudo apt install curl unzip zip
-curl -Lo bazelisk https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64
+curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-linux-arm64"
 chmod +x bazelisk
 sudo mv bazelisk /usr/local/bin/bazel
 
