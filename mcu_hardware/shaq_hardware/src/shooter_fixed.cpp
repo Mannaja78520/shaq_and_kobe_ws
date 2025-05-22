@@ -5,7 +5,6 @@
 
 #define LED_PIN 13
 
-#define LED_STRIP 14
 
 #include <micro_ros_platformio.h>
 #include <stdio.h>
@@ -30,7 +29,7 @@
 
 #include <FastLED.h>
 
-#define LED_PIN     5        // GPIO pin where WS2812B data line is connected
+#define LED_STRIP     31       // GPIO pin where WS2812B data line is connected
 #define NUM_LEDS    30        // Number of WS2812B LEDs
 #define COLOR_ORDER GRB      // Most WS2812B use GRB order
 
@@ -155,7 +154,7 @@ void doReboot()
 
 void setup()
 {   
-    FastLED.addLeds<WS2812B, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+    FastLED.addLeds<WS2812B, LED_STRIP, COLOR_ORDER>(leds, NUM_LEDS);
     FastLED.setBrightness(100);   // adjust brightness (0-255)
 
 

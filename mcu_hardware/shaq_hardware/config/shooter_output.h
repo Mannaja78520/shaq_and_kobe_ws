@@ -32,8 +32,8 @@
 #define MOTOR1_ENCODER_INV false
 #define MOTOR2_ENCODER_INV false
 
-#define MOTOR1_INV false
-#define MOTOR2_INV false
+#define MOTOR1_INV false  //Lower
+#define MOTOR2_INV false //Upper
 #define MOTOR3_INV true
 
 
@@ -47,9 +47,9 @@
 #define MOTORSHOOTER1_IN_B 2
 
 
-#define MOTORSHOOTER2_PWM 3
-#define MOTORSHOOTER2_IN_A 4 
-#define MOTORSHOOTER2_IN_B 5
+#define MOTORSHOOTER2_PWM 9
+#define MOTORSHOOTER2_IN_A 10  
+#define MOTORSHOOTER2_IN_B 11
 
 
 #define MOTORLIFT_PWM 6
