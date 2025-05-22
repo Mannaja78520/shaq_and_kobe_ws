@@ -8,13 +8,15 @@ model.export(format="onnx",
             #  format="TensorRT",
             opset=12,
             simplify=True,
-            imgsz=(640, 480),
+            # imgsz=(320, 256),
+            imgsz=320,
             optimize = False,
             # int8 = True,
             # dynamic = True,
             device = "cpu",
             # Specifies the device for exporting: GPU (device=0), CPU (device=cpu), MPS for Apple silicon (device=mps) or
             # DLA for NVIDIA Jetson (device=dla:0 or device=dla:1). TensorRT exports automatically use GPU.
+            nms = True,
             )
 
 

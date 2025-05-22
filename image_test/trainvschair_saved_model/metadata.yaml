@@ -1,6 +1,6 @@
 description: Ultralytics YOLO11n model trained on /content/datasets/TgQhr8jf2O/data.yaml
 author: Ultralytics
-date: '2025-05-17T20:48:30.092326'
+date: '2025-05-20T10:56:46.330414'
 version: 8.3.133
 license: AGPL-3.0 License (https://ultralytics.com/license)
 docs: https://docs.ultralytics.com
@@ -8,8 +8,8 @@ stride: 32
 task: detect
 batch: 1
 imgsz:
-- 640
-- 480
+- 256
+- 256
 names:
   0: hoop
 args:
