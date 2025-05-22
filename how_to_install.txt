@@ -159,7 +159,7 @@ sudo make
 
 
 cd ~
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-x64-1.17.0.tgz
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-x64-1.22.0.tgz
 tar -xvzf onnxruntime-linux-x64-1.22.0.tgz
 cd onnxruntime-linux-x64-1.22.0
 sudo cp -r include /usr/local/
