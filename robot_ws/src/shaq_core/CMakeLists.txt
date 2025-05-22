@@ -92,7 +92,9 @@ install(PROGRAMS
 
 # Adjust the following to match your path (if you didn't install to /usr/local)
 include_directories(/usr/local/include)
-link_directories(/usr/local/lib)
+#link_directories(/usr/local/lib)
+link_directories(/home/shaq/onnxruntime/build/Linux/Release)
+include_directories(/home/shaq/onnxruntime/include)
 
 ################################################################################
 # Install C++ Programs
@@ -101,6 +103,11 @@ link_directories(/usr/local/lib)
 add_executable(apriltag_auto_aim scripts_camera/apriltag_auto_aim.cpp)
 add_executable(hoop_detection_onnx scripts_camera/hoop_detection_onnx.cpp)
 add_executable(hoop_detection_tflite scripts_camera/hoop_detection_tflite.cpp)
+
+target_include_directories(hoop_detection_tflite
+  PRIVATE
+    /home/shaq/tensorflow
+)
 
 ament_target_dependencies(apriltag_auto_aim 
   rclcpp
@@ -129,8 +136,10 @@ ament_target_dependencies(hoop_detection_tflite
 
 target_include_directories(hoop_detection_tflite 
  PUBLIC 
-   /usr/local/include
-   ${PROJECT_SOURCE_DIR}/include  # Optional: Add your own headers
+  #/usr/local/include
+    /home/shaq/tensorflow/tensorflow/lite
+    /home/shaq/tensorflow/tensorflow/lite/core
+    ${PROJECT_SOURCE_DIR}/include  # your own headers if any
 )
 
 target_link_libraries(apriltag_auto_aim ${OpenCV_LIBS} apriltag)
