@@ -1,0 +1,204 @@
+sudo apt update -y
+sudo apt full-upgrade -y
+
+#########
+
+locale  # check for UTF-8
+
+sudo apt update && sudo apt install locales
+
+sudo locale-gen en_US en_US.UTF-8
+
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+export LANG=en_US.UTF-8
+
+locale  # verify settings
+
+#########
+
+sudo apt install software-properties-common
+
+sudo add-apt-repository universe
+
+#########
+
+sudo apt update && sudo apt install curl -y
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+#########
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+#########
+
+sudo apt update && sudo apt install ros-dev-tools
+
+sudo apt update -y
+sudo apt upgrade -y
+
+#########
+
+sudo apt install ros-jazzy-desktop
+
+#########
+
+sudo apt install ros-jazzy-ros-base
+
+#########
+
+echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+#########
+
+sudo apt update -y
+sudo apt upgrade -y
+
+#########
+
+sudo apt install git
+
+sudo apt update
+sudo apt install python3-pip python3-colcon-common-extensions
+
+
+mkdir -p ~/uros_ws/src
+cd ~/uros_ws
+git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
+
+
+sudo rosdep init
+rosdep update
+rosdep install --from-path src --ignore-src -y
+colcon build
+
+echo "source ~/uros_ws/install/local_setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+sudo apt update
+ros2 run micro_ros_setup create_agent_ws.sh
+ros2 run micro_ros_setup build_agent.sh
+source install/local_setup.bash
+
+sudo apt install -y \
+  ros-jazzy-rclcpp \
+  ros-jazzy-rclpy \
+  ros-jazzy-tf2 \
+  ros-jazzy-tf2-geometry-msgs \
+  ros-jazzy-cv-bridge \
+  ros-jazzy-yaml-cpp-vendor \
+  ros-jazzy-geometry-msgs \
+  ros-jazzy-std-msgs \
+  ros-jazzy-sensor-msgs \
+  ros-jazzy-rclcpp-action \
+  ros-jazzy-ament-index-cpp \
+  python3-colcon-common-extensions
+
+
+sudo apt install -y \
+  python3-pip \
+  python3-opencv \
+  python3-numpy \
+  python3-yaml \
+  python3-setuptools \
+  build-essential \
+  cmake \
+  libopencv-dev \
+  libyaml-cpp-dev \
+  libeigen3-dev
+
+  sudo apt install -y \
+  python3-pytest \
+  ros-jazzy-ament-lint \
+  ros-jazzy-ament-lint-auto
+
+  sudo apt install -y libapriltag-dev
+
+
+#########
+
+cd ~
+sudo apt install curl unzip zip
+curl -Lo bazelisk https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64
+chmod +x bazelisk
+sudo mv bazelisk /usr/local/bin/bazel
+
+cd ~
+git clone  --depth 1 https://github.com/tensorflow/tensorflow.git
+cd tensorflow
+./configure
+## ตั้งค่า
+
+bazel build -c opt //tensorflow/lite:libtensorflowlite.so
+
+sudo cp bazel-bin/tensorflow/lite/libtensorflowlite*.so /usr/local/lib/
+sudo mkdir -p /usr/local/include/tensorflow/
+sudo cp -r tensorflow/lite/* /usr/local/include/tensorflow/
+
+cd ~
+git clone https://github.com/google/flatbuffers.git
+cd flatbuffers
+git checkout v24.3.25
+cmake -G "Unix Makefiles"
+make -j$(nproc)
+sudo make install
+
+#########
+
+sudo apt update
+sudo apt install -y python3-pip python3-dev git cmake protobuf-compiler libprotoc-dev
+
+sudo apt update
+sudo apt install -y git cmake build-essential python3-dev python3-pip
+sudo apt-get update
+sudo apt-get install libgtest-dev
+cd /usr/src/gtest
+sudo cmake .
+sudo make
+
+
+cd ~
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-x64-1.17.0.tgz
+tar -xvzf onnxruntime-linux-x64-1.22.0.tgz
+cd onnxruntime-linux-x64-1.22.0
+sudo cp -r include /usr/local/
+sudo cp -r lib /usr/local/
+sudo ldconfig
+
+
+##########
+
+sudo apt install python3.12-venv
+cd ~
+git clone https://github.com/Mannaja78520/shaq_and_kobe_ws.git
+cd shaq_and_kobe_ws
+sudo apt update
+sudo apt upgrade
+sudo apt install ros-jazzy-action-msgs* ros-jazzy-actionlib* ros-jazzy-v4l2-camera -y
+
+./setup_venv.sh
+source $PWD/shaq_and_koby_venv/bin/activate
+pip install catkin_pkg pyyaml onnxruntime opencv_python
+pip install flatbuffers numpy packaging protobuf sympy
+pip install --pre --index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/ORT-Nightly/pypi/simple/ onnxruntime
+pip install onnxruntime-directml
+pip install flatbuffers numpy packaging protobuf sympy
+pip install --pre --index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/ORT-Nightly/pypi/simple/ onnxruntime-directml
+pip install onnxruntime-gpu
+pip install flatbuffers numpy packaging protobuf sympy
+pip install --pre --index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/ORT-Nightly/pypi/simple/ onnxruntime-gpu
+pip install flatbuffers numpy packaging protobuf sympy
+pip install onnxruntime-gpu --index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-11/pypi/simple/
+pip install onnxruntime-qnn
+pip install flatbuffers numpy packaging protobuf sympy
+pip install --pre --index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/ORT-Nightly/pypi/simple/ onnxruntime-qnn
+pip install "numpy<2"
+pip install tensorflow
+  
+
+
+cd robot_ws
+colcon build
+echo "source $PWD/install/setup.bash" >> ~/.bashrc
+source ~/.bashrc
