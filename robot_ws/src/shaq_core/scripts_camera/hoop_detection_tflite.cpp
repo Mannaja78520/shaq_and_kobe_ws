@@ -66,13 +66,18 @@ public:
 
     // Publishers
     pub_hoop_pos_ = this->create_publisher<geometry_msgs::msg::Twist>("/shaq/send_where_hoop", rclcpp::SensorDataQoS());
-    pub_annotated_image_ = this->create_publisher<sensor_msgs::msg::Image>("/shaq/image/annotated_image", rclcpp::SensorDataQoS());
+    // pub_annotated_image_ = this->create_publisher<sensor_msgs::msg::Image>("/shaq/image/annotated_image", rclcpp::SensorDataQoS());
+    rclcpp::QoS best_effort_qos(rclcpp::KeepLast(10));
+    best_effort_qos.best_effort();
+    pub_annotated_image_ = this->create_publisher<sensor_msgs::msg::Image>("/shaq/image/annotated_image", best_effort_qos);
+
     pub_led_ = this->create_publisher<geometry_msgs::msg::Twist>("/shaq/led", rclcpp::QoS(10));
 
     // Subscriber to camera image
     sub_image_ = this->create_subscription<sensor_msgs::msg::Image>(
       "/shaq/image_raw",
-      rclcpp::SensorDataQoS(),
+      // rclcpp::SensorDataQoS(),
+      best_effort_qos,
       std::bind(&HoopDetectionNode::imageCallback, this, std::placeholders::_1));
 
     // Timer for publishing data periodically

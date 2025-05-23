@@ -14,8 +14,12 @@ public:
     : Node("apriltag_detector")
     {
         publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/shaq/distance/kobe", 10);
+        
+        rclcpp::QoS best_effort_qos(rclcpp::KeepLast(10));
+        best_effort_qos.best_effort();
+
         subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
-            "/shaq/image_raw", 10,
+            "/shaq/image_raw", best_effort_qos,
             std::bind(&AprilTagDetector::image_callback, this, std::placeholders::_1));
 
         tag_size_ = 0.1;       // meters
