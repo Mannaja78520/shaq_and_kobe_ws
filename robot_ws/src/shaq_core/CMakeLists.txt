@@ -93,8 +93,8 @@ install(PROGRAMS
 # Adjust the following to match your path (if you didn't install to /usr/local)
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib)
-#link_directories(/home/shaq/onnxruntime/build/Linux/Release)
-#include_directories(/home/shaq/onnxruntime/include)
+# link_directories(/home/shaq/onnxruntime/build/Linux/Release)
+# include_directories(/home/shaq/onnxruntime/include)
 
 ################################################################################
 # Install C++ Programs
@@ -132,8 +132,8 @@ ament_target_dependencies(hoop_detection_tflite
 target_include_directories(hoop_detection_tflite 
  PUBLIC 
   /usr/local/include
-    /home/shaq/tensorflow/tensorflow/lite
-    /home/shaq/tensorflow/tensorflow/lite/core
+    ๒ /home/shaq/tensorflow/tensorflow/lite
+    ๒ /home/shaq/tensorflow/tensorflow/lite/core
     ${PROJECT_SOURCE_DIR}/include  # your own headers if any
 )
 
