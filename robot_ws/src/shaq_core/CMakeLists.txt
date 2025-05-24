@@ -132,8 +132,8 @@ ament_target_dependencies(hoop_detection_tflite
 target_include_directories(hoop_detection_tflite 
  PUBLIC 
   /usr/local/include
-    ๒ /home/shaq/tensorflow/tensorflow/lite
-    ๒ /home/shaq/tensorflow/tensorflow/lite/core
+    # /home/shaq/tensorflow/tensorflow/lite
+    # /home/shaq/tensorflow/tensorflow/lite/core
     ${PROJECT_SOURCE_DIR}/include  # your own headers if any
 )
 
