@@ -144,7 +144,7 @@ bazel build -c opt //tensorflow/lite:libtensorflowlite.so
 
 sudo cp bazel-bin/tensorflow/lite/libtensorflowlite*.so /usr/local/lib/
 sudo mkdir -p /usr/local/include/tensorflow/
-sudo cp -r tensorflow/lite/* /usr/local/include/tensorflow/
+sudo cp -r tensorflow/* /usr/local/include/tensorflow/
 
 cd ~
 git clone https://github.com/google/flatbuffers.git
