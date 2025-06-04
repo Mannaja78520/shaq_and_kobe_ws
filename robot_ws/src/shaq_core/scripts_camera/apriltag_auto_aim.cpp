@@ -14,8 +14,12 @@ public:
     : Node("apriltag_detector")
     {
         publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/shaq/distance/kobe", 10);
+        
+        rclcpp::QoS best_effort_qos(rclcpp::KeepLast(10));
+        best_effort_qos.best_effort();
+
         subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
-            "/shaq/image_raw", 10,
+            "/shaq/image_raw", best_effort_qos,
             std::bind(&AprilTagDetector::image_callback, this, std::placeholders::_1));
 
         tag_size_ = 0.1;       // meters
@@ -33,6 +37,11 @@ public:
     }
 
 private:
+
+    const double wanted_distance = 3.0;    // meters
+    const double max_offset = 1.0;      // deadband tolerance in meters
+
+
     void image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
     {
         cv::Mat frame;
@@ -65,6 +74,7 @@ private:
             {3, {350, 0}}
         };
 
+
         std::pair<int, int> default_center = {frame_w / 2, frame_h / 2};
 
         if (zarray_size(detections) == 0) {
@@ -72,6 +82,7 @@ private:
             out.linear.x = 0.0;
             out.linear.y = 0.0;
             out.linear.z = 0.0;
+            out.angular.y = 123123.0; //Dont want to be 0 Cuz 0 For Led error = 0m
             publisher_->publish(out);
         } else {
             for (int i = 0; i < zarray_size(detections); i++) {
@@ -97,6 +108,8 @@ private:
 
                 double perceived_size = (perceived_width + perceived_height) / 2.0;
                 double distance = (tag_size_ * focal_length_) / perceived_size;
+                double error = distance - wanted_distance;          // positive = too far, negative = too close
+                double normalized_error = std::clamp(error / max_offset, -1.0, 1.0);
 
                 auto out = geometry_msgs::msg::Twist();
                 out.linear.x = center_x;
@@ -104,7 +117,7 @@ private:
                 out.linear.z = distance;
 
                 out.angular.x = screen_center.first;
-                out.angular.y = 55555555555555.0;
+                out.angular.y = normalized_error;
                 out.angular.z = tag_id;
 
                 publisher_->publish(out);

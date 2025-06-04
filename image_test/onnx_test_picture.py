@@ -10,7 +10,7 @@ if image is None:
     raise ValueError("Image not found or invalid path!")
 
 # Resize to model input size: (width, height)
-input_size = (640, 480)
+input_size = (320, 256)
 image_resized = cv2.resize(image, input_size)
 
 results = model.predict(source=image_resized, imgsz=input_size)[0]

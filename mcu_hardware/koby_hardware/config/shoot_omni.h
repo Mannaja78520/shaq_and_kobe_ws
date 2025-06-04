@@ -9,7 +9,7 @@
 
 
 #define MOTOR1_INV true
-#define MOTOR2_INV true
+#define MOTOR2_INV false
 #define MOTOR3_INV true
 
 
@@ -17,12 +17,12 @@
 #define MOTOR2_BREAK false
 #define MOTOR3_BREAK true
 
-//UpperMotor
+//Lower
 #define MOTORSHOOTER1_PWM 37     
 #define MOTORSHOOTER1_IN_A 36
 #define MOTORSHOOTER1_IN_B 35
 
-//LowerMotor
+//Upper
 #define MOTORSHOOTER2_PWM 15
 #define MOTORSHOOTER2_IN_A 14 
 #define MOTORSHOOTER2_IN_B 13
