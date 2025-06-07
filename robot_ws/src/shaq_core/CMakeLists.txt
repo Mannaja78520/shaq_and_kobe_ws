@@ -101,8 +101,8 @@ link_directories(/usr/local/lib)
 ################################################################################
 
 add_executable(apriltag_auto_aim scripts_camera/apriltag_auto_aim.cpp)
-add_executable(hoop_detection_onnx scripts_camera/hoop_detection_onnx.cpp)
-add_executable(hoop_detection_tflite scripts_camera/hoop_detection_tflite.cpp)
+# add_executable(hoop_detection_onnx scripts_camera/hoop_detection_onnx.cpp)
+# add_executable(hoop_detection_tflite scripts_camera/hoop_detection_tflite.cpp)
 
 ament_target_dependencies(apriltag_auto_aim 
   rclcpp
@@ -112,44 +112,44 @@ ament_target_dependencies(apriltag_auto_aim
   OpenCV
 )
 
-ament_target_dependencies(hoop_detection_onnx
-  rclcpp
-  sensor_msgs
-  std_msgs
-  cv_bridge
-  ament_index_cpp
-)
+# ament_target_dependencies(hoop_detection_onnx
+#   rclcpp
+#   sensor_msgs
+#   std_msgs
+#   cv_bridge
+#   ament_index_cpp
+# )
 
-ament_target_dependencies(hoop_detection_tflite
- rclcpp
- sensor_msgs
- std_msgs
- cv_bridge
- ament_index_cpp
- OpenCV
-)
+# ament_target_dependencies(hoop_detection_tflite
+#  rclcpp
+#  sensor_msgs
+#  std_msgs
+#  cv_bridge
+#  ament_index_cpp
+# OpenCV
+# )
 
-target_include_directories(hoop_detection_tflite 
- PUBLIC 
-  /usr/local/include
-    # /home/shaq/tensorflow/tensorflow/lite
-    # /home/shaq/tensorflow/tensorflow/lite/core
-    ${PROJECT_SOURCE_DIR}/include  # your own headers if any
-)
+# target_include_directories(hoop_detection_tflite 
+#  PUBLIC 
+#   /usr/local/include
+#     # /home/shaq/tensorflow/tensorflow/lite
+#     # /home/shaq/tensorflow/tensorflow/lite/core
+#     ${PROJECT_SOURCE_DIR}/include  # your own headers if any
+# )
 
 target_link_libraries(apriltag_auto_aim ${OpenCV_LIBS} apriltag)
-target_link_libraries(hoop_detection_onnx ${OpenCV_LIBS} onnxruntime)
+# target_link_libraries(hoop_detection_onnx ${OpenCV_LIBS} onnxruntime)
 
-target_link_libraries(hoop_detection_tflite
- ${OpenCV_LIBS}
- tensorflowlite
-)
+# target_link_libraries(hoop_detection_tflite
+#  ${OpenCV_LIBS}
+#  tensorflowlite
+# )
 
 
 install(TARGETS
   apriltag_auto_aim
-  hoop_detection_onnx
-  hoop_detection_tflite
+#   hoop_detection_onnx
+#   hoop_detection_tflite
   DESTINATION lib/${PROJECT_NAME}
 )
 

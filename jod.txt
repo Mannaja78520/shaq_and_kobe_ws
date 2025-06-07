@@ -118,6 +118,8 @@ PS4 Me 98:B6:E9:D7:56:B2
 
 PS5 :90:B6:85:9A:50:B0
 
+88:03:4C:3A:E8:5F
+
 Bluetooth Adapter Shaq: Controller 98:BA:5F:31:8A:84
 
 
